@@ -143,10 +143,12 @@ import { useHibahForm } from '@/composables/useHibahForm'
 import RevealBlock from './RevealBlock.vue'
 import CountdownTimer from './CountdownTimer.vue'
 
+const activeHibahId = ref<number | null>(null)
+
 const {
   form, submitting, success: successForm, regNo,
   fieldErrors, checkError, submit, reset
-} = useHibahForm()
+} = useHibahForm(activeHibahId)
 
 const eventData = ref({
   bannerTitle: HIBAH.banner.title,
@@ -161,10 +163,11 @@ onMounted(async () => {
   try {
     const url = `${SITE.apiBase}/hibah?status_hibah=aktif&per_page=1`
     const res = await fetch(url)
-    if (!res.ok) return // fallback to content.json
+    if (!res.ok) return
     const data: HibahEvent[] = await res.json()
     if (data.length > 0) {
       const ev = data[0]
+      activeHibahId.value = ev.id
       eventData.value = {
         bannerTitle: new DOMParser().parseFromString(ev.title.rendered, 'text/html').body.textContent || HIBAH.banner.title,
         bannerDesc: new DOMParser().parseFromString(ev.excerpt.rendered, 'text/html').body.textContent || HIBAH.banner.desc,

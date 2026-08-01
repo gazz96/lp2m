@@ -1,9 +1,10 @@
-import { reactive, ref } from 'vue'
+import { reactive, ref, type Ref } from 'vue'
 import type { HibahFormData } from '@/types'
 import { SITE } from '@/data'
 
-export function useHibahForm() {
+export function useHibahForm(hibahId: Ref<number | null>) {
   const form = reactive<HibahFormData>({
+    hibah_id: hibahId.value,
     nama: '',
     nip: '',
     jenis: 'Dosen',
@@ -68,9 +69,11 @@ export function useHibahForm() {
   async function submit() {
     if (!validate() || submitting.value) return
 
+    // Sync hibah_id from the reactive ref (parent may update it).
+    form.hibah_id = hibahId.value
+
     submitting.value = true
     try {
-      // Try posting to WordPress endpoint; fallback to CF Pages function
       const res = await fetch(SITE.formEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -79,15 +82,13 @@ export function useHibahForm() {
 
       if (res.ok) {
         const data = await res.json()
-        regNo.value = data.reg_no || `LP2M-2026-${String(Math.floor(10000 + Math.random() * 89999))}`
+        regNo.value = data.reg_no || `REG-${String(Math.floor(10000 + Math.random() * 89999))}`
       } else {
-        // Fallback: generate reg number locally
-        regNo.value = `LP2M-2026-${String(Math.floor(10000 + Math.random() * 89999))}`
+        regNo.value = `REG-${String(Math.floor(10000 + Math.random() * 89999))}`
       }
       success.value = true
     } catch {
-      // Network error — still show success with reg number
-      regNo.value = `LP2M-2026-${String(Math.floor(10000 + Math.random() * 89999))}`
+      regNo.value = `REG-${String(Math.floor(10000 + Math.random() * 89999))}`
       success.value = true
     } finally {
       submitting.value = false
@@ -95,8 +96,10 @@ export function useHibahForm() {
   }
 
   function reset() {
+    form.hibah_id = hibahId.value
     Object.assign(form, {
-      nama: '', nip: '', jenis: 'Dosen', prodi: '', skema: '',
+      hibah_id: hibahId.value,
+      nama: '', nip: '', jenis: 'Dosen' as const, prodi: '', skema: '',
       judul: '', ringkasan: '', jml_tim: '', anggota: '',
       email: '', hp: '', pernyataan: false
     })

@@ -28,6 +28,7 @@ export interface WpCategory {
 }
 
 export interface HibahFormData {
+  hibah_id: number | null
   nama: string
   nip: string
   jenis: 'Dosen' | 'Mahasiswa' | 'Tenaga Kependidikan'

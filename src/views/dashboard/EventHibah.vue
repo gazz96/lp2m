@@ -31,10 +31,10 @@
       </div>
     </div>
 
-    <!-- Form pendaftaran hibah (embedded dari landing) -->
+    <!-- Form pendaftaran hibah -->
     <div class="dash-card" style="margin-top:32px">
       <h3>📝 Form Pendaftaran Hibah</h3>
-      <HibahFormEmbed />
+      <HibahFormEmbed :hibah-id="selectedHibahId" />
     </div>
   </div>
 </template>
@@ -59,6 +59,7 @@ const posts = ref<EventPost[]>([])
 const loading = ref(true)
 const error = ref('')
 const activeTab = ref('all')
+const selectedHibahId = ref<number | null>(null)
 
 const tabs = [
   { key: 'all', label: 'Semua' },
@@ -81,6 +82,9 @@ onMounted(async () => {
     const res = await fetch(url)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data: HibahEvent[] = await res.json()
+    if (data.length > 0) {
+      selectedHibahId.value = data[0].id
+    }
     posts.value = data.map((p: HibahEvent) => ({
       id: p.id,
       title: new DOMParser().parseFromString(p.title.rendered, 'text/html').body.textContent || '',

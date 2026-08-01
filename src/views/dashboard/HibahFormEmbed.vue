@@ -89,10 +89,14 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { HIBAH } from '@/data'
 import { useHibahForm } from '@/composables/useHibahForm'
 
-const { form, submitting, success: successForm, regNo, fieldErrors, checkError, submit, reset } = useHibahForm()
+const props = defineProps<{ hibahId?: number | null }>()
+const hibahIdRef = ref<number | null>(props.hibahId ?? null)
+
+const { form, submitting, success: successForm, regNo, fieldErrors, checkError, submit, reset } = useHibahForm(hibahIdRef)
 
 function submitForm() { submit() }
 </script>
