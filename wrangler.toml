@@ -1,8 +1,4 @@
-# Cloudflare Pages project configuration
-# Deploy via: npx wrangler pages deploy dist
-# Or connect repo in Cloudflare Pages dashboard with:
-#   Build command:  npm install && npm run build
-#   Output dir:     dist
+name = "lp2m"
 compatibility_date = "2026-08-01"
 pages_build_output_dir = "dist"
 
