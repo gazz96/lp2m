@@ -1,0 +1,32 @@
+<template>
+  <TopBar />
+  <SiteNav />
+  <main>
+    <HeroSection />
+    <FrondRule leafColor="#8CB39A" />
+    <TentangSection />
+    <BidangSection />
+    <InfografisSection />
+    <FrondRule leafColor="#C99A3B" />
+    <HibahSection />
+    <PublikasiSection />
+    <MitraSection />
+    <CtaSection />
+  </main>
+  <SiteFooter />
+</template>
+
+<script setup lang="ts">
+import TopBar from './components/TopBar.vue'
+import SiteNav from './components/SiteNav.vue'
+import HeroSection from './components/HeroSection.vue'
+import FrondRule from './components/FrondRule.vue'
+import TentangSection from './components/TentangSection.vue'
+import BidangSection from './components/BidangSection.vue'
+import InfografisSection from './components/InfografisSection.vue'
+import HibahSection from './components/HibahSection.vue'
+import PublikasiSection from './components/PublikasiSection.vue'
+import MitraSection from './components/MitraSection.vue'
+import CtaSection from './components/CtaSection.vue'
+import SiteFooter from './components/SiteFooter.vue'
+</script>

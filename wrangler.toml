@@ -1,0 +1,6 @@
+name = "lp2m-itsi"
+compatibility_date = "2026-08-01"
+pages_build_output_dir = "dist"
+
+# Jika pakai Cloudflare Pages + Functions, folder functions/ auto-detected.
+# Tidak perlu config tambahan untuk basic usage.

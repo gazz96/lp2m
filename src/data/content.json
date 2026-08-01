@@ -1,0 +1,177 @@
+{
+  "site": {
+    "name": "LP2M ITSI",
+    "fullName": "Lembaga Penelitian dan Pengabdian kepada Masyarakat",
+    "institute": "Institut Teknologi Sawit Indonesia",
+    "email": "lp2m@itsi.ac.id",
+    "phone": "(061) 663 7060",
+    "address": "Jl. Williem Iskandar (Pancing)",
+    "address2": "Medan Estate, Percut Sei Tuan",
+    "address3": "Kota Medan, Sumatera Utara 20222",
+    "mainUrl": "https://itsi.ac.id",
+    "apiBase": "https://itsi.ac.id/index.php/wp-json/wp/v2",
+    "formEndpoint": "/api/hibah",
+    "newsCategoryIds": [16, 17, 18, 10],
+    "newsPerPage": 6
+  },
+  "hero": {
+    "eyebrow": "Tri Dharma Perguruan Tinggi · Penelitian & Pengabdian",
+    "titleHtml": "Riset sawit hulu\u00a0ke\u00a0hilir, <em>terhubung langsung</em> ke masyarakat perkebunan.",
+    "lead": "Lembaga Penelitian dan Pengabdian kepada Masyarakat (LP2M) ITSI mengelola, mendanai, dan mengawal penelitian serta pengabdian dosen dan mahasiswa — dari laboratorium hingga ke desa binaan di kawasan perkebunan kelapa sawit.",
+    "eventTitle": "Hibah Kompetitif Riset Hilirisasi Sawit & Pengabdian Desa Binaan 2026",
+    "eventDesc": "Skema pendanaan internal LP2M untuk dosen, kelompok riset lintas program studi, dan mahasiswa.",
+    "schedule": [
+      "Pendaftaran dibuka 1 Agustus 2026",
+      "Batas akhir usulan 15 September 2026",
+      "Pengumuman penerima 10 Oktober 2026"
+    ],
+    "stats": [
+      { "count": 187, "label": "Penelitian didanai (5 tahun)" },
+      { "count": 342, "label": "Publikasi terindeks" },
+      { "count": 96, "label": "Desa & kelompok tani binaan" },
+      { "count": 41, "label": "Mitra kerja sama aktif" }
+    ]
+  },
+  "tentang": {
+    "eyebrow": "Tentang Kami",
+    "title": "Kedudukan, Tugas, dan Fungsi LP2M",
+    "desc": "LP2M merupakan unsur pelaksana akademik ITSI yang mengoordinasikan, memfasilitasi, dan mengendalikan mutu seluruh kegiatan penelitian serta pengabdian kepada masyarakat di lingkungan institut.",
+    "quote": "\u201cPenelitian yang baik lahir dari kebun, dan harus kembali memberi manfaat ke kebun.\u201d",
+    "quoteBody": "LP2M menjalankan dua dharma dari Tri Dharma Perguruan Tinggi — penelitian dan pengabdian kepada masyarakat — dengan fokus khusus pada rantai nilai industri kelapa sawit dan karet, agribisnis perkebunan, teknologi informasi pendukung, serta pemberdayaan masyarakat di kawasan perkebunan binaan ITSI.",
+    "pillars": [
+      { "num": "01", "title": "Perencanaan & Pengelolaan Hibah", "desc": "Menyusun roadmap riset, membuka skema hibah internal, serta mengelola pendanaan penelitian dan pengabdian dosen maupun mahasiswa." },
+      { "num": "02", "title": "Fasilitasi Publikasi & HKI", "desc": "Mendampingi civitas akademika dalam publikasi ilmiah, hak kekayaan intelektual, dan hilirisasi hasil penelitian ke industri." },
+      { "num": "03", "title": "Pengabdian & Desa Binaan", "desc": "Mengoordinasikan program pemberdayaan petani sawit, KKN tematik, dan kerja sama dengan pemerintah daerah serta mitra industri." },
+      { "num": "04", "title": "Penjaminan Mutu Penelitian", "desc": "Mengawal etika penelitian, reviu proposal, monitoring-evaluasi, hingga pelaporan capaian kinerja penelitian institusi." }
+    ],
+    "leadership": [
+      { "role": "Ketua LP2M", "name": "Ketua Lembaga", "unit": "Koordinasi umum & kebijakan riset institusi" },
+      { "role": "Kepala Pusat", "name": "Pusat Penelitian", "unit": "Pengelolaan skema penelitian & publikasi" },
+      { "role": "Kepala Pusat", "name": "Pusat Pengabdian Masyarakat", "unit": "Program desa binaan & kemitraan" },
+      { "role": "Kepala Pusat", "name": "Pusat Data, Publikasi & HKI", "unit": "Basis data riset & kekayaan intelektual" }
+    ]
+  },
+  "bidang": {
+    "eyebrow": "Fokus Riset",
+    "title": "Bidang Unggulan Penelitian & Pengabdian",
+    "desc": "Empat rumpun bidang yang menjadi prioritas pendanaan LP2M, selaras dengan Rencana Induk Penelitian ITSI.",
+    "items": [
+      {
+        "title": "Budidaya & Agronomi Sawit",
+        "desc": "Peningkatan produktivitas tanaman, pemuliaan bibit unggul, dan pengelolaan lahan perkebunan berkelanjutan.",
+        "icon": "leaf"
+      },
+      {
+        "title": "Teknologi Pengolahan Hasil Perkebunan",
+        "desc": "Hilirisasi CPO dan produk turunan, efisiensi proses pabrik, serta pemanfaatan limbah menjadi produk bernilai tambah.",
+        "icon": "gear"
+      },
+      {
+        "title": "Sistem & Teknologi Informasi Perkebunan",
+        "desc": "Digitalisasi rantai pasok sawit, sistem informasi manajemen kebun, IoT, dan analitik data pertanian presisi.",
+        "icon": "cross"
+      },
+      {
+        "title": "Agribisnis, Sosial & Pemberdayaan",
+        "desc": "Kelembagaan petani, kewirausahaan perdesaan, dan pengabdian berbasis SDGs di kawasan perkebunan binaan.",
+        "icon": "hexagon"
+      }
+    ]
+  },
+  "infografis": {
+    "eyebrow": "Kinerja Lembaga",
+    "title": "Infografis Capaian LP2M",
+    "desc": "Ringkasan visual capaian penelitian, pengabdian, dan sebaran wilayah dampingan LP2M ITSI.",
+    "ledger": [
+      { "count": 58, "label": "Dosen aktif sebagai peneliti" },
+      { "count": 214, "label": "Mahasiswa terlibat riset & pengabdian" },
+      { "count": 3.2, "label": "Dana hibah tersalurkan (Rp, dalam miliar)", "decimals": 1, "suffix": " M" },
+      { "count": 12, "label": "HKI & paten terdaftar" }
+    ],
+    "donutData": [
+      { "val": 34, "color": "#1F4D36", "label": "Penelitian Dasar (34%)" },
+      { "val": 26, "color": "#2F6B4F", "label": "Penelitian Terapan (26%)" },
+      { "val": 28, "color": "#C99A3B", "label": "Pengabdian Desa Binaan (28%)" },
+      { "val": 12, "color": "#9B4224", "label": "Kewirausahaan (12%)" }
+    ],
+    "regions": [
+      { "name": "Deli Serdang", "width": 88, "val": 22 },
+      { "name": "Serdang Bedagai", "width": 72, "val": 18 },
+      { "name": "Langkat", "width": 64, "val": 16 },
+      { "name": "Simalungun", "width": 56, "val": 14 },
+      { "name": "Asahan", "width": 40, "val": 10 },
+      { "name": "Labuhanbatu", "width": 32, "val": 8 }
+    ]
+  },
+  "hibah": {
+    "eyebrow": "Hibah & Agenda",
+    "title": "Pendaftaran Hibah Internal Penelitian & Pengabdian",
+    "desc": "Formulir pendaftaran di bawah berlaku untuk seluruh skema hibah internal LP2M pada event yang sedang berjalan.",
+    "banner": {
+      "eyebrow": "Event Aktif · Tahun Anggaran 2026/2027",
+      "title": "Hibah Kompetitif Riset Hilirisasi Sawit & Pengabdian Berbasis Desa Binaan 2026",
+      "desc": "Diperuntukkan bagi dosen tetap, kelompok riset lintas program studi, dan mahasiswa yang mengusulkan penelitian maupun pengabdian sesuai bidang unggulan LP2M ITSI.",
+      "deadline": "2026-09-15T23:59:59",
+      "deadlineLabel": "15 September 2026",
+      "timeline": [
+        { "date": "01 Agu 2026", "label": "Sosialisasi & pembukaan pendaftaran usulan" },
+        { "date": "15 Sep 2026", "label": "Batas akhir pengunggahan proposal lengkap" },
+        { "date": "16–30 Sep 2026", "label": "Seleksi administrasi & reviu substansi oleh reviewer internal" },
+        { "date": "10 Okt 2026", "label": "Pengumuman resmi penerima hibah" },
+        { "date": "Okt 2026–Jul 2027", "label": "Pelaksanaan kegiatan & pelaporan kemajuan" }
+      ],
+      "info": [
+        "Maks. 3 anggota tim per usulan",
+        "Dana s.d. Rp 35 juta / skema penelitian",
+        "Dana s.d. Rp 20 juta / skema pengabdian"
+      ]
+    },
+    "form": {
+      "prodiOptions": [
+        "Budidaya Tanaman Perkebunan",
+        "Teknologi Pengolahan Hasil Perkebunan",
+        "Sistem dan Teknologi Informasi",
+        "Agribisnis",
+        "Unit / Lembaga Lainnya"
+      ],
+      "skemaOptions": [
+        "Penelitian Dasar Unggulan Sawit",
+        "Penelitian Terapan & Hilirisasi Produk Perkebunan",
+        "Penelitian Kolaborasi Lintas Program Studi",
+        "Pengabdian kepada Masyarakat Berbasis Desa Binaan",
+        "Pengabdian Kewirausahaan & Pemberdayaan Petani Sawit"
+      ]
+    }
+  },
+  "mitra": {
+    "eyebrow": "Kemitraan",
+    "title": "Mitra Kerja Sama Tridharma",
+    "items": [
+      "BUMN Perkebunan",
+      "Pemerintah Kabupaten",
+      "Kementerian Hukum & HAM",
+      "Kelompok Tani Sawit",
+      "Perguruan Tinggi Mitra"
+    ]
+  },
+  "cta": {
+    "title": "Punya gagasan riset atau program pengabdian?",
+    "desc": "Konsultasikan rencana usulan Anda dengan Pusat Penelitian atau Pusat Pengabdian sebelum batas akhir pendaftaran."
+  },
+  "footer": {
+    "tagline": "Lembaga Penelitian dan Pengabdian kepada Masyarakat, Institut Teknologi Sawit Indonesia. Mengelola riset dan pengabdian dari kebun sawit menuju inovasi bangsa.",
+    "tautan": [
+      { "label": "Tentang LP2M", "href": "#tentang" },
+      { "label": "Bidang Unggulan", "href": "#bidang" },
+      { "label": "Infografis Kinerja", "href": "#infografis" },
+      { "label": "Hibah & Event", "href": "#hibah" },
+      { "label": "Publikasi", "href": "#publikasi" }
+    ],
+    "layanan": [
+      { "label": "Pendaftaran Hibah", "href": "#hibah" },
+      { "label": "Panduan Penulisan Proposal", "href": "#" },
+      { "label": "Layanan HKI & Paten", "href": "#" },
+      { "label": "Portal Utama ITSI", "href": "https://itsi.ac.id" }
+    ]
+  }
+}
