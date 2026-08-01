@@ -1,6 +1,9 @@
 name = "lp2m"
 compatibility_date = "2026-08-01"
-pages_build_output_dir = "dist"
 
-# Jika pakai Cloudflare Pages Functions (opsional)
-# Folder functions/ akan auto-detected oleh Pages CI
+# Untuk 'wrangler deploy' (Workers + static assets)
+[assets]
+directory = "./dist"
+
+# Untuk 'wrangler pages deploy'
+pages_build_output_dir = "dist"
