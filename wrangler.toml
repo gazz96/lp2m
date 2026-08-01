@@ -1,6 +1,10 @@
-name = "lp2m-itsi"
+# Cloudflare Pages project configuration
+# Deploy via: npx wrangler pages deploy dist
+# Or connect repo in Cloudflare Pages dashboard with:
+#   Build command:  npm install && npm run build
+#   Output dir:     dist
 compatibility_date = "2026-08-01"
 pages_build_output_dir = "dist"
 
-# Jika pakai Cloudflare Pages + Functions, folder functions/ auto-detected.
-# Tidak perlu config tambahan untuk basic usage.
+# Jika pakai Cloudflare Pages Functions (opsional)
+# Folder functions/ akan auto-detected oleh Pages CI
