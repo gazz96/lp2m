@@ -42,6 +42,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { SITE } from '@/data'
+import type { HibahEvent } from '@/types'
 import HibahFormEmbed from '@/views/dashboard/HibahFormEmbed.vue'
 
 interface EventPost {
@@ -61,12 +62,9 @@ const activeTab = ref('all')
 
 const tabs = [
   { key: 'all', label: 'Semua' },
-  { key: 'agenda', label: 'Agenda' },
-  { key: 'info', label: 'Info Pendaftaran' },
-  { key: 'kegiatan', label: 'Kegiatan' }
+  { key: 'internal', label: 'Internal' },
+  { key: 'eksternal', label: 'Eksternal' }
 ]
-
-const catNames: Record<number, string> = { 27: 'Agenda', 6: 'Info Pendaftaran', 8: 'Kegiatan' }
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -74,24 +72,23 @@ function formatDate(d: string) {
 
 const filteredPosts = computed(() => {
   if (activeTab.value === 'all') return posts.value
-  const keyMap: Record<string, number> = { agenda: 27, info: 6, kegiatan: 8 }
-  return posts.value.filter(p => p.catId === keyMap[activeTab.value])
+  return posts.value.filter(p => p.kategori === activeTab.value)
 })
 
 onMounted(async () => {
   try {
-    const url = `${SITE.apiBase}/posts?categories=27,6,8&per_page=30&orderby=date&order=desc`
+    const url = `${SITE.apiBase}/hibah?per_page=30&orderby=date&order=desc`
     const res = await fetch(url)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
-    posts.value = data.map((p: any) => ({
+    const data: HibahEvent[] = await res.json()
+    posts.value = data.map((p: HibahEvent) => ({
       id: p.id,
-      title: new DOMParser().parseFromString(p.title.rendered, 'text/html').body.textContent || p.title.rendered,
+      title: new DOMParser().parseFromString(p.title.rendered, 'text/html').body.textContent || '',
       link: p.link,
       date: formatDate(p.date),
-      excerpt: new DOMParser().parseFromString(p.excerpt?.rendered || '', 'text/html').body.textContent?.slice(0, 120) + '…' || '',
-      kategori: catNames[p.categories?.[0]] || 'Event',
-      catId: p.categories?.[0] || 0
+      excerpt: p.kategori_hibah || p.skema || p.jenis_hibah || '',
+      kategori: p.jenis_hibah || 'internal',
+      catId: p.id
     }))
   } catch (e: any) {
     error.value = e.message

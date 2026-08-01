@@ -6,8 +6,11 @@
     <!-- Timeline -->
     <div class="dash-card">
       <h3>📅 Timeline Event Hibah Aktif</h3>
-      <div class="timeline-vert">
-        <div v-for="(item, idx) in HIBAH.banner.timeline" :key="idx" class="tl-item">
+      <div v-if="loading" class="loading-text">Memuat timeline...</div>
+      <div v-else-if="error" class="error-text">{{ error }}</div>
+      <div v-else-if="timeline.length === 0" class="empty-text">Belum ada timeline. Silakan tambahkan melalui admin WordPress → Hibah LP2M.</div>
+      <div v-else class="timeline-vert">
+        <div v-for="(item, idx) in timeline" :key="idx" class="tl-item">
           <div class="tl-marker" :class="{ done: idx < 2 }">{{ idx + 1 }}</div>
           <div class="tl-content">
             <div class="tl-date">{{ item.date }}</div>
@@ -18,8 +21,10 @@
     </div>
 
     <!-- Panduan penulisan -->
-    <div class="dash-grid-2">
-      <div v-for="doc in panduan" :key="doc.title" class="dash-card doc-card">
+    <div v-if="loading" class="loading-text" style="text-align:left">Memuat panduan...</div>
+    <div v-else-if="panduan.length > 0">
+      <div class="dash-grid-2" style="margin-top:20px">
+        <div v-for="doc in panduan" :key="doc.title" class="dash-card doc-card">
         <div class="doc-icon">📄</div>
         <h4>{{ doc.title }}</h4>
         <p>{{ doc.desc }}</p>
@@ -27,6 +32,7 @@
           ⬇ Unduh {{ doc.format }}
         </a>
       </div>
+    </div>
     </div>
 
     <!-- Template proposal -->
@@ -46,53 +52,70 @@
 </template>
 
 <script setup lang="ts">
-import { HIBAH } from '@/data'
+import { ref, onMounted } from 'vue'
+import { SITE } from '@/data'
+import type { HibahEvent } from '@/types'
 
-const panduan = [
-  {
-    title: 'Panduan Penulisan Proposal Penelitian',
-    desc: 'Format, sistematika, dan ketentuan penulisan proposal penelitian hibah internal LP2M.',
-    link: '#', file: 'panduan-proposal-penelitian.docx', format: 'DOCX'
-  },
-  {
-    title: 'Panduan Penulisan Proposal Pengabdian',
-    desc: 'Pedoman penyusunan proposal pengabdian masyarakat berbasis desa binaan.',
-    link: '#', file: 'panduan-proposal-pengabdian.docx', format: 'DOCX'
-  },
-  {
-    title: 'Buku Pedoman Hibah Internal 2026',
-    desc: 'Dokumen lengkap skema, ketentuan, dan alur hibah internal LP2M ITSI.',
-    link: '#', file: 'buku-pedoman-hibah-2026.pdf', format: 'PDF'
-  },
-  {
-    title: 'Template RAB & Justifikasi Anggaran',
-    desc: 'Template rencana anggaran biaya dan justifikasi untuk semua skema hibah.',
-    link: '#', file: 'template-rab.xlsx', format: 'XLSX'
-  }
-]
+const activeEvent = ref<HibahEvent | null>(null)
+const loading = ref(true)
+const error = ref('')
 
-const templates = [
-  {
-    title: 'Template Proposal Penelitian (.docx)',
-    desc: 'File template siap isi untuk proposal penelitian.',
-    link: '#', file: 'template-proposal-penelitian.docx'
-  },
-  {
-    title: 'Template Proposal Pengabdian (.docx)',
-    desc: 'File template siap isi untuk proposal pengabdian.',
-    link: '#', file: 'template-proposal-pengabdian.docx'
-  },
-  {
-    title: 'Template Laporan Kemajuan (.docx)',
-    desc: 'Format laporan kemajuan penelitian dan pengabdian.',
-    link: '#', file: 'template-laporan-kemajuan.docx'
-  },
-  {
-    title: 'Template Laporan Akhir (.docx)',
-    desc: 'Format laporan akhir untuk semua skema hibah.',
-    link: '#', file: 'template-laporan-akhir.docx'
+const panduan = ref<Array<{ title: string; desc: string; link: string; file: string; format: string }>>([])
+const templates = ref<Array<{ title: string; desc: string; link: string; file: string }>>([])
+const timeline = ref<Array<{ date: string; label: string }>>([])
+
+onMounted(async () => {
+  try {
+    // Fetch event hibah terbaru
+    const url = `${SITE.apiBase}/hibah?per_page=1&orderby=date&order=desc`
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data: HibahEvent[] = await res.json()
+    if (data.length > 0) {
+      activeEvent.value = data[0]
+      timeline.value = data[0].timeline_items || []
+
+      // Map file panduan
+      if (data[0].file_panduan?.length) {
+        panduan.value = data[0].file_panduan.map((url: string, i: number) => {
+          const isDocx = url.toLowerCase().endsWith('.docx')
+          return {
+            title: `Panduan Penulisan Proposal ${i + 1}`,
+            desc: 'Format, sistematika, dan ketentuan penulisan proposal hibah LP2M.',
+            link: url,
+            file: url.split('/').pop() || `panduan-${i + 1}.pdf`,
+            format: isDocx ? 'DOCX' : 'PDF'
+          }
+        })
+      }
+
+      // Map file template
+      if (data[0].file_template?.length) {
+        templates.value = data[0].file_template.map((url: string, i: number) => ({
+          title: `Template Proposal ${i + 1}`,
+          desc: 'File template siap isi untuk proposal penelitian atau pengabdian.',
+          link: url,
+          file: url.split('/').pop() || `template-${i + 1}.docx`
+        }))
+      }
+
+      // Link panduan alternatif
+      if (data[0].link_panduan) {
+        panduan.value.push({
+          title: 'Link Panduan Eksternal',
+          desc: 'Dokumen panduan hibah selengkapnya (Google Drive / portal).',
+          link: data[0].link_panduan,
+          file: 'panduan-eksternal',
+          format: 'LINK'
+        })
+      }
+    }
+  } catch (e: any) {
+    error.value = e.message
+  } finally {
+    loading.value = false
   }
-]
+})
 </script>
 
 <style scoped>
@@ -121,4 +144,6 @@ const templates = [
 .tpl-row strong { font-size: 0.9rem; color: var(--green-800); }
 .tpl-row p { font-size: 0.8rem; color: var(--ink-soft); margin: 2px 0 0; }
 .tpl-btn { font-size: 0.82rem; padding: 8px 16px; white-space: nowrap; }
+.loading-text, .empty-text, .error-text { color: var(--ink-soft); font-size: 0.88rem; padding: 16px 0; }
+.error-text { color: var(--rust); }
 </style>

@@ -84,3 +84,33 @@ export interface PubCardData {
   title: string
   excerpt: string
 }
+
+export interface HibahEvent {
+  id: number
+  title: { rendered: string }
+  excerpt: { rendered: string }
+  content: { rendered: string }
+  link: string
+  date: string
+  jenis_hibah: 'internal' | 'eksternal'
+  status_hibah: 'aktif' | 'ditutup' | 'arsip'
+  kategori_hibah: string
+  deadline: string
+  deadline_label: string
+  skema: string
+  event_eyebrow: string
+  dana_maks: string
+  jumlah_tim_maks: string
+  info_tambahan: string
+  timeline_items: Array<{ date: string; label: string }>
+  file_panduan: string[]
+  file_template: string[]
+  link_panduan: string
+  category_names: string[]
+  _embedded?: {
+    'wp:featuredmedia'?: Array<{
+      source_url: string
+      alt_text: string
+    }>
+  }
+}

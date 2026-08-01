@@ -10,7 +10,7 @@
     "address3": "Kota Medan, Sumatera Utara 20222",
     "mainUrl": "https://itsi.ac.id",
     "apiBase": "https://itsi.ac.id/index.php/wp-json/wp/v2",
-    "formEndpoint": "/api/hibah",
+    "formEndpoint": "https://itsi.ac.id/index.php/wp-json/lp2m/v1/hibah",
     "newsCategoryIds": [16, 17, 18, 10],
     "newsPerPage": 6
   },

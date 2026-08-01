@@ -13,10 +13,10 @@
       <RevealBlock class="hibah-banner">
         <div>
           <div class="eyebrow banner-eyebrow">{{ HIBAH.banner.eyebrow }}</div>
-          <h2>{{ HIBAH.banner.title }}</h2>
-          <p>{{ HIBAH.banner.desc }}</p>
+          <h2>{{ eventData.bannerTitle }}</h2>
+          <p>{{ eventData.bannerDesc }}</p>
           <div class="timeline">
-            <div v-for="t in HIBAH.banner.timeline" :key="t.date" class="t-row">
+            <div v-for="t in eventData.timeline" :key="t.date" class="t-row">
               <span class="date">{{ t.date }}</span>
               <span>{{ t.label }}</span>
             </div>
@@ -24,10 +24,10 @@
         </div>
         <div class="countdown-box">
           <div class="cd-label">Sisa waktu pendaftaran</div>
-          <CountdownTimer :deadline="HIBAH.banner.deadline" />
-          <div class="cd-sub">hari menuju {{ HIBAH.banner.deadlineLabel }}</div>
+          <CountdownTimer :deadline="eventData.deadline" />
+          <div class="cd-sub">hari menuju {{ eventData.deadlineLabel }}</div>
           <ul class="leaf-list mt-16">
-            <li v-for="info in HIBAH.banner.info" :key="info">
+            <li v-for="info in eventData.info" :key="info">
               <svg width="16" height="16" viewBox="0 0 18 18"><path d="M2 16 C2 9 6 2 16 2 C14 8 9 13 2 16 Z" fill="none" stroke="#C99A3B" stroke-width="1.6"/></svg>
               {{ info }}
             </li>
@@ -136,7 +136,9 @@
 </template>
 
 <script setup lang="ts">
-import { HIBAH } from '@/data'
+import { ref, onMounted } from 'vue'
+import { HIBAH, SITE } from '@/data'
+import type { HibahEvent } from '@/types'
 import { useHibahForm } from '@/composables/useHibahForm'
 import RevealBlock from './RevealBlock.vue'
 import CountdownTimer from './CountdownTimer.vue'
@@ -146,8 +148,38 @@ const {
   fieldErrors, checkError, submit, reset
 } = useHibahForm()
 
-function submitForm() { submit() }
+const eventData = ref({
+  bannerTitle: HIBAH.banner.title,
+  bannerDesc: HIBAH.banner.desc,
+  deadline: HIBAH.banner.deadline,
+  deadlineLabel: HIBAH.banner.deadlineLabel,
+  timeline: HIBAH.banner.timeline,
+  info: HIBAH.banner.info,
+})
 
+onMounted(async () => {
+  try {
+    const url = `${SITE.apiBase}/hibah?status_hibah=aktif&per_page=1`
+    const res = await fetch(url)
+    if (!res.ok) return // fallback to content.json
+    const data: HibahEvent[] = await res.json()
+    if (data.length > 0) {
+      const ev = data[0]
+      eventData.value = {
+        bannerTitle: new DOMParser().parseFromString(ev.title.rendered, 'text/html').body.textContent || HIBAH.banner.title,
+        bannerDesc: new DOMParser().parseFromString(ev.excerpt.rendered, 'text/html').body.textContent || HIBAH.banner.desc,
+        deadline: ev.deadline || HIBAH.banner.deadline,
+        deadlineLabel: ev.deadline_label || HIBAH.banner.deadlineLabel,
+        timeline: ev.timeline_items?.length ? ev.timeline_items : HIBAH.banner.timeline,
+        info: ev.info_tambahan ? ev.info_tambahan.split('\n').filter((l: string) => l.trim()) : HIBAH.banner.info,
+      }
+    }
+  } catch {
+    // Network error — use static content.json
+  }
+})
+
+function submitForm() { submit() }
 function resetForm() { reset() }
 </script>
 
