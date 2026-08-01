@@ -10,13 +10,15 @@
           </div>
         </div>
 
-        <div class="nav-links" :class="{ open: menuOpen }" ref="navLinksRef">
+        <div class="nav-links" :class="{ open: menuOpen }">
           <a v-for="link in links" :key="link.href" :href="link.href" @click="menuOpen = false">{{ link.label }}</a>
         </div>
 
         <div class="nav-cta">
           <a href="#hibah" class="btn btn-outline nav-btn">Jadwal Hibah</a>
-          <a href="#form-hibah" class="btn btn-primary nav-btn">Daftar Hibah</a>
+          <slot name="extra">
+            <a href="#form-hibah" class="btn btn-primary nav-btn">Daftar Hibah</a>
+          </slot>
           <button class="burger" @click="menuOpen = !menuOpen" aria-label="Buka menu">
             <span></span><span></span><span></span>
           </button>
@@ -41,7 +43,6 @@ const links = [
 ]
 
 const menuOpen = ref(false)
-const navLinksRef = ref<HTMLElement>()
 </script>
 
 <style scoped>

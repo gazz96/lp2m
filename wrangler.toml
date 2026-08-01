@@ -1,7 +1,3 @@
 name = "lp2m"
 compatibility_date = "2026-08-01"
 pages_build_output_dir = "dist"
-
-# Untuk 'wrangler deploy' (Workers + static assets)
-[assets]
-directory = "./dist"
