@@ -3,6 +3,7 @@ export interface WpPost {
   date: string
   date_gmt: string
   modified: string
+  status: string
   slug: string
   link: string
   title: { rendered: string }
@@ -88,6 +89,7 @@ export interface PubCardData {
 
 export interface HibahEvent {
   id: number
+  status: string
   title: { rendered: string }
   excerpt: { rendered: string }
   content: { rendered: string }

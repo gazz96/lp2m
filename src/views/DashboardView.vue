@@ -15,6 +15,15 @@
         <router-link to="/dashboard/event-hibah" active-class="active" class="dash-link">
           <span class="dash-icon">📋</span> Event & Hibah
         </router-link>
+        <router-link to="/dashboard/kelola-hibah" active-class="active" class="dash-link">
+          <span class="dash-icon">⚙️</span> Kelola Hibah
+        </router-link>
+        <router-link to="/dashboard/kelola-artikel" active-class="active" class="dash-link">
+          <span class="dash-icon">✍️</span> Kelola Artikel
+        </router-link>
+        <router-link to="/dashboard/pendaftaran" active-class="active" class="dash-link">
+          <span class="dash-icon">📬</span> Pendaftaran
+        </router-link>
         <router-link to="/dashboard/panduan" active-class="active" class="dash-link">
           <span class="dash-icon">📘</span> Panduan & Template
         </router-link>

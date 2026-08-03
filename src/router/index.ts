@@ -5,6 +5,9 @@ import DashboardView from '@/views/DashboardView.vue'
 import LoginView from '@/views/LoginView.vue'
 import DashboardHome from '@/views/dashboard/HomePage.vue'
 import EventHibah from '@/views/dashboard/EventHibah.vue'
+import KelolaHibah from '@/views/dashboard/KelolaHibah.vue'
+import KelolaArtikel from '@/views/dashboard/KelolaArtikel.vue'
+import Pendaftaran from '@/views/dashboard/Pendaftaran.vue'
 import Panduan from '@/views/dashboard/Panduan.vue'
 import BeritaArtikel from '@/views/dashboard/BeritaArtikel.vue'
 import Infografis from '@/views/dashboard/Infografis.vue'
@@ -32,6 +35,9 @@ const router = createRouter({
       children: [
         { path: '', name: 'dashboard', component: DashboardHome },
         { path: 'event-hibah', name: 'event-hibah', component: EventHibah },
+        { path: 'kelola-hibah', name: 'kelola-hibah', component: KelolaHibah },
+        { path: 'kelola-artikel', name: 'kelola-artikel', component: KelolaArtikel },
+        { path: 'pendaftaran', name: 'pendaftaran', component: Pendaftaran },
         { path: 'panduan', name: 'panduan', component: Panduan },
         { path: 'berita-artikel', name: 'berita-artikel', component: BeritaArtikel },
         { path: 'infografis', name: 'infografis', component: Infografis }
