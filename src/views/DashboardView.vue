@@ -145,8 +145,8 @@ function doLogout() {
 .dash-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
 .dash-link.active { background: rgba(201,154,59,0.2); color: var(--gold-soft); }
 .dash-link.sub { padding-left: 28px; font-size: 0.82rem; }
-.dash-icon { font-size: 1.1rem; width: 22px; text-align: center; }
-.dash-link.sub .dash-icon { width: 18px; }
+.dash-icon { width: 20px; height: 20px; flex-shrink: 0; display: block; }
+.dash-link.sub .dash-icon { width: 16px; height: 16px; }
 
 .dash-footer {
   padding: 16px 20px;
