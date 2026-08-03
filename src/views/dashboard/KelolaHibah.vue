@@ -302,7 +302,7 @@ async function fetchAll(p = 1) {
       ...p,
       _title: clean(p.title.rendered),
       _date: fmtDate(p.date),
-      _cats: p.categories.map(id => katTerms.value.find(t => t.id === id)?.name || '').filter(Boolean)
+      _cats: (p.categories || []).map(id => katTerms.value.find(t => t.id === id)?.name || '').filter(Boolean)
     }))
     total.value = parseInt(res.headers.get('X-WP-Total') || '0')
     page.value = p
