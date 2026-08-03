@@ -1,34 +1,33 @@
 <template>
-  <div class="login-page">
+  <div class="login-wrap">
     <div class="login-card">
       <div class="login-logo">
-        <div class="brand-mark-lg">LP</div>
+        <div class="brand-mark">LP</div>
         <span>LP2M Dashboard</span>
       </div>
-      <h2>Login Dashboard</h2>
-      <p class="sub">Gunakan <strong>Application Password</strong> WordPress —<br/>bukan password login biasa.</p>
 
       <form @submit.prevent="doLogin" novalidate>
         <div class="field">
-          <label for="username">Username WordPress</label>
-          <input type="text" id="username" v-model="username" placeholder="cth. lp2m_editor" autocomplete="username" />
+          <label for="username">Username</label>
+          <input type="text" id="username" v-model="username" placeholder="Username WordPress Anda" autocomplete="username" />
         </div>
         <div class="field">
-          <label for="appPass">Application Password</label>
-          <div class="pass-wrapper">
-            <input :type="showPass ? 'text' : 'password'" id="appPass" v-model="appPassword" placeholder="xxxx xxxx xxxx xxxx xxxx" autocomplete="current-password" />
-            <button type="button" class="toggle-pass" @click="showPass = !showPass" tabindex="-1">
-              {{ showPass ? 'Hide' : 'Show' }}
+          <label for="password">Password</label>
+          <div class="pass-wrap">
+            <input :type="showPass ? 'text' : 'password'" id="password" v-model="appPassword" placeholder="Application Password" autocomplete="current-password" />
+            <button type="button" class="btn-toggle" @click="showPass = !showPass" tabindex="-1">
+              <span :class="'dashicons ' + (showPass ? 'dashicons-hidden' : 'dashicons-visibility')"></span>
             </button>
           </div>
-          <div class="hint">Dapat dibuat di: <code>WP Admin → Users → Profile → Application Passwords</code></div>
         </div>
 
-        <div v-if="error" class="error-box">{{ error }}</div>
+        <div v-if="error" class="notice notice-error inline"><p>{{ error }}</p></div>
 
-        <button type="submit" class="btn-login" :disabled="loading">
-          {{ loading ? 'Memeriksa...' : 'Masuk' }}
-        </button>
+        <p class="submit">
+          <button type="submit" class="button button-primary button-large" style="width:100%" :disabled="loading">
+            {{ loading ? 'Memeriksa...' : 'Masuk' }}
+          </button>
+        </p>
       </form>
     </div>
   </div>
@@ -50,7 +49,7 @@ const error = ref('')
 
 async function doLogin() {
   if (!username.value.trim() || !appPassword.value.trim()) {
-    error.value = 'Username dan Application Password wajib diisi.'
+    error.value = 'Username dan Password wajib diisi.'
     return
   }
 
@@ -70,136 +69,103 @@ async function doLogin() {
 </script>
 
 <style scoped>
-.login-page {
+.login-wrap {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg, #f5f7f5);
+  background: var(--wp-bg);
   padding: 24px;
 }
+
 .login-card {
-  background: var(--card, #fff);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  background: var(--wp-surface);
+  border: 1px solid var(--wp-border-light);
+  border-radius: 4px;
   padding: 40px 36px;
   width: 100%;
-  max-width: 420px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  max-width: 400px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
+
 .login-logo {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
 }
-.brand-mark-lg {
-  width: 48px; height: 48px;
-  border-radius: 50%;
-  background: var(--green-700);
-  color: var(--gold-soft);
+.brand-mark {
+  width: 44px; height: 44px;
+  border-radius: 4px;
+  background: var(--wp-primary);
+  color: #fff;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 15px;
 }
 .login-logo span {
-  font-size: 1.05rem;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--green-800);
-  font-family: 'Fraunces', serif;
+  color: var(--wp-text);
 }
-.login-card h2 {
-  text-align: center;
-  font-size: 1.5rem;
-  color: var(--green-800);
-  margin-bottom: 6px;
-}
-.sub {
-  text-align: center;
-  font-size: 0.84rem;
-  color: var(--ink-soft);
-  margin-bottom: 28px;
-  line-height: 1.5;
-}
-.sub strong { color: var(--ink); }
+
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 18px;
+  gap: 5px;
+  margin-bottom: 16px;
 }
 .field label {
-  font-size: 0.82rem;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--green-800);
+  color: var(--wp-text);
 }
 .field input {
-  border: 1px solid var(--line);
-  background: #fff;
-  border-radius: 6px;
-  padding: 12px 14px;
+  border: 1px solid #949494;
+  border-radius: 2px;
+  padding: 0 12px;
+  min-height: 40px;
   font-family: inherit;
-  font-size: 0.92rem;
-  color: var(--ink);
+  font-size: 14px;
+  color: var(--wp-text);
   outline: none;
+  box-shadow: 0 0 0 transparent;
 }
-.field input:focus { border-color: var(--green-600); box-shadow: 0 0 0 3px rgba(47,107,79,0.15); }
-.pass-wrapper {
+.field input:focus {
+  border-color: var(--wp-primary);
+  box-shadow: 0 0 0 var(--wp-focus-width) var(--wp-primary);
+  outline: 2px solid transparent;
+}
+
+.pass-wrap {
   display: flex;
   position: relative;
 }
-.pass-wrapper input {
+.pass-wrap input {
   flex: 1;
-  padding-right: 46px;
+  padding-right: 40px;
 }
-.toggle-pass {
+.btn-toggle {
   position: absolute;
-  right: 4px;
-  top: 4px;
-  bottom: 4px;
-  width: 38px;
+  right: 2px; top: 2px; bottom: 2px;
+  width: 36px;
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 2px;
 }
-.hint {
-  font-size: 0.72rem;
-  color: var(--ink-soft);
-  margin-top: 4px;
+.btn-toggle:hover { background: var(--wp-alt-bg); }
+.btn-toggle .dashicons {
+  font-size: 20px;
+  width: 20px; height: 20px;
+  color: var(--wp-text-muted);
 }
-.hint code {
-  background: var(--paper-2);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.7rem;
-}
-.error-box {
-  background: var(--rust-soft, #fff0ed);
-  color: var(--rust);
-  padding: 10px 14px;
-  border-radius: 6px;
-  font-size: 0.84rem;
-  margin-bottom: 16px;
-  border: 1px solid var(--rust);
-}
-.btn-login {
-  width: 100%;
-  padding: 13px 20px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  background: var(--green-700);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.15s;
-}
-.btn-login:hover { background: var(--green-800); }
-.btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-toggle:hover .dashicons { color: var(--wp-text-secondary); }
+
+.notice.inline { margin: 12px 0; }
+
+p.submit { text-align: left; max-width: 100%; margin-top: 20px; padding-top: 10px; }
 </style>
