@@ -1,0 +1,173 @@
+/* ══════════════════════════════════════════════
+   WordPress 7.0.2 Admin CSS — Dashboard LP2M
+   Extracted & adapted from:
+     common.css, forms.css, list-tables.css,
+     dashboard.css, edit.css, buttons.css,
+     colors/modern/colors.css, components/style.css
+   No external dependencies.
+   ══════════════════════════════════════════════ */
+
+/* ── Root Variables ── */
+:root {
+  --wp-bg: #f0f0f1;
+  --wp-surface: #fff;
+  --wp-border: #c3c4c7;
+  --wp-border-light: #dcdcde;
+  --wp-text: #1e1e1e;
+  --wp-text-secondary: #50575e;
+  --wp-text-muted: #787c82;
+  --wp-primary: #2271b1;
+  --wp-primary-hover: #135e96;
+  --wp-primary-light: #f0f6fc;
+  --wp-danger: #d63638;
+  --wp-success: #00a32a;
+  --wp-success-bg: #edfaef;
+  --wp-warning: #dba617;
+  --wp-warning-bg: #fcf9e8;
+  --wp-alt-bg: #f6f7f7;
+  --wp-radius: 3px;
+  --wp-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+/* ── Body & Wrappers ── */
+#wpbody-content { padding: 20px 25px; }
+.wrap { margin: 0; }
+.wrap > h1 { font-size: 23px; font-weight: 400; margin: 0 0 16px; padding: 9px 0 4px; line-height: 1.3; }
+
+/* ── Tables (widefat) ── */
+.widefat { background: var(--wp-surface); border: 1px solid var(--wp-border-light); border-radius: var(--wp-radius); border-spacing: 0; width: 100%; clear: both; margin: 0; }
+.widefat * { word-wrap: break-word; }
+.widefat thead th,
+.widefat thead td { border-bottom: 1px solid var(--wp-border-light); padding: 8px 10px; font-size: 13px; line-height: 1.4; color: var(--wp-text-secondary); }
+.widefat tfoot th,
+.widefat tfoot td { border-top: 1px solid var(--wp-border-light); }
+.widefat td,
+.widefat th { padding: 10px; vertical-align: top; line-height: 1.4; font-size: 14px; border-bottom: 1px solid var(--wp-border-light); }
+.widefat td p,
+.widefat td ol,
+.widefat td ul { font-size: 13px; }
+.widefat .check-column { width: 2.2em; padding: 10px 0 10px 10px; vertical-align: top; }
+.widefat tbody tr:last-child td,
+.widefat tbody tr:last-child th { border-bottom: none; }
+.widefat tbody tr:hover { background: var(--wp-primary-light); }
+.striped > tbody > :nth-child(odd),
+ul.striped > :nth-child(odd) { background-color: var(--wp-alt-bg); }
+
+.sortable a,
+.sortable span { display: block; padding: inherit; }
+.sortable a:hover,
+.sortable a:focus { color: var(--wp-primary); }
+
+.row-title { font-size: 14px !important; font-weight: 600; }
+.row-actions { left: 0; visibility: hidden; font-size: 13px; padding: 2px 0 0; position: relative; }
+tr:hover .row-actions,
+.mobile .row-actions,
+.row-actions.visible,
+.comment-item:hover .row-actions { visibility: visible; }
+.row-actions span a { color: var(--wp-primary); text-decoration: none; }
+.row-actions span a:hover { color: var(--wp-primary-hover); }
+.row-actions .delete a,
+.row-actions .trash a { color: var(--wp-danger); }
+
+.tablenav { height: auto; clear: both; margin: 6px 0 4px; }
+.tablenav .displaying-num { margin-right: 7px; color: var(--wp-text-muted); font-size: 14px; }
+.tablenav .tablenav-pages { float: right; margin: 0 0 9px; color: var(--wp-text-secondary); font-size: 14px; }
+.tablenav .tablenav-pages a,
+.tablenav .tablenav-pages span { display: inline-block; padding: 0 10px 2px; font-size: 13px; line-height: 2.15384615; font-weight: 400; text-decoration: none; }
+.tablenav .tablenav-pages a { border: 1px solid var(--wp-border); color: var(--wp-primary); }
+.tablenav .tablenav-pages a:hover { background: var(--wp-primary-light); }
+.tablenav .tablenav-pages .current { background: var(--wp-primary); border-color: var(--wp-primary); color: #fff; }
+
+/* ── Subsubsub (filter tabs) ── */
+.subsubsub { float: left; margin: 8px 0 0; list-style: none; padding: 0; font-size: 13px; }
+.subsubsub li { display: inline-block; margin: 0; padding: 0; white-space: nowrap; }
+.subsubsub a { color: var(--wp-primary); text-decoration: none; }
+.subsubsub a.current { font-weight: 600; border: none; color: var(--wp-text); }
+.subsubsub a .count,
+.subsubsub a.current .count { color: var(--wp-text-muted); font-weight: 400; }
+.subsubsub li + li::before { content: " | "; color: var(--wp-border); }
+
+/* ── Buttons ── */
+.wp-core-ui .button,
+.wp-core-ui .button-primary,
+.wp-core-ui .button-secondary { display: inline-block; text-decoration: none; font-size: 13px; line-height: 2.15384615; min-height: 30px; margin: 0; padding: 0 10px; cursor: pointer; border-width: 1px; border-style: solid; -webkit-appearance: none; border-radius: var(--wp-radius); white-space: nowrap; box-sizing: border-box; }
+
+.wp-core-ui .button,
+.wp-core-ui .button-secondary { color: var(--wp-primary); border-color: var(--wp-primary); background: var(--wp-alt-bg); vertical-align: top; }
+.wp-core-ui .button:hover,
+.wp-core-ui .button-secondary:hover { background: #f0f0f1; border-color: #0a4b78; color: #0a4b78; }
+.wp-core-ui .button:focus { box-shadow: 0 0 0 1px var(--wp-primary); outline: 2px solid transparent; }
+.wp-core-ui .button:disabled { color: #a7aaad !important; border-color: #dcdcde !important; background: #f6f7f7 !important; cursor: not-allowed; }
+
+.wp-core-ui .button-primary { background: var(--wp-primary); border-color: var(--wp-primary); color: #fff; }
+.wp-core-ui .button-primary:hover { background: var(--wp-primary-hover); border-color: var(--wp-primary-hover); }
+.wp-core-ui .button-primary:focus { box-shadow: 0 0 0 1px #fff, 0 0 0 3px var(--wp-primary); }
+
+.wp-core-ui .button-link { border: 0; border-radius: 0; background: none; color: var(--wp-primary); padding: 0; line-height: inherit; min-height: auto; vertical-align: baseline; }
+.wp-core-ui .button-link:hover { color: var(--wp-primary-hover); }
+.wp-core-ui .button-link.delete { color: var(--wp-danger); }
+
+.button-small { font-size: 13px; line-height: 2; min-height: 26px; padding: 0 8px; }
+.button-large { font-size: 14px; line-height: 2.71428571; min-height: 38px; padding: 0 14px; }
+
+/* ── Forms ── */
+input,
+select,
+textarea { font-family: var(--wp-sans); }
+
+.wp-core-ui input[type="text"],
+.wp-core-ui input[type="search"],
+.wp-core-ui input[type="number"],
+.wp-core-ui input[type="url"],
+.wp-core-ui input[type="date"],
+.wp-core-ui input[type="email"],
+.wp-core-ui input[type="password"],
+.wp-core-ui select,
+.wp-core-ui textarea { background: var(--wp-surface); border: 1px solid var(--wp-border); border-radius: var(--wp-radius); font-size: 14px; line-height: 2; min-height: 30px; padding: 0 8px; color: var(--wp-text); box-shadow: 0 0 0 transparent; outline: 0; }
+.wp-core-ui input:focus,
+.wp-core-ui select:focus,
+.wp-core-ui textarea:focus { border-color: var(--wp-primary); box-shadow: 0 0 0 1px var(--wp-primary); }
+.wp-core-ui textarea { line-height: 1.5; padding: 5px 8px; }
+.wp-core-ui select { padding-right: 24px; }
+
+.form-table th { font-weight: 600; font-size: 14px; padding: 20px 10px 20px 0; text-align: left; vertical-align: top; width: 200px; }
+.form-table td { padding: 15px 10px; vertical-align: middle; font-size: 14px; }
+.form-table td p { margin-top: 4px; margin-bottom: 0; }
+.form-table td p.description { color: var(--wp-text-muted); font-size: 13px; }
+
+/* ── Notices ── */
+.notice { background: var(--wp-surface); border: 1px solid var(--wp-border-light); border-left-width: 4px; box-shadow: 0 1px 1px rgba(0,0,0,0.04); margin: 5px 0 15px; padding: 1px 12px; font-size: 13px; }
+.notice p { margin: 0.5em 0; padding: 2px; font-size: 14px; }
+.notice-success { border-left-color: var(--wp-success); }
+.notice-error { border-left-color: var(--wp-danger); }
+.notice-warning { border-left-color: var(--wp-warning); }
+.notice-info { border-left-color: #72aee6; }
+
+/* ── Cards / Postbox ── */
+.postbox { background: var(--wp-surface); border: 1px solid var(--wp-border-light); border-radius: var(--wp-radius); box-shadow: 0 1px 1px rgba(0,0,0,0.04); margin-bottom: 20px; min-width: 255px; }
+.postbox .postbox-header { border-bottom: 1px solid var(--wp-border-light); padding: 10px 12px; }
+.postbox .postbox-header h2 { font-size: 14px; margin: 0; padding: 0; line-height: 1.4; font-weight: 600; }
+.postbox .inside { padding: 12px; }
+
+/* ── Meta Box Sidebar ── */
+#side-sortables .postbox { margin-bottom: 12px; }
+
+/* ── Page Title Actions ── */
+.page-title-action { display: inline-block; text-decoration: none; font-size: 13px; line-height: 2.15384615; min-height: 30px; margin: 0 0 0 4px; padding: 0 10px; cursor: pointer; border: 1px solid var(--wp-primary); border-radius: var(--wp-radius); background: var(--wp-alt-bg); color: var(--wp-primary); white-space: nowrap; }
+.page-title-action:hover { background: var(--wp-primary); border-color: var(--wp-primary); color: #fff; }
+
+/* ── Status / Badge ── */
+.post-state { font-size: 13px; font-weight: 400; color: var(--wp-text-muted); margin-left: 4px; }
+.post-state.draft,
+.post-state.pending { color: var(--wp-text-secondary); }
+
+/* ── Misc ── */
+.clear { clear: both; }
+.screen-reader-text { border: 0; clip: rect(1px, 1px, 1px, 1px); -webkit-clip-path: inset(50%); clip-path: inset(50%); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; word-wrap: normal !important; }
+.spinner { display: inline-block; width: 20px; height: 20px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='35' fill='none' stroke='%232271b1' stroke-width='8' stroke-dasharray='164.93361431346415 56.97787143782138'%3E%3CanimateTransform attributeName='transform' type='rotate' repeatCount='indefinite' dur='1s' values='0 50 50;360 50 50'/%3E%3C/circle%3E%3C/svg%3E") no-repeat center; background-size: contain; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Dashboard specific ── */
+#dashboard-widgets .meta-box-sortables { min-height: 100px; }
+#dashboard-widgets .postbox .inside { margin-bottom: 0; }
+.welcome-panel { position: relative; overflow: auto; margin: 16px 0; padding: 23px 10px 0; border: 1px solid var(--wp-border-light); border-radius: var(--wp-radius); box-shadow: 0 1px 1px rgba(0,0,0,0.04); background: var(--wp-surface); font-size: 14px; line-height: 1.7; }
