@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
@@ -88,7 +88,9 @@ async function save(){
     const r=await window.fetch(url,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify(p)})
     if(!r.ok){const e=await r.json().catch(()=>({}));err.value=e.message||`HTTP ${r.status}`;toast.error(e.message||'Gagal menyimpan');saving.value=false;return}
     const c=await r.json();if(!editId.value){editId.value=c.id;router.replace('/dashboard/hibah/'+c.id)};saving.value=false;err.value='';toast.success(editId.value?'Hibah berhasil diperbarui!':'Hibah berhasil dibuat!')}catch(e:any){err.value=e.message;saving.value=false}}
-onMounted(()=>{loadTerms();const id=route.params.id as string;if(id)loadItem(parseInt(id))})
+function resetForm(){Object.assign(f,{title:'',content:'',status:'draft',jenis_hibah:'internal',deadline:'',dana_maks_num:0,event_eyebrow:'',info_tambahan:'',link_panduan:'',timeline_items:[],featured_media:null});selKats.value=[];selSkms.value=[];thumb.value='';editId.value=null;err.value=''}
+watch(()=>route.params.id,(id)=>{if(id)loadItem(parseInt(id as string));else resetForm()})
+onMounted(()=>{loadTerms();const id=route.params.id as string;if(id)loadItem(parseInt(id));else resetForm()})
 </script>
 <style scoped>
 .wp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.wp-header h1{font-size:1.3rem;margin:0}.hdr-acts{display:flex;gap:8px}
