@@ -1,7 +1,11 @@
 <template>
   <div class="form-panel">
-    <form @submit.prevent="submitForm" novalidate>
+    <!-- Loading config -->
+    <div v-if="loadingConfig" class="loading-text">Memuat konfigurasi form...</div>
+
+    <form v-else @submit.prevent="submitForm" novalidate>
       <div class="form-grid">
+        <!-- Standard fields -->
         <div class="field" :class="{ invalid: fieldErrors.nama }">
           <label for="nama">Nama Lengkap &amp; Gelar *</label>
           <input type="text" id="nama" v-model="form.nama" placeholder="cth. Dr. Andi Pratama, S.Kom., M.T." />
@@ -29,7 +33,7 @@
           <div class="error-msg">{{ fieldErrors.prodi }}</div>
         </div>
         <div class="field" :class="{ invalid: fieldErrors.skema }">
-          <label for="skema2">Skema Hibah yang Diikuti *</label>
+          <label for="skema2">Skema Hibah *</label>
           <select id="skema2" v-model="form.skema">
             <option value="">Pilih skema hibah</option>
             <option v-for="o in HIBAH.form.skemaOptions" :key="o" :value="o">{{ o }}</option>
@@ -46,6 +50,38 @@
           <textarea id="ringkasan2" v-model="form.ringkasan" maxlength="500" placeholder="Latar belakang, tujuan, dan luaran yang ditargetkan"></textarea>
           <div class="error-msg">{{ fieldErrors.ringkasan }}</div>
         </div>
+
+        <!-- Custom fields from form builder -->
+        <template v-for="f in customFields" :key="f.key">
+          <div v-if="f.type === 'textarea'" class="field full" :class="{ invalid: fieldErrors[f.key] }">
+            <label :for="'cf_' + f.key">{{ f.label }}{{ f.required ? ' *' : '' }}</label>
+            <textarea :id="'cf_' + f.key" v-model="customValues[f.key]" maxlength="1000" :placeholder="'Masukkan ' + f.label.toLowerCase()"></textarea>
+            <div class="error-msg">{{ fieldErrors[f.key] }}</div>
+          </div>
+
+          <div v-else-if="f.type === 'radio'" class="field full" :class="{ invalid: fieldErrors[f.key] }">
+            <label>{{ f.label }}{{ f.required ? ' *' : '' }}</label>
+            <div class="radio-group">
+              <label v-for="opt in (f.options || [])" :key="opt">
+                <input type="radio" :value="opt" v-model="customValues[f.key]" /> {{ opt }}
+              </label>
+            </div>
+            <div class="error-msg">{{ fieldErrors[f.key] }}</div>
+          </div>
+
+          <div v-else :class="['field', { invalid: fieldErrors[f.key] }]">
+            <label :for="'cf_' + f.key">{{ f.label }}{{ f.required ? ' *' : '' }}</label>
+            <input
+              :type="f.type"
+              :id="'cf_' + f.key"
+              v-model="customValues[f.key]"
+              :placeholder="'Masukkan ' + f.label.toLowerCase()"
+            />
+            <div class="error-msg">{{ fieldErrors[f.key] }}</div>
+          </div>
+        </template>
+
+        <!-- Standard optional fields (always after custom) -->
         <div class="field">
           <label for="jml2">Jumlah Anggota Tim</label>
           <input type="number" id="jml2" v-model="form.jml_tim" min="0" max="3" placeholder="0–3 orang" />
@@ -89,16 +125,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { HIBAH } from '@/data'
 import { useHibahForm } from '@/composables/useHibahForm'
 
 const props = defineProps<{ hibahId?: number | null }>()
 const hibahIdRef = ref<number | null>(props.hibahId ?? null)
 
-const { form, submitting, success: successForm, regNo, fieldErrors, checkError, submit, reset } = useHibahForm(hibahIdRef)
+const {
+  form, submitting, success: successForm, regNo,
+  fieldErrors, checkError, customFields, customValues, loadingConfig,
+  submit, reset, loadFormConfig
+} = useHibahForm(hibahIdRef)
 
 function submitForm() { submit() }
+
+// Reload form config when hibahId changes
+watch(() => props.hibahId, (newId) => {
+  hibahIdRef.value = newId ?? null
+  loadFormConfig()
+})
 </script>
 
 <style scoped>
@@ -123,6 +169,7 @@ function submitForm() { submit() }
 .error-msg { font-size: 0.72rem; color: var(--rust); min-height: 1em; }
 .field.invalid input, .field.invalid select, .field.invalid textarea { border-color: var(--rust); }
 .mt-22 { margin-top: 20px; }
+.loading-text { color: var(--ink-soft); font-size: 0.9rem; padding: 16px 0; text-align: center; }
 .success-panel { background: var(--green-800); color: #fff; border-radius: 8px; padding: 28px; text-align: center; }
 .success-panel.show { display: block; }
 @media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } }

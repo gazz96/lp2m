@@ -1,6 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import HomeView from '@/views/HomeView.vue'
 import DashboardView from '@/views/DashboardView.vue'
+import LoginView from '@/views/LoginView.vue'
 import DashboardHome from '@/views/dashboard/HomePage.vue'
 import EventHibah from '@/views/dashboard/EventHibah.vue'
 import Panduan from '@/views/dashboard/Panduan.vue'
@@ -19,8 +21,14 @@ const router = createRouter({
       component: HomeView
     },
     {
+      path: '/login',
+      name: 'login',
+      component: LoginView
+    },
+    {
       path: '/dashboard',
       component: DashboardView,
+      meta: { requiresAuth: true },
       children: [
         { path: '', name: 'dashboard', component: DashboardHome },
         { path: 'event-hibah', name: 'event-hibah', component: EventHibah },
@@ -30,6 +38,23 @@ const router = createRouter({
       ]
     }
   ]
+})
+
+// Auth guard
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth) {
+    const auth = useAuthStore()
+    if (!auth.isLoggedIn) {
+      return { name: 'login', query: { redirect: to.fullPath } }
+    }
+  }
+  // Redirect logged-in user from /login to dashboard
+  if (to.name === 'login') {
+    const auth = useAuthStore()
+    if (auth.isLoggedIn) {
+      return { name: 'dashboard' }
+    }
+  }
 })
 
 export default router

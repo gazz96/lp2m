@@ -1,6 +1,15 @@
 import { reactive, ref, type Ref } from 'vue'
 import type { HibahFormData } from '@/types'
 import { SITE } from '@/data'
+import { useAuthStore } from '@/stores/auth'
+
+export interface FormField {
+  key: string
+  label: string
+  type: 'text' | 'url' | 'email' | 'number' | 'radio' | 'select' | 'textarea' | 'tel'
+  required: boolean
+  options?: string[]
+}
 
 export function useHibahForm(hibahId: Ref<number | null>) {
   const form = reactive<HibahFormData>({
@@ -24,6 +33,34 @@ export function useHibahForm(hibahId: Ref<number | null>) {
   const regNo = ref('')
   const fieldErrors = reactive<Record<string, string>>({})
   const checkError = ref('')
+  const customFields = ref<FormField[]>([])
+  const customValues = reactive<Record<string, string>>({})
+  const loadingConfig = ref(false)
+
+  async function loadFormConfig() {
+    const id = hibahId.value
+    if (!id || id <= 0) return
+    loadingConfig.value = true
+    try {
+      const res = await fetch(`${SITE.apiBase.replace('/wp/v2', '')}/lp2m/v1/hibah/${id}/form-config`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.success && data.custom) {
+          customFields.value = data.custom
+          // Initialize values
+          for (const f of data.custom) {
+            if (!(f.key in customValues)) {
+              customValues[f.key] = ''
+            }
+          }
+        }
+      }
+    } catch {
+      // silently fail — form still works with standard fields
+    } finally {
+      loadingConfig.value = false
+    }
+  }
 
   function validate(): boolean {
     let valid = true
@@ -63,21 +100,43 @@ export function useHibahForm(hibahId: Ref<number | null>) {
       checkError.value = ''
     }
 
+    // Validate custom required fields
+    for (const f of customFields.value) {
+      if (f.required && !(customValues[f.key] || '').trim()) {
+        fieldErrors[f.key] = f.label + ' wajib diisi.'
+        valid = false
+      } else {
+        fieldErrors[f.key] = ''
+      }
+    }
+
     return valid
   }
 
   async function submit() {
     if (!validate() || submitting.value) return
 
-    // Sync hibah_id from the reactive ref (parent may update it).
+    // Sync hibah_id from the reactive ref
     form.hibah_id = hibahId.value
 
     submitting.value = true
     try {
+      // Build payload: standard fields + custom fields as top-level keys
+      const payload: Record<string, unknown> = { ...form }
+      for (const f of customFields.value) {
+        payload[f.key] = customValues[f.key] || ''
+      }
+
+      const auth = useAuthStore()
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...auth.authHeaders()
+      }
+
       const res = await fetch(SITE.formEndpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form })
+        headers,
+        body: JSON.stringify(payload)
       })
 
       if (res.ok) {
@@ -104,10 +163,20 @@ export function useHibahForm(hibahId: Ref<number | null>) {
       email: '', hp: '', pernyataan: false
     })
     Object.keys(fieldErrors).forEach(k => delete fieldErrors[k])
+    for (const f of customFields.value) {
+      customValues[f.key] = ''
+    }
     checkError.value = ''
     success.value = false
     regNo.value = ''
   }
 
-  return { form, submitting, success, regNo, fieldErrors, checkError, validate, submit, reset }
+  // Auto-load config when hibahId changes
+  loadFormConfig()
+
+  return {
+    form, submitting, success, regNo, fieldErrors, checkError,
+    customFields, customValues, loadingConfig,
+    validate, submit, reset, loadFormConfig
+  }
 }

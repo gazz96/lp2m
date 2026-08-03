@@ -26,6 +26,14 @@
         </router-link>
       </nav>
       <div class="dash-footer">
+        <div class="dash-user" v-if="auth.isLoggedIn">
+          <div class="user-avatar">{{ auth.userInitials }}</div>
+          <div class="user-info">
+            <div class="user-name">{{ auth.user?.name }}</div>
+            <div class="user-role">{{ auth.isAdmin ? 'Admin' : 'Editor' }}</div>
+          </div>
+        </div>
+        <button v-if="auth.isLoggedIn" @click="doLogout" class="btn-logout">Keluar</button>
         <router-link to="/" class="dash-link-sm">← Kembali ke Landing</router-link>
       </div>
     </aside>
@@ -38,6 +46,16 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+function doLogout() {
+  auth.logout()
+  router.push('/')
+}
 </script>
 
 <style scoped>
@@ -110,7 +128,52 @@
 .dash-footer {
   padding: 16px 20px;
   border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
+.dash-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.user-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  color: var(--green-900);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.user-info {
+  overflow: hidden;
+}
+.user-name {
+  font-size: 0.82rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-role {
+  font-size: 0.7rem;
+  color: var(--green-300);
+}
+.btn-logout {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: var(--green-100);
+  border-radius: 5px;
+  font-size: 0.78rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.08); color: #fff; }
 .dash-link-sm {
   color: var(--green-300);
   text-decoration: none;
