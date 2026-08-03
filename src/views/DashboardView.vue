@@ -10,26 +10,33 @@
       </div>
       <nav class="dash-nav">
         <router-link to="/dashboard" exact-active-class="active" class="dash-link">
-          <span class="dash-icon">🏠</span> Beranda
+          <svg class="dash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Beranda
         </router-link>
         <div class="nav-section">Hibah</div>
         <router-link to="/dashboard/hibah" active-class="active" class="dash-link sub">
-          <span class="dash-icon">📋</span> Lihat Hibah
+          <svg class="dash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          Lihat Hibah
         </router-link>
         <router-link to="/dashboard/hibah/tambah" active-class="active" class="dash-link sub">
-          <span class="dash-icon">➕</span> Tambah Hibah
+          <svg class="dash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Hibah
         </router-link>
         <router-link to="/dashboard/hibah/kategori" active-class="active" class="dash-link sub">
-          <span class="dash-icon">🏷️</span> Kategori Hibah
+          <svg class="dash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Kategori Hibah
         </router-link>
         <router-link to="/dashboard/hibah/skema" active-class="active" class="dash-link sub">
-          <span class="dash-icon">📊</span> Skema Hibah
+          <svg class="dash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+          Skema Hibah
         </router-link>
         <router-link to="/dashboard/kelola-artikel" active-class="active" class="dash-link">
-          <span class="dash-icon">✍️</span> Kelola Artikel
+          <svg class="dash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Kelola Artikel
         </router-link>
         <router-link to="/dashboard/pendaftaran" active-class="active" class="dash-link">
-          <span class="dash-icon">📬</span> Pendaftaran
+          <svg class="dash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
+          Pendaftaran
         </router-link>
       </nav>
       <div class="dash-footer">

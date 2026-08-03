@@ -18,7 +18,7 @@
           <div class="pass-wrapper">
             <input :type="showPass ? 'text' : 'password'" id="appPass" v-model="appPassword" placeholder="xxxx xxxx xxxx xxxx xxxx" autocomplete="current-password" />
             <button type="button" class="toggle-pass" @click="showPass = !showPass" tabindex="-1">
-              {{ showPass ? '🙈' : '👁️' }}
+              {{ showPass ? 'Hide' : 'Show' }}
             </button>
           </div>
           <div class="hint">Dapat dibuat di: <code>WP Admin → Users → Profile → Application Passwords</code></div>
