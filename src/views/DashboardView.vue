@@ -12,8 +12,18 @@
         <router-link to="/dashboard" exact-active-class="active" class="dash-link">
           <span class="dash-icon">🏠</span> Beranda
         </router-link>
-        <router-link to="/dashboard/kelola-hibah" active-class="active" class="dash-link">
-          <span class="dash-icon">⚙️</span> Kelola Hibah
+        <div class="nav-section">Hibah</div>
+        <router-link to="/dashboard/hibah" active-class="active" class="dash-link sub">
+          <span class="dash-icon">📋</span> Lihat Hibah
+        </router-link>
+        <router-link to="/dashboard/hibah/tambah" active-class="active" class="dash-link sub">
+          <span class="dash-icon">➕</span> Tambah Hibah
+        </router-link>
+        <router-link to="/dashboard/hibah/kategori" active-class="active" class="dash-link sub">
+          <span class="dash-icon">🏷️</span> Kategori Hibah
+        </router-link>
+        <router-link to="/dashboard/hibah/skema" active-class="active" class="dash-link sub">
+          <span class="dash-icon">📊</span> Skema Hibah
         </router-link>
         <router-link to="/dashboard/kelola-artikel" active-class="active" class="dash-link">
           <span class="dash-icon">✍️</span> Kelola Artikel
@@ -127,7 +137,9 @@ function doLogout() {
 }
 .dash-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
 .dash-link.active { background: rgba(201,154,59,0.2); color: var(--gold-soft); }
+.dash-link.sub { padding-left: 28px; font-size: 0.82rem; }
 .dash-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+.dash-link.sub .dash-icon { width: 18px; }
 
 .dash-footer {
   padding: 16px 20px;

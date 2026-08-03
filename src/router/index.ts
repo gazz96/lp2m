@@ -4,7 +4,10 @@ import HomeView from '@/views/HomeView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import LoginView from '@/views/LoginView.vue'
 import DashboardHome from '@/views/dashboard/HomePage.vue'
-import KelolaHibah from '@/views/dashboard/KelolaHibah.vue'
+import HibahIndex from '@/views/dashboard/Hibah/Index.vue'
+import HibahForm from '@/views/dashboard/Hibah/Form.vue'
+import HibahKategori from '@/views/dashboard/Hibah/Kategori.vue'
+import HibahSkema from '@/views/dashboard/Hibah/Skema.vue'
 import KelolaArtikel from '@/views/dashboard/KelolaArtikel.vue'
 import Pendaftaran from '@/views/dashboard/Pendaftaran.vue'
 
@@ -20,7 +23,11 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         { path: '', name: 'dashboard', component: DashboardHome },
-        { path: 'kelola-hibah', name: 'kelola-hibah', component: KelolaHibah },
+        { path: 'hibah', name: 'hibah', component: HibahIndex },
+        { path: 'hibah/tambah', name: 'hibah-tambah', component: HibahForm },
+        { path: 'hibah/:id', name: 'hibah-edit', component: HibahForm },
+        { path: 'hibah/kategori', name: 'hibah-kategori', component: HibahKategori },
+        { path: 'hibah/skema', name: 'hibah-skema', component: HibahSkema },
         { path: 'kelola-artikel', name: 'kelola-artikel', component: KelolaArtikel },
         { path: 'pendaftaran', name: 'pendaftaran', component: Pendaftaran },
       ]
@@ -31,15 +38,11 @@ const router = createRouter({
 router.beforeEach((to) => {
   if (to.meta.requiresAuth) {
     const auth = useAuthStore()
-    if (!auth.isLoggedIn) {
-      return { name: 'login', query: { redirect: to.fullPath } }
-    }
+    if (!auth.isLoggedIn) return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.name === 'login') {
     const auth = useAuthStore()
-    if (auth.isLoggedIn) {
-      return { name: 'dashboard' }
-    }
+    if (auth.isLoggedIn) return { name: 'dashboard' }
   }
 })
 
