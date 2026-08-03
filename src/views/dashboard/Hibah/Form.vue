@@ -54,7 +54,9 @@ import { useAuthStore } from '@/stores/auth'
 import HtmlEditor from '@/components/HtmlEditor.vue'
 import ThumbnailPicker from '@/components/ThumbnailPicker.vue'
 import TagSelect from '@/components/TagSelect.vue'
+import { useToast } from '@/composables/useToast'
 const route=useRoute(),router=useRouter(),auth=useAuthStore()
+const toast=useToast()
 const editId=ref<number|null>(null),saving=ref(false),err=ref(''),thumb=ref('')
 const kTerms=ref<{id:number;name:string}[]>([]),sTerms=ref<{id:number;name:string}[]>([])
 const selKats=ref<number[]>([]),selSkms=ref<number[]>([])
@@ -70,7 +72,7 @@ async function loadItem(id:number){
   f.jenis_hibah=p.jenis_hibah||'internal';f.deadline=p.deadline?p.deadline.slice(0,10):'';f.dana_maks_num=parseInt(p.dana_maks)||0
   f.event_eyebrow=p.event_eyebrow||'';f.info_tambahan=p.info_tambahan||'';f.link_panduan=p.link_panduan||''
   f.timeline_items=p.timeline_items||[];f.featured_media=p.featured_media||null
-  selKats.value=p.categories||[];selSkms.value=p.skema_hibah||[]
+  selKats.value=p.kategori_hibah||[];selSkms.value=p.skema_hibah||[]
   thumb.value=p._embedded?.['wp:featuredmedia']?.[0]?.source_url||''}catch{}}
 async function addTerm(tax:string,name:string,arr:{id:number;name:string}[],sel:number[]){
   err.value='';const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'-')
@@ -80,12 +82,12 @@ async function addTerm(tax:string,name:string,arr:{id:number;name:string}[],sel:
 function previewDraft(){if(editId.value)window.open(`https://itsi.ac.id/?p=${editId.value}&preview=true`,'_blank')}
 async function save(){
   if(!f.title.trim()){err.value='Judul wajib diisi.';return};saving.value=true;err.value=''
-  const p:any={title:f.title,content:f.content,status:f.status,jenis_hibah:f.jenis_hibah,deadline:f.deadline?f.deadline+'T23:59:59':'',deadline_label:f.deadline?new Date(f.deadline).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'',dana_maks:f.dana_maks_num?String(f.dana_maks_num):'',event_eyebrow:f.event_eyebrow,info_tambahan:f.info_tambahan,link_panduan:f.link_panduan,categories:selKats.value,skema_hibah:selSkms.value,timeline_items:f.timeline_items}
+  const p:any={title:f.title,content:f.content,status:f.status,jenis_hibah:f.jenis_hibah,deadline:f.deadline?f.deadline+'T23:59:59':'',deadline_label:f.deadline?new Date(f.deadline).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'',dana_maks:f.dana_maks_num?String(f.dana_maks_num):'',event_eyebrow:f.event_eyebrow,info_tambahan:f.info_tambahan,link_panduan:f.link_panduan,kategori_hibah:selKats.value,skema_hibah:selSkms.value,timeline_items:f.timeline_items}
   if(f.featured_media)p.featured_media=f.featured_media
   try{const url=editId.value?`${SITE.apiBase}/hibah/${editId.value}`:`${SITE.apiBase}/hibah`
     const r=await window.fetch(url,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify(p)})
-    if(!r.ok){const e=await r.json().catch(()=>({}));err.value=e.message||`HTTP ${r.status}`;saving.value=false;return}
-    const c=await r.json();if(!editId.value){editId.value=c.id;router.replace('/dashboard/hibah/'+c.id)};saving.value=false;err.value=''}catch(e:any){err.value=e.message;saving.value=false}}
+    if(!r.ok){const e=await r.json().catch(()=>({}));err.value=e.message||`HTTP ${r.status}`;toast.error(e.message||'Gagal menyimpan');saving.value=false;return}
+    const c=await r.json();if(!editId.value){editId.value=c.id;router.replace('/dashboard/hibah/'+c.id)};saving.value=false;err.value='';toast.success(editId.value?'Hibah berhasil diperbarui!':'Hibah berhasil dibuat!')}catch(e:any){err.value=e.message;saving.value=false}}
 onMounted(()=>{loadTerms();const id=route.params.id as string;if(id)loadItem(parseInt(id))})
 </script>
 <style scoped>

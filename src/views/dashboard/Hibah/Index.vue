@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { SITE } from '@/data'
-type Row={id:number;slug:string;status:string;date:string;title:{rendered:string};categories:number[];skema_hibah:number[];_title:string;_date:string;_cats:string[];_skms:string[]}
+type Row={id:number;slug:string;status:string;date:string;title:{rendered:string};kategori_hibah:number[];skema_hibah:number[];_title:string;_date:string;_cats:string[];_skms:string[]}
 const items=ref<Row[]>([]),loading=ref(true),total=ref(0),page=ref(1),perPage=20,search=ref(''),statusFilter=ref('any'),sk=ref<'title'|'date'>('date'),sd=ref<'asc'|'desc'>('desc')
 const kTerms=ref<{id:number;name:string}[]>([]),sTerms=ref<{id:number;name:string}[]>([])
 function clean(s:string){return new DOMParser().parseFromString(s,'text/html').body.textContent||''}
@@ -40,7 +40,7 @@ function tsort(k:'title'|'date'){if(sk.value===k)sd.value=sd.value==='asc'?'desc
 function sl(k:string){return sk.value===k?(sd.value==='asc'?'↑':'↓'):''}
 const filtered=computed(()=>{let a=[...items.value];if(statusFilter.value!=='any')a=a.filter(r=>r.status===statusFilter.value);if(search.value.trim()){const q=search.value.toLowerCase();a=a.filter(r=>r._title.toLowerCase().includes(q))}a.sort((x,y)=>{const vx=sk.value==='title'?x._title:x.date;const vy=sk.value==='title'?y._title:y.date;return sd.value==='desc'?vy.localeCompare(vx):vx.localeCompare(vy)});return a})
 async function loadTerms(){try{const[k,s]=await Promise.all([window.fetch(`${SITE.apiBase}/kategori_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/skema_hibah?per_page=100`)]);if(k.ok)kTerms.value=await k.json();if(s.ok)sTerms.value=await s.json()}catch{}}
-async function load(p=1){loading.value=true;try{const r=await window.fetch(`${SITE.apiBase}/hibah?per_page=${perPage}&page=${p}&orderby=date&order=desc&_fields=id,slug,status,date,title,categories,skema_hibah`);if(!r.ok)throw new Error(`HTTP ${r.status}`);const raw=await r.json();items.value=raw.map((p:any)=>({...p,_title:clean(p.title?.rendered||''),_date:fmt(p.date),_cats:(p.categories||[]).map((id:number)=>kTerms.value.find(t=>t.id===id)?.name||'').filter(Boolean),_skms:(p.skema_hibah||[]).map((id:number)=>sTerms.value.find(t=>t.id===id)?.name||'').filter(Boolean)}));total.value=parseInt(r.headers.get('X-WP-Total')||'0');page.value=p}catch(e:any){}finally{loading.value=false}}
+async function load(p=1){loading.value=true;try{const r=await window.fetch(`${SITE.apiBase}/hibah?per_page=${perPage}&page=${p}&orderby=date&order=desc&_fields=id,slug,status,date,title,kategori_hibah,skema_hibah`);if(!r.ok)throw new Error(`HTTP ${r.status}`);const raw=await r.json();items.value=raw.map((p:any)=>({...p,_title:clean(p.title?.rendered||''),_date:fmt(p.date),_cats:(p.categories||[]).map((id:number)=>kTerms.value.find(t=>t.id===id)?.name||'').filter(Boolean),_skms:(p.skema_hibah||[]).map((id:number)=>sTerms.value.find(t=>t.id===id)?.name||'').filter(Boolean)}));total.value=parseInt(r.headers.get('X-WP-Total')||'0');page.value=p}catch(e:any){}finally{loading.value=false}}
 onMounted(()=>{loadTerms();load()})
 </script>
 <style scoped>
