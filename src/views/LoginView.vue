@@ -9,12 +9,12 @@
       <form @submit.prevent="doLogin" novalidate>
         <div class="field">
           <label for="username">Username</label>
-          <input type="text" id="username" v-model="username" placeholder="Username WordPress Anda" autocomplete="username" />
+          <input type="text" id="username" v-model="username" placeholder="input username" autocomplete="username" />
         </div>
         <div class="field">
           <label for="password">Password</label>
           <div class="pass-wrap">
-            <input :type="showPass ? 'text' : 'password'" id="password" v-model="appPassword" placeholder="Application Password" autocomplete="current-password" />
+            <input :type="showPass ? 'text' : 'password'" id="password" v-model="appPassword" placeholder="input password" autocomplete="current-password" />
             <button type="button" class="btn-toggle" @click="showPass = !showPass" tabindex="-1">
               <span :class="'dashicons ' + (showPass ? 'dashicons-hidden' : 'dashicons-visibility')"></span>
             </button>
@@ -122,7 +122,8 @@ async function doLogin() {
   font-weight: 600;
   color: var(--wp-text);
 }
-.field input {
+.field input,
+.pass-wrap input {
   border: 1px solid #949494;
   border-radius: 2px;
   padding: 0 12px;
@@ -132,8 +133,11 @@ async function doLogin() {
   color: var(--wp-text);
   outline: none;
   box-shadow: 0 0 0 transparent;
+  width: 100%;
+  box-sizing: border-box;
 }
-.field input:focus {
+.field input:focus,
+.pass-wrap input:focus {
   border-color: var(--wp-primary);
   box-shadow: 0 0 0 var(--wp-focus-width) var(--wp-primary);
   outline: 2px solid transparent;
