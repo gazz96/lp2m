@@ -25,13 +25,15 @@
           <div v-if="err" class="err">{{ err }}</div>
         </div></div>
         <div class="mb"><div class="mb-t">Kategori Hibah</div><div class="mb-b">
-          <label v-for="t in kTerms" :key="t.id" class="cb"><input type="checkbox" :value="t.id" v-model="selKats" />{{ t.name }}</label>
-          <div v-if="!kTerms.length" class="hint">Belum ada kategori.</div>
-          <div style="margin-top:8px"><input type="text" v-model="newKat" placeholder="Baru..." class="sm-inp" /><button class="btn btn-sm btn-outline" @click="addKat" style="margin-top:4px">+</button></div></div></div>
+          <TagSelect :terms="kTerms" :selected="selKats" placeholder="Cari atau buat kategori..."
+            @add="(t:any)=>selKats.push(t.id)" @remove="(id:number)=>selKats=selKats.filter(x=>x!==id)"
+            @create="addTerm('kategori_hibah',$event,kTerms,selKats)" />
+        </div></div>
         <div class="mb"><div class="mb-t">Skema Hibah</div><div class="mb-b">
-          <label v-for="t in sTerms" :key="t.id" class="cb"><input type="checkbox" :value="t.id" v-model="selSkms" />{{ t.name }}</label>
-          <div v-if="!sTerms.length" class="hint">Belum ada skema.</div>
-          <div style="margin-top:8px"><input type="text" v-model="newSkm" placeholder="Baru..." class="sm-inp" /><button class="btn btn-sm btn-outline" @click="addSkm" style="margin-top:4px">+</button></div></div></div>
+          <TagSelect :terms="sTerms" :selected="selSkms" placeholder="Cari atau buat skema..."
+            @add="(t:any)=>selSkms.push(t.id)" @remove="(id:number)=>selSkms=selSkms.filter(x=>x!==id)"
+            @create="addTerm('skema_hibah',$event,sTerms,selSkms)" />
+        </div></div>
         <div class="mb"><div class="mb-t">Deadline & Dana</div><div class="mb-b">
           <div class="field"><label>Deadline</label><input type="date" v-model="f.deadline" /></div>
           <div class="field" style="margin-top:10px"><label>Dana Maks (Rp)</label><input type="number" v-model.number="f.dana_maks_num" placeholder="35000000" /></div></div></div>
@@ -51,10 +53,11 @@ import { SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
 import HtmlEditor from '@/components/HtmlEditor.vue'
 import ThumbnailPicker from '@/components/ThumbnailPicker.vue'
+import TagSelect from '@/components/TagSelect.vue'
 const route=useRoute(),router=useRouter(),auth=useAuthStore()
 const editId=ref<number|null>(null),saving=ref(false),err=ref(''),thumb=ref('')
 const kTerms=ref<{id:number;name:string}[]>([]),sTerms=ref<{id:number;name:string}[]>([])
-const selKats=ref<number[]>([]),selSkms=ref<number[]>([]),newKat=ref(''),newSkm=ref('')
+const selKats=ref<number[]>([]),selSkms=ref<number[]>([])
 interface TL{date:string;label:string}
 const f=reactive({title:'',content:'',status:'draft',jenis_hibah:'internal',deadline:'',dana_maks_num:0,event_eyebrow:'',info_tambahan:'',link_panduan:'',timeline_items:[] as TL[],featured_media:null as number|null})
 function clean(s:string){return new DOMParser().parseFromString(s,'text/html').body.textContent||''}
@@ -62,19 +65,18 @@ async function loadTerms(){
   try{const[k,s]=await Promise.all([window.fetch(`${SITE.apiBase}/kategori_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/skema_hibah?per_page=100`)])
   if(k.ok)kTerms.value=await k.json();if(s.ok)sTerms.value=await s.json()}catch{}}
 async function loadItem(id:number){
-  try{const r=await window.fetch(`${SITE.apiBase}/hibah/${id}`);if(!r.ok)return;const p=await r.json()
+  try{const r=await window.fetch(`${SITE.apiBase}/hibah/${id}?_embed`);if(!r.ok)return;const p=await r.json()
   editId.value=p.id;f.title=clean(p.title?.rendered||'');f.content=p.content?.rendered||'';f.status=p.status||'draft'
   f.jenis_hibah=p.jenis_hibah||'internal';f.deadline=p.deadline?p.deadline.slice(0,10):'';f.dana_maks_num=parseInt(p.dana_maks)||0
   f.event_eyebrow=p.event_eyebrow||'';f.info_tambahan=p.info_tambahan||'';f.link_panduan=p.link_panduan||''
   f.timeline_items=p.timeline_items||[];f.featured_media=p.featured_media||null
   selKats.value=p.categories||[];selSkms.value=p.skema_hibah||[]
   thumb.value=p._embedded?.['wp:featuredmedia']?.[0]?.source_url||''}catch{}}
-async function addKat(){const n=newKat.value.trim();if(!n)return
-  const r=await window.fetch(`${SITE.apiBase}/kategori_hibah`,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify({name:n,slug:n.toLowerCase().replace(/[^a-z0-9]+/g,'-')})})
-  if(r.ok){const c=await r.json();kTerms.value.push({id:c.id,name:c.name});selKats.value.push(c.id);newKat.value=''}else err.value='Gagal'} 
-async function addSkm(){const n=newSkm.value.trim();if(!n)return
-  const r=await window.fetch(`${SITE.apiBase}/skema_hibah`,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify({name:n,slug:n.toLowerCase().replace(/[^a-z0-9]+/g,'-')})})
-  if(r.ok){const c=await r.json();sTerms.value.push({id:c.id,name:c.name});selSkms.value.push(c.id);newSkm.value=''}else err.value='Gagal'}
+async function addTerm(tax:string,name:string,arr:{id:number;name:string}[],sel:number[]){
+  err.value='';const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'-')
+  try{const r=await window.fetch(`${SITE.apiBase}/${tax}`,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify({name,slug})})
+  if(!r.ok)throw new Error((await r.json().catch(()=>({}))).message||'Gagal')
+  const c=await r.json();arr.push({id:c.id,name:c.name});sel.push(c.id)}catch(e:any){err.value='Gagal: '+e.message}}
 function previewDraft(){if(editId.value)window.open(`https://itsi.ac.id/?p=${editId.value}&preview=true`,'_blank')}
 async function save(){
   if(!f.title.trim()){err.value='Judul wajib diisi.';return};saving.value=true;err.value=''
@@ -93,10 +95,8 @@ onMounted(()=>{loadTerms();const id=route.params.id as string;if(id)loadItem(par
 .field{display:flex;flex-direction:column;gap:4px}.field label{font-size:.76rem;font-weight:600;color:var(--green-800)}
 .field input,.field select,.field textarea{border:1px solid var(--line);background:#fff;border-radius:4px;padding:8px 10px;font-family:inherit;font-size:.84rem;color:var(--ink);outline:none}
 .title-inp{font-size:1rem!important;padding:10px 12px!important}
-.cb{display:flex;align-items:center;gap:6px;font-size:.82rem;cursor:pointer;margin-bottom:6px}.hint{font-size:.72rem;color:var(--ink-soft)}
-.sm-inp{width:100%;border:1px solid var(--line);border-radius:4px;padding:6px 8px;font-size:.8rem;font-family:inherit;outline:none;margin-top:4px}
 .repeater{display:flex;flex-direction:column;gap:6px}.r-row{display:flex;gap:6px;align-items:center}.r-row input{border:1px solid var(--line);border-radius:4px;padding:6px 8px;font-size:.8rem;font-family:inherit;outline:none}
 .r-x{width:24px;height:24px;border:1px solid var(--rust);background:#fff;color:var(--rust);border-radius:4px;cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center}
-.err{color:var(--rust);font-size:.78rem;margin-top:4px}.btn-sm{padding:5px 12px;font-size:.76rem}
+.err{color:var(--rust);font-size:.78rem;margin-top:8px}.btn-sm{padding:5px 12px;font-size:.76rem}
 @media(max-width:800px){.wp-layout{flex-direction:column}.wp-side{width:100%}}
 </style>
