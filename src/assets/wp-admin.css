@@ -99,30 +99,76 @@ ul.striped > :nth-child(odd) { background-color: var(--wp-alt-bg); }
 .button-small { font-size: 13px; line-height: 2; min-height: 26px; padding: 0 8px; }
 .button-large { font-size: 14px; line-height: 2.71428571; min-height: 38px; padding: 0 14px; }
 
-/* ── Forms ── */
-input,
-select,
-textarea { font-family: var(--wp-sans); }
+/* ── Forms (forms.min.css WP 7.0.2) ── */
+button, input, select, textarea { box-sizing: border-box; font-family: inherit; font-size: inherit; font-weight: inherit; }
+input, select { margin: 0 1px; }
+input, textarea { font-size: 14px; }
 
-.wp-core-ui input[type="text"],
-.wp-core-ui input[type="search"],
-.wp-core-ui input[type="number"],
-.wp-core-ui input[type="url"],
-.wp-core-ui input[type="date"],
-.wp-core-ui input[type="email"],
-.wp-core-ui input[type="password"],
-.wp-core-ui select,
-.wp-core-ui textarea { background: var(--wp-surface); border: 1px solid var(--wp-border); border-radius: var(--wp-radius); font-size: 14px; line-height: 2; min-height: 30px; padding: 0 8px; color: var(--wp-text); box-shadow: 0 0 0 transparent; outline: 0; }
-.wp-core-ui input:focus,
-.wp-core-ui select:focus,
-.wp-core-ui textarea:focus { border-color: var(--wp-primary); box-shadow: 0 0 0 1px var(--wp-primary); }
-.wp-core-ui textarea { line-height: 1.5; padding: 5px 8px; }
-.wp-core-ui select { padding-right: 24px; }
+input[type="color"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="datetime"],
+input[type="email"],
+input[type="month"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="text"],
+input[type="time"],
+input[type="url"],
+input[type="week"],
+select,
+textarea {
+  box-shadow: 0 0 0 transparent;
+  border-radius: 2px;
+  border: 1px solid #949494;
+  background-color: #fff;
+  color: #1e1e1e;
+  outline: 0;
+}
+input[type="date"],
+input[type="datetime-local"],
+input[type="datetime"],
+input[type="email"],
+input[type="month"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="text"],
+input[type="time"],
+input[type="url"],
+input[type="week"] { padding: 0 12px; min-height: 40px; line-height: 2.71428571; }
+input:focus,
+select:focus,
+textarea:focus { border-color: var(--wp-primary); box-shadow: 0 0 0 var(--wp-focus-width) var(--wp-primary); outline: 2px solid transparent; }
+
+select { padding: 0 24px 0 12px; line-height: 2.71428571; min-height: 40px; font-size: 14px; color: #1e1e1e; border-color: #949494; box-shadow: none; }
+select:hover { color: #1e1e1e; border-color: #1e1e1e; }
+select:focus { border-color: var(--wp-primary); box-shadow: 0 0 0 var(--wp-focus-width) var(--wp-primary); }
+
+textarea { overflow: auto; padding: 8px 12px; line-height: 1.42857143; resize: vertical; }
+textarea:focus { border-color: var(--wp-primary); box-shadow: 0 0 0 var(--wp-focus-width) var(--wp-primary); outline: 2px solid transparent; }
 
 .form-table th { font-weight: 600; font-size: 14px; padding: 20px 10px 20px 0; text-align: left; vertical-align: top; width: 200px; }
 .form-table td { padding: 15px 10px; vertical-align: middle; font-size: 14px; }
 .form-table td p { margin-top: 4px; margin-bottom: 0; }
 .form-table td p.description { color: var(--wp-text-muted); font-size: 13px; }
+
+.form-invalid input,
+.form-invalid select,
+.form-invalid textarea { border-color: #d63638 !important; box-shadow: 0 0 2px rgba(214,54,56,0.8); }
+
+p.submit { text-align: left; max-width: 100%; margin-top: 20px; padding-top: 10px; }
+.submit { padding: 1.5em 0; margin: 5px 0; border-radius: 0 0 3px 3px; border: none; }
+
+.meta-box-sortables select { max-width: 100%; }
+.meta-box-sortables input { vertical-align: middle; }
+
+#titlediv #title { width: 100%; font-size: 1.7em; line-height: 100%; padding: 3px 8px; }
+
+.tagsdiv .newtag { margin: 0; }
 
 /* ── Notices ── */
 .notice { background: var(--wp-surface); border: 1px solid var(--wp-border-light); border-left-width: 4px; box-shadow: 0 1px 1px rgba(0,0,0,0.04); margin: 5px 0 15px; padding: 1px 12px; font-size: 13px; }
