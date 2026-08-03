@@ -140,3 +140,8 @@ function doLogout() { auth.logout(); router.push('/') }
 .dash-link-sm { color: rgba(255,255,255,0.45); text-decoration: none; font-size: 12px; }
 .dash-link-sm:hover { color: #fff; }
 </style>
+
+<style>
+/* WP 7.0.2 Admin CSS — scoped to dashboard only (DashboardView) */
+@import '@/assets/wp-admin.css';
+</style>
