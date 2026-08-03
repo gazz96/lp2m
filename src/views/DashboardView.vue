@@ -1,6 +1,5 @@
 <template>
   <div class="dashboard-shell">
-    <!-- Sidebar -->
     <aside class="dash-sidebar">
       <div class="dash-brand">
         <router-link to="/" class="dash-logo">
@@ -52,7 +51,6 @@
       </div>
     </aside>
 
-    <!-- Main content -->
     <main class="dash-main">
       <router-view />
     </main>
@@ -62,224 +60,83 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-
 const router = useRouter()
 const auth = useAuthStore()
-
-function doLogout() {
-  auth.logout()
-  router.push('/')
-}
+function doLogout() { auth.logout(); router.push('/') }
 </script>
 
 <style scoped>
-.dashboard-shell {
-  display: flex;
-  min-height: 100vh;
-  background: var(--paper);
-}
+/* ── Shell ── */
+.dashboard-shell { display: flex; min-height: 100vh; background: var(--wp-bg); }
 
+/* ── Sidebar (WP admin-menu.css spec) ── */
 .dash-sidebar {
-  width: 260px;
-  background: var(--green-900);
-  color: var(--green-100);
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  z-index: 40;
+  width: 240px; background: #1d2327; color: #f0f0f1;
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 40;
 }
 
 .dash-brand {
-  padding: 22px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding: 18px 16px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 .dash-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #fff;
-  text-decoration: none;
-  font-family: 'Fraunces', serif;
-  font-weight: 600;
-  font-size: 0.95rem;
+  display: flex; align-items: center; gap: 10px;
+  color: #fff; text-decoration: none; font-size: 14px; font-weight: 600;
 }
 .brand-mark-sm {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: var(--green-600);
+  width: 28px; height: 28px; border-radius: 4px;
+  background: var(--wp-primary); color: #fff;
   display: flex; align-items: center; justify-content: center;
-  color: var(--gold-soft);
-  font-size: 0.8rem;
-  flex-shrink: 0;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
 }
 
-.dash-nav {
-  flex: 1;
-  padding: 16px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+.dash-nav { flex: 1; margin: 12px 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
+
 .nav-section {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--green-400);
-  padding: 12px 12px 4px;
-  font-weight: 700;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4); padding: 12px 16px 4px; font-weight: 600;
 }
-.dash-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 5px;
-  color: var(--green-100);
-  text-decoration: none;
-  font-size: 0.88rem;
-  transition: background 0.15s;
-}
-.dash-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
-.dash-link.active { background: rgba(201,154,59,0.2); color: var(--gold-soft); }
-.dash-link.sub { padding-left: 28px; font-size: 0.82rem; }
-.dash-icon { width: 20px; height: 20px; flex-shrink: 0; display: block; }
-.dash-link.sub .dash-icon { width: 16px; height: 16px; }
 
-.dash-footer {
-  padding: 16px 20px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.dash-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; margin: 0 8px; border-radius: var(--wp-radius);
+  color: #f0f0f1; text-decoration: none; font-size: 14px;
+  line-height: 1.3; min-height: 34px; transition: background 0.1s;
 }
-.dash-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.dash-link:hover { background: var(--wp-primary); color: #fff; }
+.dash-link.active { background: var(--wp-primary); color: #fff; font-weight: 500; }
+.dash-link.sub { padding-left: 20px; font-size: 13px; }
+
+.dash-icon { width: 20px; height: 20px; flex-shrink: 0; display: block; color: rgba(240,246,252,0.6); }
+.dash-link:hover .dash-icon,
+.dash-link.active .dash-icon { color: #fff; }
+.dash-link.sub .dash-icon { width: 16px; height: 16px; opacity: 0.7; }
+
+/* ── Main Content ── */
+.dash-main {
+  margin-left: 240px; flex: 1; min-height: 100vh;
+  padding: 32px; max-width: 1100px;
 }
+
+/* ── Footer ── */
+.dash-footer { padding: 14px 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+.dash-user { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .user-avatar {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: var(--gold-soft);
-  color: var(--green-900);
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--wp-primary); color: #fff;
   display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  flex-shrink: 0;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
 }
-.user-info {
-  overflow: hidden;
-}
-.user-name {
-  font-size: 0.82rem;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.user-role {
-  font-size: 0.7rem;
-  color: var(--green-300);
-}
+.user-name { font-size: 13px; font-weight: 500; }
+.user-role { font-size: 11px; color: rgba(255,255,255,0.45); }
+
 .btn-logout {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: transparent;
-  color: var(--green-100);
-  border-radius: 5px;
-  font-size: 0.78rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.15s;
+  width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.6); padding: 6px 14px; border-radius: var(--wp-radius);
+  font-size: 12px; cursor: pointer; font-family: inherit; margin-bottom: 8px;
 }
 .btn-logout:hover { background: rgba(255,255,255,0.08); color: #fff; }
-.dash-link-sm {
-  color: var(--green-300);
-  text-decoration: none;
-  font-size: 0.8rem;
-}
+.dash-link-sm { color: rgba(255,255,255,0.45); text-decoration: none; font-size: 12px; }
 .dash-link-sm:hover { color: #fff; }
-
-.dash-main {
-  flex: 1;
-  margin-left: 260px;
-  padding: 32px;
-  max-width: 1100px;
-}
-
-/* Dashboard global styles */
-.dash-main h1 {
-  font-size: 1.6rem;
-  margin-bottom: 8px;
-  color: var(--green-900);
-}
-.dash-main .subtitle {
-  color: var(--ink-soft);
-  font-size: 0.92rem;
-  margin-bottom: 28px;
-}
-.dash-card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 24px;
-  margin-bottom: 20px;
-}
-.dash-card h3 {
-  font-size: 1.05rem;
-  margin-bottom: 14px;
-}
-.dash-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-.dash-grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-.dash-stat {
-  background: var(--green-800);
-  color: #fff;
-  border-radius: 8px;
-  padding: 20px;
-}
-.dash-stat .num {
-  font-family: 'Fraunces', serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--gold-soft);
-}
-.dash-stat .lbl {
-  font-size: 0.8rem;
-  color: var(--green-100);
-  margin-top: 4px;
-}
-
-@media (max-width: 800px) {
-  .dash-sidebar { width: 200px; }
-  .dash-main { margin-left: 200px; padding: 20px; }
-  .dash-grid-2, .dash-grid-3 { grid-template-columns: 1fr; }
-}
-@media (max-width: 600px) {
-  .dashboard-shell { flex-direction: column; }
-  .dash-sidebar {
-    width: 100%;
-    position: relative;
-    flex-direction: row;
-    overflow-x: auto;
-    padding: 12px;
-    gap: 8px;
-  }
-  .dash-brand, .dash-nav { display: flex; gap: 6px; }
-  .dash-nav { flex-direction: row; padding: 0; }
-  .dash-link { padding: 8px 10px; font-size: 0.78rem; }
-  .dash-footer { display: none; }
-  .dash-main { margin-left: 0; padding: 16px; }
-}
 </style>
