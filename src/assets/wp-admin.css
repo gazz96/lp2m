@@ -201,7 +201,7 @@ tr:hover .row-actions,
 .row-actions span a { display: inline-block; padding: 2px 8px 2px 0; font-size: 13px; }
 
 .sorting-indicator { display: inline-block; width: 10px; margin-left: 4px; vertical-align: middle; }
-.sorting-indicator:before { content: "\\2195"; font-size: 14px; color: var(--wp-text-muted); }
+.sorting-indicator:before { content: "\2195"; font-size: 14px; color: var(--wp-text-muted); }
 
 .search-box { float: right; margin: 0 0 8px; }
 .search-box input[type="search"] { float: left; margin: 0 4px 0 0; width: 280px; }
