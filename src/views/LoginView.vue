@@ -128,6 +128,8 @@ async function doLogin() {
   border-radius: 2px;
   padding: 0 12px;
   min-height: 40px;
+  height: 40px;
+  line-height: 40px;
   font-family: inherit;
   font-size: 14px;
   color: var(--wp-text);
