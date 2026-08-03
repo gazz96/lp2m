@@ -5,9 +5,7 @@ import DashboardView from '@/views/DashboardView.vue'
 import LoginView from '@/views/LoginView.vue'
 import DashboardHome from '@/views/dashboard/HomePage.vue'
 import KelolaHibah from '@/views/dashboard/KelolaHibah.vue'
-import LihatHibah from '@/views/dashboard/LihatHibah.vue'
 import KelolaArtikel from '@/views/dashboard/KelolaArtikel.vue'
-import LihatArtikel from '@/views/dashboard/LihatArtikel.vue'
 import Pendaftaran from '@/views/dashboard/Pendaftaran.vue'
 
 const router = createRouter({
@@ -23,9 +21,7 @@ const router = createRouter({
       children: [
         { path: '', name: 'dashboard', component: DashboardHome },
         { path: 'kelola-hibah', name: 'kelola-hibah', component: KelolaHibah },
-        { path: 'lihat-hibah', name: 'lihat-hibah', component: LihatHibah },
         { path: 'kelola-artikel', name: 'kelola-artikel', component: KelolaArtikel },
-        { path: 'lihat-artikel', name: 'lihat-artikel', component: LihatArtikel },
         { path: 'pendaftaran', name: 'pendaftaran', component: Pendaftaran },
       ]
     }

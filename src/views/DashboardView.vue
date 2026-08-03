@@ -12,19 +12,11 @@
         <router-link to="/dashboard" exact-active-class="active" class="dash-link">
           <span class="dash-icon">🏠</span> Beranda
         </router-link>
-        <div class="nav-section">Kelola</div>
         <router-link to="/dashboard/kelola-hibah" active-class="active" class="dash-link">
           <span class="dash-icon">⚙️</span> Kelola Hibah
         </router-link>
         <router-link to="/dashboard/kelola-artikel" active-class="active" class="dash-link">
           <span class="dash-icon">✍️</span> Kelola Artikel
-        </router-link>
-        <div class="nav-section">Lihat</div>
-        <router-link to="/dashboard/lihat-hibah" active-class="active" class="dash-link">
-          <span class="dash-icon">📋</span> Lihat Hibah
-        </router-link>
-        <router-link to="/dashboard/lihat-artikel" active-class="active" class="dash-link">
-          <span class="dash-icon">📰</span> Lihat Artikel
         </router-link>
         <router-link to="/dashboard/pendaftaran" active-class="active" class="dash-link">
           <span class="dash-icon">📬</span> Pendaftaran

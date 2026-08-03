@@ -73,9 +73,53 @@
               <label>Kategori</label>
               <input type="text" v-model="form.kategori_hibah" placeholder="Penelitian Dasar..." />
             </div>
+            <!-- Kategori taxonomy — searchable + create -->
+            <div class="field full">
+              <label>Kategori Hibah</label>
+              <div class="tag-input">
+                <div class="selected-tags" v-if="selectedCategories.length">
+                  <span v-for="id in selectedCategories" :key="id" class="tag-chip">
+                    {{ taxTermLabel(id) }}
+                    <button type="button" class="tag-remove" @click="selectedCategories = selectedCategories.filter(x => x !== id)">✕</button>
+                  </span>
+                </div>
+                <div class="search-row">
+                  <input
+                    type="text"
+                    v-model="catSearch"
+                    placeholder="Cari atau buat baru..."
+                    class="search-input"
+                    @focus="showCatDropdown = true"
+                    @blur="hideCatDropdown"
+                  />
+                  <div class="search-dropdown" v-if="showCatDropdown && filteredCatOptions.length">
+                    <button type="button" v-for="t in filteredCatOptions" :key="t.id"
+                      class="drop-item"
+                      @mousedown.prevent="addCategory(t)"
+                    >{{ t.name }}</button>
+                  </div>
+                  <div class="search-dropdown" v-if="showCatDropdown && catSearch.trim() && !filteredCatOptions.length">
+                    <button type="button" class="drop-item new" @mousedown.prevent="createCategory(catSearch.trim())">
+                      + Buat "{{ catSearch.trim() }}"
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div v-if="catError" class="hint-error">{{ catError }}</div>
+            </div>
+
+            <!-- Skema — searchable from existing + type custom -->
             <div class="field">
               <label>Skema Hibah</label>
-              <input type="text" v-model="form.skema" placeholder="Hibah Kompetitif..." />
+              <input
+                type="text"
+                v-model="form.skema"
+                :list="'skema-datalist-' + _uid"
+                placeholder="Pilih atau ketik..."
+              />
+              <datalist :id="'skema-datalist-' + _uid">
+                <option v-for="s in existingSkema" :key="s" :value="s" />
+              </datalist>
             </div>
             <div class="field">
               <label>Deadline (ISO)</label>
@@ -100,18 +144,6 @@
             <div class="field full">
               <label>Info Tambahan (satu per baris)</label>
               <textarea v-model="form.info_tambahan" rows="3" placeholder="Maks. 3 anggota tim..."></textarea>
-            </div>
-
-            <!-- Kategori taxonomy -->
-            <div class="field full">
-              <label>Kategori (taxonomy)</label>
-              <div class="checkbox-list" v-if="taxTerms.length">
-                <label v-for="t in taxTerms" :key="t.id" class="cb-item">
-                  <input type="checkbox" :value="t.id" v-model="form.categories" />
-                  {{ t.name }}
-                </label>
-              </div>
-              <span v-else class="hint">Belum ada kategori. Buat di WP Admin → Kategori Hibah.</span>
             </div>
 
             <!-- Timeline repeater -->
@@ -154,7 +186,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
 import type { HibahEvent } from '@/types'
@@ -162,6 +194,7 @@ import HtmlEditor from '@/components/HtmlEditor.vue'
 import ThumbnailPicker from '@/components/ThumbnailPicker.vue'
 
 const auth = useAuthStore()
+const _uid = Math.random().toString(36).slice(2, 8)
 
 const items = ref<HibahEvent[]>([])
 const loading = ref(true)
@@ -176,6 +209,44 @@ const saving = ref(false)
 const modalError = ref('')
 const thumbPreview = ref('')
 const taxTerms = ref<{ id: number; name: string }[]>([])
+const selectedCategories = ref<number[]>([])
+const catSearch = ref('')
+const showCatDropdown = ref(false)
+const catError = ref('')
+const existingSkema = ref<string[]>([])
+
+const filteredCatOptions = computed(() => {
+  if (!catSearch.value.trim()) return taxTerms.value.filter(t => !selectedCategories.value.includes(t.id))
+  return taxTerms.value.filter(t =>
+    !selectedCategories.value.includes(t.id) &&
+    t.name.toLowerCase().includes(catSearch.value.toLowerCase())
+  )
+})
+
+function taxTermLabel(id: number) { return taxTerms.value.find(t => t.id === id)?.name || String(id) }
+
+function addCategory(t: { id: number; name: string }) {
+  if (!selectedCategories.value.includes(t.id)) selectedCategories.value.push(t.id)
+  catSearch.value = ''
+}
+
+function hideCatDropdown() { setTimeout(() => { showCatDropdown.value = false }, 150) }
+
+async function createCategory(name: string) {
+  catError.value = ''
+  try {
+    const res = await fetch(`${SITE.apiBase}/kategori_hibah`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...auth.authHeaders() },
+      body: JSON.stringify({ name, slug: name.toLowerCase().replace(/\s+/g, '-') })
+    })
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || `HTTP ${res.status}`)
+    const created = await res.json()
+    taxTerms.value.push({ id: created.id, name: created.name })
+    selectedCategories.value.push(created.id)
+    catSearch.value = ''
+  } catch (e: any) { catError.value = 'Gagal buat kategori: ' + e.message }
+}
 
 interface TimelineItem { date: string; label: string }
 const emptyForm = () => ({
@@ -183,7 +254,6 @@ const emptyForm = () => ({
   jenis_hibah: 'internal', status_hibah: 'aktif',
   deadline: '', deadline_label: '', skema: '', kategori_hibah: '',
   dana_maks: '', event_eyebrow: '', info_tambahan: '', link_panduan: '',
-  categories: [] as number[],
   timeline_items: [] as TimelineItem[],
   featured_media: null as number | null
 })
@@ -198,6 +268,17 @@ async function fetchTaxonomy() {
   try {
     const res = await fetch(`${SITE.apiBase}/kategori_hibah?per_page=50`)
     if (res.ok) taxTerms.value = await res.json()
+  } catch { /* ignore */ }
+}
+
+async function fetchExistingSkema() {
+  try {
+    const res = await fetch(`${SITE.apiBase}/hibah?per_page=100&_fields=id,skema&status=publish`)
+    if (res.ok) {
+      const data: any[] = await res.json()
+      const unique = new Set(data.map(p => (p.skema || '').trim()).filter(Boolean))
+      existingSkema.value = Array.from(unique).sort()
+    }
   } catch { /* ignore */ }
 }
 
@@ -217,7 +298,8 @@ async function fetchAll(p = 1) {
 
 function openCreate() {
   Object.assign(form, emptyForm())
-  editingId.value = null; modalError.value = ''; thumbPreview.value = ''
+  selectedCategories.value = []
+  editingId.value = null; modalError.value = ''; thumbPreview.value = ''; catSearch.value = '';
   showModal.value = true
 }
 
@@ -236,11 +318,11 @@ function openEdit(item: HibahEvent) {
   form.event_eyebrow = (item as any).event_eyebrow || ''
   form.info_tambahan = (item as any).info_tambahan || ''
   form.link_panduan = (item as any).link_panduan || ''
-  form.categories = (item as any).categories || []
   form.timeline_items = (item as any).timeline_items || []
   form.featured_media = (item as any).featured_media || null
+  selectedCategories.value = (item as any).categories || []
   thumbPreview.value = item._embedded?.['wp:featuredmedia']?.[0]?.source_url || ''
-  modalError.value = ''
+  modalError.value = ''; catSearch.value = ''
   showModal.value = true
 }
 
@@ -264,7 +346,7 @@ async function save() {
     event_eyebrow: form.event_eyebrow,
     info_tambahan: form.info_tambahan,
     link_panduan: form.link_panduan,
-    categories: form.categories,
+    categories: selectedCategories.value,
     timeline_items: form.timeline_items,
     featured_media: form.featured_media || undefined
   }
@@ -272,7 +354,6 @@ async function save() {
   try {
     let res: Response
     if (editingId.value) {
-      // WP REST update = POST (not PUT for meta compat)
       res = await fetch(`${SITE.apiBase}/hibah/${editingId.value}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...auth.authHeaders() },
@@ -294,13 +375,14 @@ async function save() {
     saving.value = false
     closeModal()
     fetchAll(page.value)
+    fetchExistingSkema()
   } catch (e: any) {
     modalError.value = e.message
     saving.value = false
   }
 }
 
-onMounted(() => { fetchAll(); fetchTaxonomy() })
+onMounted(() => { fetchAll(); fetchTaxonomy(); fetchExistingSkema() })
 </script>
 
 <style scoped>
@@ -347,4 +429,17 @@ td { padding: 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .error-box { background: #fff0ed; color: var(--rust); padding: 10px 14px; border-radius: 6px; font-size: 0.82rem; margin-top: 16px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 .loading-text, .error-text { color: var(--ink-soft); padding: 24px 0; }
+/* Tag input styles */
+.tag-input { border: 1px solid var(--line); border-radius: 5px; background: #fff; padding: 8px; }
+.selected-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.tag-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: var(--green-100); color: var(--green-800); border-radius: 16px; font-size: 0.78rem; }
+.tag-remove { width: 18px; height: 18px; border-radius: 50%; border: none; background: transparent; color: var(--green-600); cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
+.tag-remove:hover { background: var(--green-200); }
+.search-row { position: relative; }
+.search-input { width: 100%; border: none !important; box-shadow: none !important; padding: 6px 8px !important; }
+.search-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--line); border-radius: 5px; max-height: 180px; overflow-y: auto; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.drop-item { display: block; width: 100%; text-align: left; padding: 8px 12px; border: none; background: transparent; cursor: pointer; font-size: 0.82rem; font-family: inherit; }
+.drop-item:hover { background: var(--paper-2); }
+.drop-item.new { color: var(--green-700); font-style: italic; }
+.hint-error { font-size: 0.72rem; color: var(--rust); margin-top: 4px; }
 </style>
