@@ -4,43 +4,29 @@ import HomeView from '@/views/HomeView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import LoginView from '@/views/LoginView.vue'
 import DashboardHome from '@/views/dashboard/HomePage.vue'
-import EventHibah from '@/views/dashboard/EventHibah.vue'
 import KelolaHibah from '@/views/dashboard/KelolaHibah.vue'
+import LihatHibah from '@/views/dashboard/LihatHibah.vue'
 import KelolaArtikel from '@/views/dashboard/KelolaArtikel.vue'
+import LihatArtikel from '@/views/dashboard/LihatArtikel.vue'
 import Pendaftaran from '@/views/dashboard/Pendaftaran.vue'
-import Panduan from '@/views/dashboard/Panduan.vue'
-import BeritaArtikel from '@/views/dashboard/BeritaArtikel.vue'
-import Infografis from '@/views/dashboard/Infografis.vue'
 
 const router = createRouter({
   history: createWebHistory(),
-  scrollBehavior() {
-    return { top: 0 }
-  },
+  scrollBehavior() { return { top: 0 } },
   routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: LoginView
-    },
+    { path: '/', name: 'home', component: HomeView },
+    { path: '/login', name: 'login', component: LoginView },
     {
       path: '/dashboard',
       component: DashboardView,
       meta: { requiresAuth: true },
       children: [
         { path: '', name: 'dashboard', component: DashboardHome },
-        { path: 'event-hibah', name: 'event-hibah', component: EventHibah },
         { path: 'kelola-hibah', name: 'kelola-hibah', component: KelolaHibah },
+        { path: 'lihat-hibah', name: 'lihat-hibah', component: LihatHibah },
         { path: 'kelola-artikel', name: 'kelola-artikel', component: KelolaArtikel },
+        { path: 'lihat-artikel', name: 'lihat-artikel', component: LihatArtikel },
         { path: 'pendaftaran', name: 'pendaftaran', component: Pendaftaran },
-        { path: 'panduan', name: 'panduan', component: Panduan },
-        { path: 'berita-artikel', name: 'berita-artikel', component: BeritaArtikel },
-        { path: 'infografis', name: 'infografis', component: Infografis }
       ]
     }
   ]

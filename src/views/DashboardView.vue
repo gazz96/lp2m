@@ -10,13 +10,21 @@
       </div>
       <nav class="dash-nav">
         <router-link to="/dashboard" exact-active-class="active" class="dash-link">
-          <span class="dash-icon">🏠</span> Beranda Dashboard
+          <span class="dash-icon">🏠</span> Beranda
         </router-link>
+        <div class="nav-section">Kelola</div>
         <router-link to="/dashboard/kelola-hibah" active-class="active" class="dash-link">
           <span class="dash-icon">⚙️</span> Kelola Hibah
         </router-link>
         <router-link to="/dashboard/kelola-artikel" active-class="active" class="dash-link">
           <span class="dash-icon">✍️</span> Kelola Artikel
+        </router-link>
+        <div class="nav-section">Lihat</div>
+        <router-link to="/dashboard/lihat-hibah" active-class="active" class="dash-link">
+          <span class="dash-icon">📋</span> Lihat Hibah
+        </router-link>
+        <router-link to="/dashboard/lihat-artikel" active-class="active" class="dash-link">
+          <span class="dash-icon">📰</span> Lihat Artikel
         </router-link>
         <router-link to="/dashboard/pendaftaran" active-class="active" class="dash-link">
           <span class="dash-icon">📬</span> Pendaftaran
@@ -106,7 +114,14 @@ function doLogout() {
   flex-direction: column;
   gap: 4px;
 }
-
+.nav-section {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--green-400);
+  padding: 12px 12px 4px;
+  font-weight: 700;
+}
 .dash-link {
   display: flex;
   align-items: center;
