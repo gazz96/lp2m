@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import HomeView from '@/views/HomeView.vue'
 import DashboardView from '@/views/DashboardView.vue'
@@ -10,7 +10,7 @@ import BeritaArtikel from '@/views/dashboard/BeritaArtikel.vue'
 import Infografis from '@/views/dashboard/Infografis.vue'
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   scrollBehavior() {
     return { top: 0 }
   },
@@ -40,7 +40,6 @@ const router = createRouter({
   ]
 })
 
-// Auth guard
 router.beforeEach((to) => {
   if (to.meta.requiresAuth) {
     const auth = useAuthStore()
@@ -48,7 +47,6 @@ router.beforeEach((to) => {
       return { name: 'login', query: { redirect: to.fullPath } }
     }
   }
-  // Redirect logged-in user from /login to dashboard
   if (to.name === 'login') {
     const auth = useAuthStore()
     if (auth.isLoggedIn) {
