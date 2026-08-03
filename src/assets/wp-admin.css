@@ -58,17 +58,6 @@ ul.striped > :nth-child(odd) { background-color: var(--wp-alt-bg); }
 .sortable a:hover,
 .sortable a:focus { color: var(--wp-primary); }
 
-.row-title { font-size: 14px !important; font-weight: 600; }
-.row-actions { left: 0; visibility: hidden; font-size: 13px; padding: 2px 0 0; position: relative; }
-tr:hover .row-actions,
-.mobile .row-actions,
-.row-actions.visible,
-.comment-item:hover .row-actions { visibility: visible; }
-.row-actions span a { color: var(--wp-primary); text-decoration: none; }
-.row-actions span a:hover { color: var(--wp-primary-darker-10); }
-.row-actions .delete a,
-.row-actions .trash a { color: var(--wp-danger); }
-
 .tablenav { height: auto; clear: both; margin: 6px 0 4px; }
 .tablenav .displaying-num { margin-right: 7px; color: var(--wp-text-muted); font-size: 14px; }
 .tablenav .tablenav-pages { float: right; margin: 0 0 9px; color: var(--wp-text-secondary); font-size: 14px; }
@@ -142,6 +131,52 @@ textarea { font-family: var(--wp-sans); }
 .notice-error { border-left-color: var(--wp-danger); }
 .notice-warning { border-left-color: var(--wp-warning); }
 .notice-info { border-left-color: #72aee6; }
+
+/* ── List Tables (list-tables.css) ── */
+.fixed .column-title { width: 30%; }
+.fixed .column-date { width: 14%; }
+.fixed .column-categories { width: 15%; }
+.fixed .column-tags { width: 15%; }
+.fixed .column-status { width: 10%; }
+.fixed .column-author { width: 10%; }
+
+.alternate,
+.striped > tbody > :nth-child(odd),
+ul.striped > :nth-child(odd) { background-color: var(--wp-alt-bg); }
+
+.row-title { font-size: 14px !important; font-weight: 600; }
+
+.row-actions { color: #646970; font-size: 13px; padding: 2px 0 0; visibility: hidden; }
+tr:hover .row-actions,
+.mobile .row-actions,
+.row-actions.visible,
+.comment-item:hover .row-actions { visibility: visible; }
+.row-actions span .button-link,
+.row-actions span a { display: inline-block; padding: 2px 8px 2px 0; font-size: 13px; }
+
+.sorting-indicator { display: inline-block; width: 10px; margin-left: 4px; vertical-align: middle; }
+.sorting-indicator:before { content: "\\2195"; font-size: 14px; color: var(--wp-text-muted); }
+
+.search-box { float: right; margin: 0 0 8px; }
+.search-box input[type="search"] { float: left; margin: 0 4px 0 0; width: 280px; }
+
+.post-state { font-size: 13px; font-weight: 400; color: var(--wp-text-muted); }
+.post-state.draft,
+.post-state.pending { color: var(--wp-text-secondary); }
+
+.inline-edit-wrapper { display: flow-root; padding: 0 12px; border: 1px solid transparent; border-radius: 4px; }
+.inline-edit-wrapper:focus { border-color: var(--wp-primary); }
+.inline-edit-row fieldset label,
+.inline-edit-row fieldset span.inline-edit-categories-label { display: block; margin: .2em 0; }
+.inline-edit-row fieldset label span.title { display: block; width: 6em; }
+.inline-edit-row fieldset .timestamp-wrap,
+.inline-edit-row fieldset label span.input-text-wrap { display: block; margin-left: 6em; }
+.inline-edit-row .input-text-wrap input[type="text"] { width: 100%; }
+.inline-edit-row fieldset label textarea { width: 100%; }
+.inline-edit-row select { padding-right: 24px; }
+.inline-edit-row .submit { display: flex; margin: 0; padding: .5em 0 1em; }
+.inline-edit-save.submit .button { margin-right: 8px; }
+.inline-edit-save .spinner { margin: 0; }
 
 /* ── Cards / Postbox ── */
 .postbox { background: var(--wp-surface); border: 1px solid var(--wp-border-light); border-radius: var(--wp-radius); box-shadow: 0 1px 1px rgba(0,0,0,0.04); margin-bottom: 20px; min-width: 255px; }

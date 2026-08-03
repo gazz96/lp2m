@@ -14,7 +14,7 @@
 
     <div v-if="loading" style="text-align:center;padding:40px"><span class="spinner" style="display:inline-block"></span></div>
 
-    <table v-else class="wp-list-table widefat striped">
+    <table v-else class="wp-list-table widefat striped fixed">
       <thead>
         <tr>
           <th scope="col" class="sortable column-title" @click="tsort('title')"><span>Judul</span><span class="sorting-indicator">{{ sl('title') }}</span></th>
