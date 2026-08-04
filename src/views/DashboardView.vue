@@ -32,6 +32,7 @@
         </button>
         <div v-if="groups.artikel" class="sub-items">
           <router-link to="/dashboard/kelola-artikel" active-class="active" class="dash-link sub">Kelola Artikel</router-link>
+          <router-link to="/dashboard/kelola-artikel/kategori" active-class="active" class="dash-link sub">Kategori Artikel</router-link>
         </div>
 
         <router-link to="/dashboard/pendaftaran" active-class="active" class="dash-link">
