@@ -25,30 +25,38 @@
             <textarea v-model="f.title" class="editor-post-title__input" placeholder="Tambahkan judul" rows="1" @input="autoResize($event)"></textarea>
           </div>
           <WpEditor v-model="f.content" placeholder="Mulai menulis..." />
-
-          <details class="wp-detail-group" style="margin-top:32px;border:1px solid var(--wp-border-light);border-radius:2px;background:var(--wp-bg)">
-            <summary class="wp-detail-group__title">Pengaturan Artikel</summary>
-            <div class="wp-detail-group__body">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-                <div class="components-base-control">
-                  <label class="components-base-control__label">Status</label>
-                  <select class="components-select-control__input" v-model="f.status"><option value="draft">Draft</option><option value="publish">Publish</option></select>
-                </div>
-                <div class="components-base-control">
-                  <label class="components-base-control__label">Kategori</label>
-                  <select class="components-select-control__input" v-model="f.category" @change="onCategoryChange">
-                    <option :value="null">— Pilih Kategori —</option>
-                    <option v-for="c in kTerms" :key="c.id" :value="c.id">{{ c.name }}</option>
-                  </select>
-                </div>
-              </div>
-              <div class="components-base-control">
-                <label class="components-base-control__label">Thumbnail</label>
-                <ThumbnailPicker v-model:media-id="f.featured_media" v-model:preview-url="thumb" />
-              </div>
-            </div>
-          </details>
         </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="editor-sidebar">
+        <details class="wp-detail-group" open>
+          <summary class="wp-detail-group__title">Status & Visibilitas</summary>
+          <div class="wp-detail-group__body">
+            <div class="components-base-control">
+              <label class="components-base-control__label">Status</label>
+              <select class="components-select-control__input" v-model="f.status"><option value="draft">Draft</option><option value="publish">Publish</option></select>
+            </div>
+            <div v-if="editId" style="font-size:12px;color:var(--wp-text-muted);margin-top:8px">ID: {{ editId }}</div>
+          </div>
+        </details>
+
+        <details class="wp-detail-group" open>
+          <summary class="wp-detail-group__title">Kategori</summary>
+          <div class="wp-detail-group__body">
+            <TagSelect :terms="kTerms" :selected="selCats" placeholder="Cari atau buat kategori..."
+              @add="(t:any)=>selCats.push(t.id)"
+              @remove="(id:number)=>selCats=selCats.filter(x=>x!==id)"
+              @create="addCat($event)" />
+          </div>
+        </details>
+
+        <details class="wp-detail-group" open>
+          <summary class="wp-detail-group__title">Thumbnail</summary>
+          <div class="wp-detail-group__body">
+            <ThumbnailPicker v-model:media-id="f.featured_media" v-model:preview-url="thumb" />
+          </div>
+        </details>
       </div>
     </div>
   </div>
@@ -62,26 +70,30 @@ import { useAuthStore } from '@/stores/auth'
 import WpButton from '@/components/WpButton.vue'
 import WpEditor from '@/components/WpEditor.vue'
 import ThumbnailPicker from '@/components/ThumbnailPicker.vue'
+import TagSelect from '@/components/TagSelect.vue'
 import { useToast } from '@/composables/useToast'
 
 const route=useRoute(),router=useRouter(),auth=useAuthStore()
 const toast=useToast()
 const editId=ref<number|null>(null),saving=ref(false),err=ref(''),thumb=ref('')
 const kTerms=ref<{id:number;name:string}[]>([])
-const f=reactive({title:'',content:'',status:'draft',category:null as number|null,featured_media:null as number|null})
+const selCats=ref<number[]>([])
+const f=reactive({title:'',content:'',status:'draft',featured_media:null as number|null})
 
 function clean(s:string){return new DOMParser().parseFromString(s,'text/html').body.textContent||''}
 function autoResize(e:Event){const el=e.target as HTMLTextAreaElement;el.style.height='auto';el.style.height=el.scrollHeight+'px'}
 function preview(){if(editId.value)window.open(`https://itsi.ac.id/?p=${editId.value}&preview=true`,'_blank')}
-function onCategoryChange(){}
 
 async function loadCats(){try{const r=await window.fetch(`${SITE.apiBase}/categories?per_page=100&orderby=name&order=asc`);if(r.ok)kTerms.value=await r.json()}catch{}}
-async function loadItem(id:number){try{const r=await window.fetch(`${SITE.apiBase}/posts/${id}?_embed`);if(!r.ok)return;const p=await r.json();editId.value=p.id;f.title=clean(p.title?.rendered||'');f.content=p.content?.rendered||'';f.status=p.status||'draft';f.category=p.categories?.[0]||null;f.featured_media=p.featured_media||null;thumb.value=p._embedded?.['wp:featuredmedia']?.[0]?.source_url||''}catch{}}
+async function loadItem(id:number){try{const r=await window.fetch(`${SITE.apiBase}/posts/${id}?_embed`);if(!r.ok)return;const p=await r.json();editId.value=p.id;f.title=clean(p.title?.rendered||'');f.content=p.content?.rendered||'';f.status=p.status||'draft';f.featured_media=p.featured_media||null;selCats.value=p.categories||[];thumb.value=p._embedded?.['wp:featuredmedia']?.[0]?.source_url||''}catch{}}
 
-async function save(){if(!f.title.trim()){err.value='Judul wajib diisi.';return};saving.value=true;err.value='';const p:any={title:f.title,content:f.content,status:f.status};if(f.category)p.categories=[f.category];if(f.featured_media)p.featured_media=f.featured_media
+async function addCat(name:string){err.value='';const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'-')
+  try{const r=await window.fetch(`${SITE.apiBase}/categories`,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify({name,slug})});if(!r.ok)throw new Error((await r.json().catch(()=>({}))).message||'Gagal');const c=await r.json();kTerms.value.push({id:c.id,name:c.name});selCats.value.push(c.id)}catch(e:any){err.value='Gagal: '+e.message}}
+
+async function save(){if(!f.title.trim()){err.value='Judul wajib diisi.';return};saving.value=true;err.value='';const p:any={title:f.title,content:f.content,status:f.status};if(selCats.value.length)p.categories=selCats.value;if(f.featured_media)p.featured_media=f.featured_media
   try{const url=editId.value?`${SITE.apiBase}/posts/${editId.value}`:`${SITE.apiBase}/posts`;const r=await window.fetch(url,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify(p)});if(!r.ok){const e=await r.json().catch(()=>({}));err.value=e.message||'HTTP '+r.status;toast.error(e.message||'Gagal');saving.value=false;return};const c=await r.json();if(!editId.value){editId.value=c.id;router.replace('/dashboard/artikel/'+c.id)};saving.value=false;err.value='';toast.success(editId.value?'Artikel diperbarui!':'Artikel dibuat!')}catch(e:any){err.value=e.message;saving.value=false}}
 
-function resetForm(){Object.assign(f,{title:'',content:'',status:'draft',category:null,featured_media:null});thumb.value='';editId.value=null;err.value=''}
+function resetForm(){Object.assign(f,{title:'',content:'',status:'draft',featured_media:null});selCats.value=[];thumb.value='';editId.value=null;err.value=''}
 watch(()=>route.params.id,(id)=>{if(id)loadItem(parseInt(id as string));else resetForm()})
 onMounted(()=>{loadCats();const id=route.params.id as string;if(id)loadItem(parseInt(id));else resetForm()})
 </script>
@@ -99,6 +111,7 @@ onMounted(()=>{loadCats();const id=route.params.id as string;if(id)loadItem(pars
 .editor-post-title{margin-bottom:20px}
 .editor-post-title__input{display:block;width:100%;font-size:2em;font-weight:600;line-height:1.2;padding:0;border:none;outline:none;background:transparent;color:var(--wp-text);font-family:inherit;resize:none;overflow:hidden}
 .editor-post-title__input::placeholder{color:#757575}
+.editor-sidebar{width:280px;flex-shrink:0;overflow-y:auto;border-left:1px solid var(--wp-border-light);background:#fff}
 .wp-detail-group{border-bottom:1px solid #e0e0e0}
 .wp-detail-group__title{display:flex;align-items:center;padding:12px 16px;font-size:13px;font-weight:500;color:var(--wp-text);cursor:pointer;user-select:none;list-style:none}
 .wp-detail-group__title::-webkit-details-marker{display:none}
