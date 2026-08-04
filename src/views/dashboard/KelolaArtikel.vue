@@ -2,16 +2,25 @@
   <div class="wrap">
     <h1>Artikel <WpButton variant="primary" to="/dashboard/artikel/tambah">Tambah Artikel</WpButton></h1>
 
+    <ul class="subsubsub">
+      <li><a :class="{current:statusFilter==='any'}" @click.prevent="statusFilter='any'" href="#">Semua <span class="count">({{ total }})</span></a></li>
+      <li><a :class="{current:statusFilter==='publish'}" @click.prevent="statusFilter='publish'" href="#">Publish</a></li>
+      <li><a :class="{current:statusFilter==='draft'}" @click.prevent="statusFilter='draft'" href="#">Draft</a></li>
+    </ul>
+
+    <p class="search-box">
+      <input type="search" class="components-text-control__input" v-model="search" placeholder="Cari artikel..." style="width:280px" />
+    </p>
+
     <div v-if="loading" style="text-align:center;padding:40px"><span class="spinner" style="display:inline-block"></span></div>
     <div v-else-if="error" class="notice notice-error inline"><p>{{ error }}</p></div>
 
     <WpTable v-else
       :columns="columns"
-      :rows="posts"
+      :rows="filtered"
       emptyTitle="Belum ada artikel."
       emptySub="Klik Tambah Artikel untuk membuat."
       :showFooter="false"
-      @sort="onSort"
     />
 
     <div v-if="total>perPg" class="tablenav bottom">
@@ -62,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
 import WpTable from '@/components/WpTable.vue'
@@ -74,6 +83,7 @@ import type { WpColumn } from '@/components/WpTable.vue'
 const auth=useAuthStore()
 type ExtendedPost={id:number;title:{rendered:string};status:string;date:string;author:number;featured_media:number;content?:{rendered:string};slug:string;_embedded?:{author?:{name:string}[];'wp:featuredmedia'?:{source_url:string}[]}}
 const posts=ref<ExtendedPost[]>([]),loading=ref(true),error=ref(''),total=ref(0),pg=ref(1),perPg=20
+const search=ref(''),statusFilter=ref('any')
 const showModal=ref(false),editingId=ref<number|null>(null),saving=ref(false),modalError=ref(''),thumbPreview=ref('')
 const form=reactive({title:'',content:'',status:'publish',featured_media:null as number|null})
 
@@ -92,6 +102,8 @@ const columns=ref<WpColumn[]>([
   {key:'_date',label:'Tanggal',sortable:true,type:'date',accessor:(r:any)=>fmt(r.date)},
   {key:'status',label:'Status',type:'badge',accessor:(r)=>r.status==='publish'?'Publish':'Draft'},
 ])
+
+const filtered=computed(()=>{let a=[...posts.value];if(statusFilter.value!=='any')a=a.filter((r:ExtendedPost)=>r.status===statusFilter.value);if(search.value.trim()){const q=search.value.toLowerCase();a=a.filter((r:ExtendedPost)=>clean(r.title?.rendered||'').toLowerCase().includes(q))};return a})
 
 function onSort(){}
 
