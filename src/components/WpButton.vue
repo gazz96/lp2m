@@ -15,12 +15,14 @@
       'is-destructive': variant === 'destructive',
       'is-small': size === 'small',
     }"
+    @click="$emit('click', $event)"
   >
     <slot />
   </component>
 </template>
 
 <script setup lang="ts">
+defineEmits<{ click: [e: Event] }>()
 withDefaults(defineProps<{
   variant?: 'primary' | 'secondary' | 'tertiary' | 'link' | 'destructive'
   size?: 'small' | 'default'
