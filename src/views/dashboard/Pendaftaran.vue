@@ -5,10 +5,10 @@
 
     <ul class="subsubsub">
       <li><a :class="{current:statusFilter==='all'}" @click.prevent="statusFilter='all'" href="#">Semua <span class="count">({{ total }})</span></a></li>
-      <li><a :class="{current:statusFilter==='submitted'}" @click.prevent="statusFilter='submitted'" href="#">Submitted</a></li>
-      <li><a :class="{current:statusFilter==='reviewed'}" @click.prevent="statusFilter='reviewed'" href="#">Reviewed</a></li>
-      <li><a :class="{current:statusFilter==='approved'}" @click.prevent="statusFilter='approved'" href="#">Approved</a></li>
-      <li><a :class="{current:statusFilter==='rejected'}" @click.prevent="statusFilter='rejected'" href="#">Rejected</a></li>
+      <li><a :class="{current:statusFilter==='submitted'}" @click.prevent="statusFilter='submitted'" href="#">Submitted <span class="count">({{ byStatus.submitted||0 }})</span></a></li>
+      <li><a :class="{current:statusFilter==='reviewed'}" @click.prevent="statusFilter='reviewed'" href="#">Reviewed <span class="count">({{ byStatus.reviewed||0 }})</span></a></li>
+      <li><a :class="{current:statusFilter==='approved'}" @click.prevent="statusFilter='approved'" href="#">Approved <span class="count">({{ byStatus.approved||0 }})</span></a></li>
+      <li><a :class="{current:statusFilter==='rejected'}" @click.prevent="statusFilter='rejected'" href="#">Rejected <span class="count">({{ byStatus.rejected||0 }})</span></a></li>
     </ul>
 
     <p class="search-box">
@@ -106,6 +106,8 @@ const columns:WpColumn[]=[
 ]
 
 const filtered=computed(()=>{let a=[...items.value];if(statusFilter.value!=='all')a=a.filter(r=>(r.status||'submitted')===statusFilter.value);if(search.value.trim()){const q=search.value.toLowerCase();a=a.filter(r=>clean(r.nama).toLowerCase().includes(q)||clean(r.judul).toLowerCase().includes(q))};return a})
+
+const byStatus=computed(()=>{const m:Record<string,number>={submitted:0,reviewed:0,approved:0,rejected:0};items.value.forEach(r=>{const s=r.status||'submitted';if(s in m)m[s]++});return m})
 
 async function fetchData(p=1){loading.value=true;error.value=''
   try{const base=SITE.apiBase.replace('/wp/v2','');const r=await fetch(`${base}/lp2m/v1/hibah?per_page=${perPg}&page=${p}`);if(!r.ok)throw new Error('HTTP '+r.status);const json=await r.json()
