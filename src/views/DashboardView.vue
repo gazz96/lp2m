@@ -31,8 +31,9 @@
           <span class="dashicons dashicons-arrow-right-alt2 chevron"></span>
         </button>
         <div v-if="groups.artikel" class="sub-items">
-          <router-link to="/dashboard/kelola-artikel" active-class="active" class="dash-link sub">Kelola Artikel</router-link>
-          <router-link to="/dashboard/kelola-artikel/kategori" active-class="active" class="dash-link sub">Kategori Artikel</router-link>
+          <router-link to="/dashboard/artikel" active-class="active" class="dash-link sub">Lihat Artikel</router-link>
+          <router-link to="/dashboard/artikel/tambah" active-class="active" class="dash-link sub">Tambah Artikel</router-link>
+          <router-link to="/dashboard/artikel/kategori" active-class="active" class="dash-link sub">Kategori Artikel</router-link>
         </div>
 
         <router-link to="/dashboard/pendaftaran" active-class="active" class="dash-link">
@@ -71,7 +72,7 @@ const auth = useAuthStore()
 // Auto-open group if current route is inside it
 const groups = reactive({
   hibah: route.path.startsWith('/dashboard/hibah'),
-  artikel: route.path.startsWith('/dashboard/kelola-artikel'),
+  artikel: route.path.startsWith('/dashboard/artikel') || route.path.startsWith('/dashboard/kelola-artikel'),
 })
 
 function toggleGroup(g: 'hibah' | 'artikel') {

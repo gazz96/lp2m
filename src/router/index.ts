@@ -9,6 +9,7 @@ import HibahForm from '@/views/dashboard/Hibah/Form.vue'
 import HibahKategori from '@/views/dashboard/Hibah/Kategori.vue'
 import HibahSkema from '@/views/dashboard/Hibah/Skema.vue'
 import KelolaArtikel from '@/views/dashboard/KelolaArtikel.vue'
+import ArtikelForm from '@/views/dashboard/ArtikelForm.vue'
 import KategoriArtikel from '@/views/dashboard/KategoriArtikel.vue'
 import Pendaftaran from '@/views/dashboard/Pendaftaran.vue'
 
@@ -30,7 +31,11 @@ const router = createRouter({
         { path: 'hibah/kategori', name: 'hibah-kategori', component: HibahKategori },
         { path: 'hibah/skema', name: 'hibah-skema', component: HibahSkema },
         { path: 'kelola-artikel', name: 'kelola-artikel', component: KelolaArtikel },
+        { path: 'artikel', name: 'artikel', component: KelolaArtikel },
+        { path: 'artikel/tambah', name: 'artikel-tambah', component: ArtikelForm },
+        { path: 'artikel/:id', name: 'artikel-edit', component: ArtikelForm },
         { path: 'kelola-artikel/kategori', name: 'kelola-artikel-kategori', component: KategoriArtikel },
+        { path: 'artikel/kategori', name: 'artikel-kategori', component: KategoriArtikel },
         { path: 'pendaftaran', name: 'pendaftaran', component: Pendaftaran },
       ]
     }

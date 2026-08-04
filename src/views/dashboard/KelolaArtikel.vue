@@ -1,6 +1,6 @@
 <template>
   <div class="wrap">
-    <h1>Artikel <WpButton variant="primary" @click="openCreate">Tambah Artikel</WpButton></h1>
+    <h1>Artikel <WpButton variant="primary" to="/dashboard/artikel/tambah">Tambah Artikel</WpButton></h1>
 
     <div v-if="loading" style="text-align:center;padding:40px"><span class="spinner" style="display:inline-block"></span></div>
     <div v-else-if="error" class="notice notice-error inline"><p>{{ error }}</p></div>
