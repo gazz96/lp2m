@@ -239,10 +239,8 @@ tr:hover .row-actions,
 .sortable.desc .sorting-indicator.desc { visibility: visible; }
 .sortable.desc .sorting-indicator.asc { visibility: hidden; }
 .sortable .sorting-indicators { display: inline-block; vertical-align: middle; }
-.sortable .sorting-indicator { display: inline-block; width: 10px; height: 4px; margin-top: -4px; margin-left: 7px; vertical-align: middle; }
-.sortable .sorting-indicator:before { font: normal 20px/1 dashicons; display: inline-block; speak: none; -webkit-font-smoothing: antialiased; color: #a7aaad; }
-.sortable .sorting-indicator.asc:before { content: "\\f142"; }
-.sortable .sorting-indicator.desc:before { content: "\\f140"; }
+.sortable .sorting-indicator { display: inline-flex; align-items: center; vertical-align: middle; }
+.sortable .sorting-indicator svg { width: 14px; height: 14px; color: #a7aaad; }
 
 /* ── Gutenberg Component Tokens (components/style.css WP 7.0.2) ── */
 .components-button {

@@ -13,8 +13,12 @@
         >
           <a v-if="col.sortable" href="#"><span>{{ col.label }}</span>
             <span class="sorting-indicators">
-              <span class="sorting-indicator asc" aria-hidden="true"></span>
-              <span class="sorting-indicator desc" aria-hidden="true"></span>
+              <span class="sorting-indicator asc" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 15 12 9 18 15"/></svg>
+              </span>
+              <span class="sorting-indicator desc" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </span>
             </span></a>
           <span v-else>{{ col.label }}</span>
         </th>
@@ -76,8 +80,12 @@
         >
           <a v-if="col.sortable" href="#"><span>{{ col.label }}</span>
             <span class="sorting-indicators">
-              <span class="sorting-indicator asc" aria-hidden="true"></span>
-              <span class="sorting-indicator desc" aria-hidden="true"></span>
+              <span class="sorting-indicator asc" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 15 12 9 18 15"/></svg>
+              </span>
+              <span class="sorting-indicator desc" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </span>
             </span></a>
           <span v-else>{{ col.label }}</span>
         </th>
