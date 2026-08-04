@@ -1,69 +1,78 @@
 <template>
-  <div>
-    <div class="page-head">
-      <h1>📬 Pendaftaran Hibah</h1>
-    </div>
-    <p class="subtitle">Data pendaftaran yang masuk dari form publik LP2M.</p>
+  <div class="wrap">
+    <h1>Pendaftaran Hibah</h1>
+    <p style="color:var(--wp-text-secondary);margin-top:-8px;margin-bottom:10px">Data pendaftaran yang masuk dari form publik LP2M.</p>
 
-    <div v-if="loading" class="loading-text">Memuat...</div>
-    <div v-else-if="error" class="error-text">{{ error }}</div>
-    <div v-else>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Reg No</th>
-              <th>Nama</th>
-              <th>Jenis</th>
-              <th>Skema</th>
-              <th>Judul</th>
-              <th>Tanggal</th>
-              <th class="act-col">Detail</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in items" :key="item.id">
-              <td><code>{{ item.reg_no }}</code></td>
-              <td>{{ item.nama }}</td>
-              <td><span class="badge-sm">{{ item.jenis }}</span></td>
-              <td>{{ item.skema }}</td>
-              <td class="judul-cell">{{ item.judul }}</td>
-              <td>{{ fmtDate(item.created_at) }}</td>
-              <td>
-                <button class="btn-sm btn-edit" @click="showDetail(item)">Lihat</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div v-if="total > perPg" class="pager">
-        <button :disabled="pg <= 1" @click="fetchData(pg - 1)">← Prev</button>
-        <span>Hal {{ pg }} / {{ Math.ceil(total / perPg) }}</span>
-        <button :disabled="pg * perPg >= total" @click="fetchData(pg + 1)">Next →</button>
-      </div>
+    <ul class="subsubsub">
+      <li><a :class="{current:statusFilter==='all'}" @click.prevent="statusFilter='all'" href="#">Semua <span class="count">({{ total }})</span></a></li>
+      <li><a :class="{current:statusFilter==='submitted'}" @click.prevent="statusFilter='submitted'" href="#">Submitted</a></li>
+      <li><a :class="{current:statusFilter==='reviewed'}" @click.prevent="statusFilter='reviewed'" href="#">Reviewed</a></li>
+      <li><a :class="{current:statusFilter==='approved'}" @click.prevent="statusFilter='approved'" href="#">Approved</a></li>
+      <li><a :class="{current:statusFilter==='rejected'}" @click.prevent="statusFilter='rejected'" href="#">Rejected</a></li>
+    </ul>
+
+    <p class="search-box">
+      <input type="search" class="components-text-control__input" v-model="search" placeholder="Cari nama atau judul..." style="width:280px" />
+    </p>
+
+    <div v-if="loading" style="text-align:center;padding:40px"><span class="spinner" style="display:inline-block"></span></div>
+    <div v-else-if="error" class="notice notice-error inline"><p>{{ error }}</p></div>
+
+    <WpTable v-else
+      :columns="columns"
+      :rows="filtered"
+      emptyTitle="Belum ada pendaftaran."
+      emptySub="Data akan muncul setelah ada yang mendaftar via form publik."
+      :showFooter="false"
+    />
+
+    <div v-if="total>perPg" class="tablenav bottom">
+      <div class="displaying-num">{{ total }} item</div>
+      <div class="tablenav-pages"><span class="pagination-links">
+        <a v-if="pg>1" @click.prevent="fetchData(pg-1)" href="#" class="prev-page">‹</a>
+        <a v-if="pg>1" @click.prevent="fetchData(1)" href="#">1</a>
+        <span class="current">{{ pg }}</span>
+        <a v-if="pg*perPg<total" @click.prevent="fetchData(pg+1)" href="#" class="next-page">›</a>
+      </span></div>
     </div>
 
     <!-- Detail modal -->
-    <div v-if="detail" class="modal-backdrop" @click.self="detail = null">
-      <div class="modal">
-        <h2>Detail Pendaftaran</h2>
-        <div class="detail-grid">
-          <div><strong>Reg No:</strong> {{ detail.reg_no }}</div>
-          <div><strong>Nama:</strong> {{ detail.nama }}</div>
-          <div><strong>NIP/NIDN:</strong> {{ detail.nip }}</div>
-          <div><strong>Jenis:</strong> {{ detail.jenis }}</div>
-          <div><strong>Prodi:</strong> {{ detail.prodi }}</div>
-          <div><strong>Skema:</strong> {{ detail.skema }}</div>
-          <div><strong>Judul:</strong> {{ detail.judul }}</div>
-          <div><strong>Ringkasan:</strong> {{ detail.ringkasan }}</div>
-          <div><strong>Jml Tim:</strong> {{ detail.jml_tim || '-' }}</div>
-          <div><strong>Anggota:</strong> {{ detail.anggota || '-' }}</div>
-          <div><strong>Email:</strong> {{ detail.email }}</div>
-          <div><strong>HP:</strong> {{ detail.hp }}</div>
-          <div><strong>Tanggal:</strong> {{ fmtDate(detail.created_at) }}</div>
+    <div v-if="detail" class="wp-modal-backdrop" @click.self="detail=null">
+      <div class="wp-modal">
+        <div class="wp-modal-header">
+          <h2>Detail Pendaftaran</h2>
+          <WpButton variant="tertiary" class="is-small" @click="detail=null">✕</WpButton>
         </div>
-        <div class="modal-actions">
-          <button class="btn btn-outline" @click="detail = null">Tutup</button>
+        <div class="wp-modal-body">
+          <table class="form-table" style="width:100%">
+            <tr><th>Reg No</th><td><code>{{ detail.reg_no }}</code></td></tr>
+            <tr><th>Nama</th><td>{{ detail.nama }}</td></tr>
+            <tr><th>NIP/NIDN</th><td>{{ detail.nip }}</td></tr>
+            <tr><th>Jenis</th><td>{{ detail.jenis }}</td></tr>
+            <tr><th>Prodi</th><td>{{ detail.prodi }}</td></tr>
+            <tr><th>Skema</th><td>{{ detail.skema }}</td></tr>
+            <tr><th>Judul</th><td>{{ detail.judul }}</td></tr>
+            <tr><th>Ringkasan</th><td>{{ detail.ringkasan }}</td></tr>
+            <tr><th>Jml Tim</th><td>{{ detail.jml_tim || '—' }}</td></tr>
+            <tr><th>Anggota</th><td>{{ detail.anggota || '—' }}</td></tr>
+            <tr><th>Email</th><td>{{ detail.email }}</td></tr>
+            <tr><th>HP</th><td>{{ detail.hp }}</td></tr>
+            <tr><th>Tanggal</th><td>{{ fmtDate(detail.created_at) }}</td></tr>
+            <tr><th>Status</th>
+              <td>
+                <select class="components-select-control__input" v-model="detailStatus" @change="updateStatus" style="width:160px">
+                  <option value="submitted">Submitted</option>
+                  <option value="reviewed">Reviewed</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                <span v-if="statusMsg" style="margin-left:8px;font-size:12px">{{ statusMsg }}</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="wp-modal-footer">
+          <WpButton variant="tertiary" @click="detail=null">Tutup</WpButton>
         </div>
       </div>
     </div>
@@ -71,79 +80,43 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { SITE } from '@/data'
+import { useAuthStore } from '@/stores/auth'
+import WpTable from '@/components/WpTable.vue'
+import WpButton from '@/components/WpButton.vue'
+import type { WpColumn } from '@/components/WpTable.vue'
 
-interface Submission {
-  id: number; reg_no: string; nama: string; nip: string; jenis: string
-  prodi: string; skema: string; judul: string; ringkasan: string
-  jml_tim: string; anggota: string; email: string; hp: string
-  hibah_id: number; created_at: string
-}
+const auth=useAuthStore()
+interface Submission { id:number;reg_no:string;nama:string;nip:string;jenis:string;prodi:string;skema:string;judul:string;ringkasan:string;jml_tim:string;anggota:string;email:string;hp:string;hibah_id:number;created_at:string;status?:string }
+const items=ref<Submission[]>([]),loading=ref(true),error=ref(''),total=ref(0),pg=ref(1),perPg=20
+const search=ref(''),statusFilter=ref('all')
+const detail=ref<Submission|null>(null),detailStatus=ref('submitted'),statusMsg=ref('')
 
-const items = ref<Submission[]>([])
-const loading = ref(true)
-const error = ref('')
-const total = ref(0)
-const pg = ref(1)
-const perPg = 20
-const detail = ref<Submission | null>(null)
+function fmtDate(d:string){return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+function clean(s:string){return new DOMParser().parseFromString(s,'text/html').body.textContent||''}
 
-function fmtDate(d: string) { return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }
+const columns:WpColumn[]=[
+  {key:'reg_no',label:'Reg No',accessor:(r:any)=>r.reg_no},
+  {key:'nama',label:'Nama',primary:true,rowActions:(r:any)=>[{label:'Detail',className:'edit',onClick:()=>showDetail(r)}]},
+  {key:'jenis',label:'Jenis'},
+  {key:'skema',label:'Skema'},
+  {key:'_status',label:'Status',type:'badge',accessor:(r:any)=>r.status==='approved'?'Approved':r.status==='rejected'?'Rejected':r.status==='reviewed'?'Reviewed':'Submitted'},
+  {key:'_date',label:'Tanggal',type:'date',accessor:(r:any)=>fmtDate(r.created_at)},
+]
 
-async function fetchData(p = 1) {
-  loading.value = true
-  error.value = ''
-  try {
-    const base = SITE.apiBase.replace('/wp/v2', '')
-    const url = `${base}/lp2m/v1/hibah?per_page=${perPg}&page=${p}`
-    const res = await fetch(url)
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const json = await res.json()
-    if (json.success) {
-      items.value = json.data || []
-      total.value = json.total
-      pg.value = p
-    } else {
-      error.value = json.message || 'Gagal memuat data.'
-    }
-  } catch (e: any) { error.value = e.message }
-  finally { loading.value = false }
-}
+const filtered=computed(()=>{let a=[...items.value];if(statusFilter.value!=='all')a=a.filter(r=>(r.status||'submitted')===statusFilter.value);if(search.value.trim()){const q=search.value.toLowerCase();a=a.filter(r=>clean(r.nama).toLowerCase().includes(q)||clean(r.judul).toLowerCase().includes(q))};return a})
 
-async function showDetail(item: Submission) {
-  try {
-    const base = SITE.apiBase.replace('/wp/v2', '')
-    const res = await fetch(`${base}/lp2m/v1/hibah/${item.id}`)
-    const json = await res.json()
-    detail.value = json.success ? json.data : null
-  } catch { detail.value = item }
-}
+async function fetchData(p=1){loading.value=true;error.value=''
+  try{const base=SITE.apiBase.replace('/wp/v2','');const r=await fetch(`${base}/lp2m/v1/hibah?per_page=${perPg}&page=${p}`);if(!r.ok)throw new Error('HTTP '+r.status);const json=await r.json()
+  if(json.success){items.value=(json.data||[]).map((d:any)=>({...d,status:d.status||'submitted'}));total.value=json.total;pg.value=p}else{error.value=json.message||'Gagal'}}catch(e:any){error.value=e.message}finally{loading.value=false}}
 
-onMounted(() => fetchData())
+async function showDetail(item:Submission){detail.value=item;detailStatus.value=item.status||'submitted';statusMsg.value=''
+  try{const base=SITE.apiBase.replace('/wp/v2','');const r=await fetch(`${base}/lp2m/v1/hibah/${item.id}`);const json=await r.json();if(json.success)detail.value=json.data}catch{}}
+
+async function updateStatus(){if(!detail.value)return;statusMsg.value='Menyimpan...'
+  try{const base=SITE.apiBase.replace('/wp/v2','');const r=await fetch(`${base}/lp2m/v1/hibah/${detail.value.id}`,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify({status:detailStatus.value})});const json=await r.json()
+  if(json.success){const idx=items.value.findIndex(i=>i.id===detail.value?.id);if(idx!==-1)items.value[idx].status=detailStatus.value;statusMsg.value='✓ Tersimpan';setTimeout(()=>statusMsg.value='',2000)}else{statusMsg.value='Gagal: '+json.message}}catch(e:any){statusMsg.value=e.message}}
+
+onMounted(()=>fetchData())
 </script>
-
-<style scoped>
-.page-head h1 { margin-bottom: 8px; }
-.table-wrap { overflow-x: auto; margin-top: 16px; }
-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
-th { text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--line); color: var(--ink-soft); font-weight: 600; font-size: 0.76rem; text-transform: uppercase; white-space: nowrap; }
-td { padding: 10px 12px; border-bottom: 1px solid var(--line); }
-.judul-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-code { font-family: 'IBM Plex Mono', monospace; font-size: 0.76rem; background: var(--paper-2); padding: 2px 6px; border-radius: 3px; }
-.badge-sm { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; background: var(--paper-2); color: var(--ink-soft); }
-.act-col { width: 70px; }
-.btn-sm { padding: 5px 12px; font-size: 0.74rem; border-radius: 4px; border: 1px solid var(--line); cursor: pointer; font-family: inherit; background: var(--card); }
-.btn-edit { color: var(--green-700); border-color: var(--green-600); }
-.pager { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 20px; font-size: 0.84rem; color: var(--ink-soft); }
-.pager button { padding: 6px 14px; }
-
-.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: flex-start; justify-content: center; padding-top: 60px; }
-.modal { background: var(--card); border-radius: 12px; padding: 28px; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-.modal h2 { margin-bottom: 18px; color: var(--green-800); }
-.detail-grid { display: grid; grid-template-columns: 1fr; gap: 10px; font-size: 0.87rem; }
-.detail-grid div { display: flex; gap: 8px; }
-.detail-grid strong { min-width: 110px; color: var(--green-800); }
-.modal-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
-.loading-text, .error-text { color: var(--ink-soft); padding: 24px 0; }
-</style>

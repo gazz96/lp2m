@@ -12,6 +12,8 @@ import KelolaArtikel from '@/views/dashboard/KelolaArtikel.vue'
 import ArtikelForm from '@/views/dashboard/ArtikelForm.vue'
 import KategoriArtikel from '@/views/dashboard/KategoriArtikel.vue'
 import Pendaftaran from '@/views/dashboard/Pendaftaran.vue'
+import Profile from '@/views/dashboard/Profile.vue'
+import Settings from '@/views/dashboard/Settings.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -37,6 +39,8 @@ const router = createRouter({
         { path: 'kelola-artikel/kategori', name: 'kelola-artikel-kategori', component: KategoriArtikel },
         { path: 'artikel/kategori', name: 'artikel-kategori', component: KategoriArtikel },
         { path: 'pendaftaran', name: 'pendaftaran', component: Pendaftaran },
+        { path: 'profile', name: 'profile', component: Profile },
+        { path: 'settings', name: 'settings', component: Settings },
       ]
     }
   ]

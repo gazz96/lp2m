@@ -40,6 +40,14 @@
           <span class="dashicons dashicons-email-alt"></span>
           Pendaftaran
         </router-link>
+        <router-link to="/dashboard/profile" active-class="active" class="dash-link">
+          <span class="dashicons dashicons-admin-users"></span>
+          Profile
+        </router-link>
+        <router-link to="/dashboard/settings" active-class="active" class="dash-link">
+          <span class="dashicons dashicons-admin-settings"></span>
+          Settings
+        </router-link>
       </nav>
 
       <div class="dash-footer">
