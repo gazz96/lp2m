@@ -163,7 +163,7 @@ onMounted(()=>{loadTerms();const id=route.params.id as string;if(id)loadItem(par
 
 <style scoped>
 /* ── Layout: override dash-main padding ── */
-.edit-post-layout { margin: -32px; min-height: 100vh; }
+.edit-post-layout { min-height: 100vh; }
 
 /* ── Header ── */
 .editor-header { display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#fff;border-bottom:1px solid var(--wp-border-light);min-height:48px; }

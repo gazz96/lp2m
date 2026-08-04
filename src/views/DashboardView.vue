@@ -134,7 +134,7 @@ function doLogout() { auth.logout(); router.push('/') }
 .dash-link:hover .dash-icon,
 .dash-link.active .dash-icon { color: #fff; }
 
-.dash-main { margin-left: 240px; flex: 1; min-height: 100vh; padding: 32px; max-width: 1100px; }
+.dash-main { margin-left: 240px; flex: 1; min-height: 100vh; }
 
 .dash-footer { padding: 14px 16px; border-top: 1px solid rgba(255,255,255,0.08); }
 .dash-user { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
