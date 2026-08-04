@@ -83,7 +83,10 @@ function isOwner(p:ExtendedPost){return auth.user?.id===p.author}
 
 const columns=ref<WpColumn[]>([
   {key:'_title',label:'Judul',primary:true,accessor:(r)=>clean(r.title?.rendered||''),
-    rowActions:(r)=>isOwner(r as any)?[{label:'Edit',className:'edit',to:'#'},{label:'Hapus',className:'trash',to:'#'}]:[]
+    rowActions:(r)=>isOwner(r as any)?[
+      {label:'Edit',className:'edit',to:'/dashboard/artikel/'+r.id},
+      {label:'Hapus',className:'trash',onClick:()=>confirmDelete(r as any)}
+    ]:[]
   },
   {key:'_author',label:'Penulis',accessor:(r:any)=>r._embedded?.author?.[0]?.name||'—'},
   {key:'_date',label:'Tanggal',sortable:true,type:'date',accessor:(r:any)=>fmt(r.date)},

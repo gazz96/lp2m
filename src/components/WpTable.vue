@@ -38,7 +38,9 @@
             <strong><a :href="row._editLink ?? '#'" class="row-title">{{ getCellValue(row, col) }}</a></strong>
             <div class="row-actions" v-if="col.rowActions">
               <span v-for="(act, idx) in col.rowActions(row)" :key="idx" :class="act.className">
-                <component :is="act.to ? 'router-link' : 'a'" :to="act.to" :href="act.href" :target="act.target">{{ act.label }}</component>
+                <router-link v-if="act.to" :to="act.to">{{ act.label }}</router-link>
+                <a v-else-if="act.href" :href="act.href" :target="act.target">{{ act.label }}</a>
+                <a v-else-if="act.onClick" href="#" @click.prevent="act.onClick">{{ act.label }}</a>
                 <template v-if="idx < (col.rowActions(row)?.length ?? 0) - 1"> | </template>
               </span>
             </div>
@@ -111,9 +113,10 @@ export interface WpColumn {
 export interface WpRowAction {
   label: string
   className?: string
-  to?: string       // router-link
-  href?: string     // external
+  to?: string
+  href?: string
   target?: string
+  onClick?: () => void
 }
 
 const props = withDefaults(defineProps<{
