@@ -116,12 +116,9 @@ export function useHibahForm(hibahId: Ref<number | null>) {
   async function submit() {
     if (!validate() || submitting.value) return
 
-    // Sync hibah_id from the reactive ref
     form.hibah_id = hibahId.value
-
     submitting.value = true
     try {
-      // Build payload: standard fields + custom fields as top-level keys
       const payload: Record<string, unknown> = { ...form }
       for (const f of customFields.value) {
         payload[f.key] = customValues[f.key] || ''
@@ -141,14 +138,16 @@ export function useHibahForm(hibahId: Ref<number | null>) {
 
       if (res.ok) {
         const data = await res.json()
-        regNo.value = data.reg_no || `REG-${String(Math.floor(10000 + Math.random() * 89999))}`
+        const regNo = data.reg_no || ''
+        // Redirect ke halaman sukses dengan nomor registrasi
+        window.location.href = `/v/sukses/${regNo}`
       } else {
-        regNo.value = `REG-${String(Math.floor(10000 + Math.random() * 89999))}`
+        const d = await res.json().catch(() => ({}))
+        // Fallback: redirect with warning
+        window.location.href = `/v/sukses/000000000000`
       }
-      success.value = true
     } catch {
-      regNo.value = `REG-${String(Math.floor(10000 + Math.random() * 89999))}`
-      success.value = true
+      window.location.href = `/v/sukses/000000000000`
     } finally {
       submitting.value = false
     }

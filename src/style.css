@@ -46,7 +46,8 @@ img, svg { max-width: 100%; display: block; }
 
 .mono { font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.02em; }
 
-.wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+.wrap { max-width: 1024px; margin: 0 auto; padding: 0 16px; }
+.wrap-800 { max-width: 800px; margin: 0 auto; padding: 0 20px; }
 
 /* ===== Eyebrow ===== */
 .eyebrow {

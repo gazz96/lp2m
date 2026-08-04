@@ -14,6 +14,8 @@ import KategoriArtikel from '@/views/dashboard/KategoriArtikel.vue'
 import Pendaftaran from '@/views/dashboard/Pendaftaran.vue'
 import Profile from '@/views/dashboard/Profile.vue'
 import Settings from '@/views/dashboard/Settings.vue'
+import SuksesView from '@/views/SuksesView.vue'
+import TrackStatusView from '@/views/TrackStatusView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -21,6 +23,9 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: HomeView },
     { path: '/login', name: 'login', component: LoginView },
+    { path: '/v/sukses/:no', name: 'sukses', component: SuksesView },
+    { path: '/daftar/status', name: 'track', component: TrackStatusView },
+    { path: '/daftar/status/:no', name: 'track-no', component: TrackStatusView },
     {
       path: '/dashboard',
       component: DashboardView,
