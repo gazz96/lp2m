@@ -42,7 +42,6 @@
                 <template v-if="idx < (col.rowActions(row)?.length ?? 0) - 1"> | </template>
               </span>
             </div>
-            <button type="button" class="toggle-row"><span class="screen-reader-text">Detail</span></button>
           </template>
 
           <!-- Status badge -->

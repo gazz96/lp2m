@@ -81,7 +81,7 @@ const tableColumns = computed<WpColumn[]>(() => [
   { key: '_cats', label: 'Kategori', type: 'tags' },
   { key: '_skms', label: 'Skema', type: 'tags' },
   { key: '_date', label: 'Tanggal', sortable: true, type: 'date', accessor: (r) => r._date },
-  { key: '_status', label: 'Status', type: 'badge', accessor: (r) => r.status === 'publish' ? 'Terbit' : r.status === 'draft' ? 'Draft' : r.status },
+  { key: '_status', label: 'Status', type: 'badge', accessor: (r) => r.status === 'publish' ? 'Publish' : r.status === 'draft' ? 'Draft' : r.status },
 ])
 
 function onSort(col: string, dir: 'asc' | 'desc') { sortCol.value = col; sortDir.value = dir }
