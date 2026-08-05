@@ -9,7 +9,9 @@
         <p class="desc">Sorotan kegiatan penelitian, pengabdian, dan capaian civitas akademika ITSI.</p>
       </RevealBlock>
 
-      <div v-if="loading" class="pub-loading">Memuat berita terbaru...</div>
+      <div v-if="loading" class="pub-grid">
+        <SkeletonBlock v-for="i in 6" :key="i" variant="card" style="margin-bottom:8px" />
+      </div>
       <div v-else-if="error" class="pub-error">{{ error }}</div>
       <RevealBlock v-else class="pub-grid">
         <div v-for="post in posts" :key="post.id" class="pub-card">
@@ -33,6 +35,7 @@ import { computed, onMounted } from 'vue'
 import { useNewsStore } from '@/stores/news'
 import { SITE } from '@/data'
 import RevealBlock from './RevealBlock.vue'
+import SkeletonBlock from './SkeletonBlock.vue'
 
 const store = useNewsStore()
 

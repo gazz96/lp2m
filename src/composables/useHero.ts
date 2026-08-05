@@ -77,20 +77,37 @@ const defaultHero: HeroData = {
 }
 
 export function useHero() {
-  const hero = ref<HeroData>({ ...defaultHero })
+  const hero = ref<HeroData | null>(null) // null = belum siap → skeleton
   const loading = ref(true)
   const error = ref('')
 
   const apiBase = SITE.apiBase.replace('/wp/v2', '')
 
+  // Cache-first: hero settings (TTL 10 menit).
+  const CACHE_KEY = 'lp2m_cache_hero'
+  function readCache(): HeroSettings | null {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY)
+      if (!raw) return null
+      const e = JSON.parse(raw)
+      if (!e || typeof e.t !== 'number' || Date.now() - e.t > 10 * 60 * 1000) return null
+      return e.v as HeroSettings
+    } catch { return null }
+  }
+  function writeCache(v: HeroSettings) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ v, t: Date.now() })) } catch { }
+  }
+
   async function fetchSettings(): Promise<HeroSettings | null> {
+    const cached = readCache()
+    if (cached) return cached
     try {
       const res = await fetch(`${apiBase}/lp2m/v1/settings/hero`)
       if (!res.ok) return null
-      return await res.json()
-    } catch {
-      return null
-    }
+      const data = await res.json()
+      writeCache(data)
+      return data
+    } catch { return null }
   }
 
   async function fetchNearestEvent(): Promise<HibahEventData | null> {
@@ -99,13 +116,11 @@ export function useHero() {
       if (!res.ok) return null
       const json = await res.json()
       return json.found ? json.data : null
-    } catch {
-      return null
-    }
+    } catch { return null }
   }
 
   function mergeData(settings: HeroSettings | null, event: HibahEventData | null) {
-    const h = hero.value
+    const h = { ...defaultHero }
 
     // Merge settings dari API
     if (settings) {
@@ -145,6 +160,8 @@ export function useHero() {
         link: event.permalink || '#hibah'
       }
     }
+
+    hero.value = h
   }
 
   onMounted(async () => {
@@ -155,9 +172,12 @@ export function useHero() {
         fetchSettings(),
         fetchNearestEvent()
       ])
+      // Data API (walau null → default statis dipakai saat ready; TIDAK saat loading).
       mergeData(settings, event)
     } catch (e: any) {
       error.value = e.message
+      // Fallback content.json HANYA saat error (network down).
+      hero.value = { ...defaultHero }
     } finally {
       loading.value = false
     }
