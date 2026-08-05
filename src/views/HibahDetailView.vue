@@ -43,18 +43,27 @@ function fmtDate(d:string){return new Date(d).toLocaleDateString('id-ID',{day:'n
 function clean(s:string){return new DOMParser().parseFromString(s,'text/html').body.textContent||''}
 
 const hasMeta = computed(() => !!item.value && (
-  item.value.jenis_hibah || item.value.deadline_label || item.value.dana_maks || item.value.event_eyebrow
+  item.value.deadline_label || item.value.dana_maks || item.value.event_eyebrow || item.value._prodiNames?.length
 ))
 const metaRows = computed(() => {
   const p = item.value
   if (!p) return []
   const rows: {label:string;value:string}[] = []
-  if (p.event_eyebrow) rows.push({label:'Eyebrow',value:clean(p.event_eyebrow)})
-  if (p.jenis_hibah) rows.push({label:'Jenis',value:p.jenis_hibah==='internal'?'Internal':'Eksternal'})
+  if (p.event_eyebrow) rows.push({label:'Tahun Akademik',value:clean(p.event_eyebrow)})
+  if (p._prodiNames?.length) rows.push({label:'Program Studi',value:p._prodiNames.join(', ')})
   if (p.deadline_label) rows.push({label:'Deadline',value:p.deadline_label})
   if (p.dana_maks) rows.push({label:'Dana Maks',value:'Rp '+Number(p.dana_maks).toLocaleString('id-ID')})
   return rows
 })
+
+async function resolveProdi(p:any){
+  if(!p?.program_studi_hibah?.length) return
+  try{
+    const ids=p.program_studi_hibah.join(',')
+    const r=await fetch(`${base}/wp/v2/program_studi_hibah?include=${ids}&per_page=100&_fields=id,name`)
+    if(r.ok){const terms=await r.json();p._prodiNames=(terms||[]).map((t:any)=>t.name)}
+  }catch{}
+}
 
 onMounted(async ()=>{
   const slug=(useRoute().params.slug as string)
@@ -62,7 +71,7 @@ onMounted(async ()=>{
     const r=await fetch(`${base}/wp/v2/hibah?slug=${encodeURIComponent(slug)}&_embed=wp:featuredmedia`)
     if(!r.ok)throw new Error('HTTP '+r.status)
     const data=await r.json()
-    if(data?.length) item.value=data[0]; else notFound.value=true
+    if(data?.length){item.value=data[0];resolveProdi(data[0])} else notFound.value=true
   }catch{notFound.value=true}
   finally{loading.value=false}
 })
