@@ -1,67 +1,101 @@
 <template>
-  <div class="wrap">
-    <TopBar />
-    <SiteNav />
-    <div class="track-page">
-      <div class="wrap-800">
-        <h1>Track Status Pendaftaran</h1>
-        <p>Masukkan nomor registrasi untuk melihat status usulan Anda.</p>
+  <TopBar />
+  <SiteNav />
+  <main id="site-content">
+    <div id="primary" class="content-area">
+      <div class="entry-content" style="max-width:760px;margin:0 auto;padding:80px 16px">
 
-        <form @submit.prevent="cek" class="track-form">
-          <input v-model="no" class="track-input" placeholder="20260804001" />
-          <button type="submit" class="btn btn-primary">Cek Status</button>
+        <h1 style="font-size:32px;margin-bottom:8px">Track Status Pendaftaran</h1>
+        <p style="color:var(--ink-soft);margin-bottom:32px">Masukkan nomor registrasi untuk melihat status usulan Anda.</p>
+
+        <form @submit.prevent="cek" style="display:flex;gap:12px;margin-bottom:40px">
+          <input
+            v-model="no"
+            class="track-input"
+            placeholder="202608040003"
+            style="flex:1;padding:14px 18px;border:1px solid var(--wp-border);border-radius:4px;font-size:16px"
+          />
+          <button type="submit" class="btn btn-primary" style="padding:14px 28px;font-size:15px;white-space:nowrap">Cek Status</button>
         </form>
 
-        <div v-if="loading" style="text-align:center;padding:20px">Memuat...</div>
+        <div v-if="loading" style="text-align:center;padding:40px;color:var(--ink-soft)">Memuat...</div>
 
-        <div v-else-if="result" class="track-result">
-          <table class="track-table">
-            <tr><th>Nomor Registrasi</th><td>{{ result.reg_no }}</td></tr>
-            <tr><th>Nama</th><td>{{ result.nama }}</td></tr>
-            <tr><th>Judul Usulan</th><td>{{ result.judul }}</td></tr>
-            <tr><th>Email</th><td>{{ result.email }}</td></tr>
-            <tr><th>Status</th><td><span class="badge" :class="result.status==='approved'?'publish':result.status==='rejected'?'trash':'draft'">{{ result.status.toUpperCase() }}</span></td></tr>
-            <tr><th>Terdaftar</th><td>{{ result.tanggal }}</td></tr>
+        <div v-else-if="result" style="border:1px solid var(--paper-2);border-radius:8px;overflow:hidden">
+          <div style="padding:20px 24px;background:var(--card);border-bottom:1px solid var(--paper-2);display:flex;align-items:center;gap:12px">
+            <span style="font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.08em">Nomor Registrasi</span>
+            <code style="font-size:15px;font-weight:700;color:var(--green-900)">{{ result.reg_no }}</code>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <tr v-for="row in rows" :key="row.k" style="border-bottom:1px solid var(--paper-2)">
+              <th style="width:200px;padding:14px 24px;background:var(--paper);text-align:left;font-weight:500;font-size:13px;color:var(--ink-soft);vertical-align:top">{{ row.k }}</th>
+              <td style="padding:14px 24px;font-size:14px" :class="{ 'mono reg-num': row.key === 'reg_no' }">{{ row.v }}</td>
+            </tr>
+            <tr style="border-bottom:none">
+              <th style="width:200px;padding:14px 24px;background:var(--paper);text-align:left;font-weight:500;font-size:13px;color:var(--ink-soft)">Status</th>
+              <td style="padding:14px 24px">
+                <span class="badge" :style="statusStyle(result.status)">{{ (result.status||'submitted').toUpperCase() }}</span>
+              </td>
+            </tr>
           </table>
         </div>
 
-        <div v-else-if="error" class="error-msg">{{ error }}</div>
+        <div v-else-if="error" style="padding:16px 20px;background:#fdecea;border:1px solid #f1948e;border-radius:4px;color:#c0392b;font-size:14px">{{ error }}</div>
+
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { SITE } from '@/data'
 import TopBar from '@/components/TopBar.vue'
 import SiteNav from '@/components/SiteNav.vue'
+import SiteFooter from '@/components/SiteFooter.vue'
 
 const no = ref('')
-const result = ref<Record<string,string>|null>(null)
+const result = ref<Record<string, string> | null>(null)
 const loading = ref(false)
 const error = ref('')
 
+const rows = computed(() => {
+  if (!result.value) return []
+  const all = result.value
+  return [
+    { key: 'nama', k: 'Nama Lengkap', v: all.nama || '—' },
+    { key: 'nip', k: 'NIDN / NIDK', v: all.nip || '—' },
+    { key: 'email', k: 'Email', v: all.email || '—' },
+    { key: 'hp', k: 'WhatsApp', v: all.hp || '—' },
+    { key: 'judul', k: 'Judul Usulan', v: all.judul || '—' },
+    { key: 'prodi', k: 'Prodi / Unit', v: all.prodi || '—' },
+    { key: 'skema', k: 'Skema Hibah', v: all.skema || '—' },
+    { key: 'jenis', k: 'Jenis Pengusul', v: all.jenis || '—' },
+    { key: 'jml_tim', k: 'Jumlah Tim', v: all.jml_tim || '0' },
+    { key: 'anggota', k: 'Anggota Tim', v: all.anggota || '—' },
+    { key: 'tanggal', k: 'Tanggal Daftar', v: all.tanggal || '—' },
+  ]
+})
+
+function statusStyle(s = '') {
+  if (s === 'approved') return { background: '#d5f5e3', color: '#1e8449', padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' as const }
+  if (s === 'rejected') return { background: '#fdecea', color: '#c0392b', padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' as const }
+  return { background: '#fef9e7', color: '#7d6608', padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' as const }
+}
+
 onMounted(() => {
-  const u = new URL(location.href)
-  const q = u.searchParams.get('no')
+  const q = new URL(location.href).searchParams.get('no')
   if (q) { no.value = q; cek() }
 })
 
 async function cek() {
   if (!no.value.trim()) return
-  loading.value = true
-  error.value = ''
-  result.value = null
+  loading.value = true; error.value = ''; result.value = null
   try {
-    const r = await fetch(`${SITE.apiBase.replace('/wp/v2','')}/lp2m/v1/pendaftaran/status/${no.value.trim()}`)
-    if (!r.ok) {
-      const d = await r.json().catch(() => ({}))
-      error.value = d.message || 'Pendaftaran tidak ditemukan.'
-      loading.value = false
-      return
-    }
-    result.value = await r.json()
+    const base = SITE.apiBase.replace('/wp/v2', '')
+    const r = await fetch(`${base}/lp2m/v1/pendaftaran/status/${encodeURIComponent(no.value.trim())}`)
+    const d = await r.json().catch(() => ({}))
+    if (!r.ok) error.value = d.message || `HTTP ${r.status} — ${d.code || 'error'}`
+    else result.value = d
   } catch (e: any) {
     error.value = e.message || 'Gagal memuat data.'
   } finally {
@@ -69,14 +103,3 @@ async function cek() {
   }
 }
 </script>
-
-<style>
-.track-page { padding:60px 0 80px; }
-.wrap-800 { max-width:800px; margin:0 auto; padding:0 16px; }
-.track-form { display:flex; gap:8px; margin:24px 0; }
-.track-input { flex:1; padding:10px 14px; border:1px solid var(--wp-border); border-radius:2px; font-size:15px; }
-.track-result { margin-top:20px; }
-.track-table { width:100%; border-collapse:collapse; }
-.track-table th, .track-table td { padding:10px 12px; border:1px solid var(--wp-border); text-align:left; }
-.track-table th { background:#f6f7f7; width:170px; font-weight:500; }
-</style>
