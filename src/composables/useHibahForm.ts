@@ -60,9 +60,13 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     if (taxonomyLoaded.value) return
     const base = SITE.apiBase.replace('/wp/v2', '')
     try {
-      // Prioritas: /form-config (backend terstruktur, id+label+desc). Fallback /wp/v2/*.
-      const cfg = await fetch(`${base}/lp2m/v1/hibah/${hibahId.value || 0}/form-config`)
-        .then(r => r.ok ? r.json() : null).catch(() => null)
+      // Prioritas: /form-config (backend terstruktur, id+label+desc). Hanya kalau hibah dipilih.
+      // (hibahId 0 = belum pilih → langsung fallback /wp/v2/*, jangan fetch /hibah/0/form-config)
+      const hasHibah = (hibahId.value ?? 0) > 0
+      const cfg = hasHibah
+        ? await fetch(`${base}/lp2m/v1/hibah/${hibahId.value}/form-config`)
+            .then(r => r.ok ? r.json() : null).catch(() => null)
+        : null
 
       if (cfg?.success) {
         const prodi = (cfg.prodi_options || []).map((p: any) => p.name).filter(Boolean)

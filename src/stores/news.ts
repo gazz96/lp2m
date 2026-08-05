@@ -60,6 +60,8 @@ export const useNewsStore = defineStore('news', () => {
       }))
     } catch (e: any) {
       error.value = e.message || 'Gagal memuat berita'
+      // Retry sekali setelah 3s (network transient).
+      setTimeout(() => { if (!posts.value.length) fetchNews(apiBase, categoryIds, perPage) }, 3000)
     } finally {
       loading.value = false
     }
