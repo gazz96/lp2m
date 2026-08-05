@@ -20,7 +20,7 @@
           </div>
           <div class="pub-body">
             <div class="date">{{ formatDate(post.date) }}</div>
-            <h4>{{ cleanTitle(post.title.rendered) }}</h4>
+            <h4>{{ cleanTitle(post.title) }}</h4>
             <p>{{ excerpt(post) }}</p>
             <router-link :to="`/artikel/${post.slug}`" class="rd">Baca selengkapnya &rarr;</router-link>
           </div>
@@ -59,8 +59,8 @@ function cleanTitle(title: string) {
 }
 
 function excerpt(post: any) {
-  if (post.excerpt?.rendered) {
-    return stripHtml(post.excerpt.rendered).slice(0, 160) + '…'
+  if (post.excerpt) {
+    return stripHtml(post.excerpt).slice(0, 160) + '…'
   }
   return ''
 }
