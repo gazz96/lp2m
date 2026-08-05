@@ -76,11 +76,41 @@
         </div>
       </div>
     </div>
+    <!-- Export section -->
+    <div style="border-top:1px solid var(--wp-border);margin-top:16px;padding-top:16px">
+      <div style="display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px">
+        <div>
+          <label style="font-size:11px;color:var(--wp-text-secondary);display:block;margin-bottom:4px">Dari Tanggal</label>
+          <input type="date" class="components-text-control__input" v-model="exp.dari" />
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--wp-text-secondary);display:block;margin-bottom:4px">Sampai Tanggal</label>
+          <input type="date" class="components-text-control__input" v-model="exp.sampai" />
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--wp-text-secondary);display:block;margin-bottom:4px">Filter Status</label>
+          <select class="components-select-control__input" v-model="exp.status">
+            <option value="">Semua Status</option>
+            <option value="submitted">Submitted</option>
+            <option value="reviewed">Reviewed</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div style="margin-left:auto">
+          <WpButton variant="primary" :disabled="exporting" @click="doExport">
+            {{ exporting ? 'Mempersiapkan...' : '⬇ Export ke Excel' }}
+          </WpButton>
+          <div v-if="expMsg" style="font-size:12px;color:var(--green-700);margin-top:6px;text-align:right">{{ expMsg }}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import * as XLSX from 'xlsx'
 import { SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
 import WpTable from '@/components/WpTable.vue'
@@ -116,9 +146,43 @@ async function fetchData(p=1){loading.value=true;error.value=''
 async function showDetail(item:Submission){detail.value=item;detailStatus.value=item.status||'submitted';statusMsg.value=''
   try{const base=SITE.apiBase.replace('/wp/v2','');const r=await fetch(`${base}/lp2m/v1/hibah/${item.id}`);const json=await r.json();if(json.success)detail.value=json.data}catch{}}
 
-async function updateStatus(){if(!detail.value)return;statusMsg.value='Menyimpan...'
+ async function updateStatus(){if(!detail.value)return;statusMsg.value='Menyimpan...'
   try{const base=SITE.apiBase.replace('/wp/v2','');const r=await fetch(`${base}/lp2m/v1/hibah/${detail.value.id}`,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify({status:detailStatus.value})});const json=await r.json()
   if(json.success){const idx=items.value.findIndex(i=>i.id===detail.value?.id);if(idx!==-1)items.value[idx].status=detailStatus.value;statusMsg.value='✓ Tersimpan';setTimeout(()=>statusMsg.value='',2000)}else{statusMsg.value='Gagal: '+json.message}}catch(e:any){statusMsg.value=e.message}}
+
+// ── Export ──────────────────────────────
+const exporting=ref(false), expMsg=ref('')
+const exp=ref({ dari: new Date().toISOString().slice(0,7)+'-01', sampai: new Date().toISOString().slice(0,10), status:'' })
+
+async function doExport(){
+  if(!exp.value.dari||!exp.value.sampai){expMsg.value='Pilih rentang tanggal dulu.';return}
+  exporting.value=true;expMsg.value=''
+  try{
+    const base=SITE.apiBase.replace('/wp/v2','')
+    const url=new URL(`${base}/lp2m/v1/pendaftaran/export`)
+    url.searchParams.set('dari',exp.value.dari)
+    url.searchParams.set('sampai',exp.value.sampai)
+    if(exp.value.status)url.searchParams.set('status',exp.value.status)
+    const r=await fetch(url.toString())
+    if(!r.ok)throw new Error((await r.json().catch(()=>({}))).message||'HTTP '+r.status)
+    const data=await r.json()
+    if(!data.length){expMsg.value='Tidak ada data untuk rentang ini.';return}
+    const titlePart=exp.value.status?'_'+exp.value.status:''
+    const ws=XLSX.utils.json_to_sheet(data.map((d:Record<string,unknown>)=>({
+      'No':(d.reg_no as string)||'','Nama':(d.nama as string)||'','NIP/NIDN':(d.nip as string)||'',
+      'Jenis':(d.jenis as string)||'','Prodi':(d.prodi as string)||'','Skema':(d.skema as string)||'',
+      'Judul':(d.judul as string)||'','Ringkasan':(d.ringkasan as string)||'',
+      'Jml Tim':(d.jml_tim as string)||'','Anggota':(d.anggota as string)||'',
+      'Email':(d.email as string)||'','WhatsApp':(d.hp as string)||'',
+      'Status':(d.status as string)||'','Tanggal':(d.tanggal as string)||''
+    })),{header:['No','Nama','NIP/NIDN','Jenis','Prodi','Skema','Judul','Ringkasan','Jml Tim','Anggota','Email','WhatsApp','Status','Tanggal']})
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Pendaftaran Hibah LP2M')
+    const fname='LP2M-Pendaftaran-Hibah_'+exp.value.dari.split('-').join('')+'_'+exp.value.sampai.split('-').join('')
+    XLSX.writeFile(wb,(titlePart||'')+'.xlsx',{bookType:'xlsx'})
+    expMsg.value=`✓ ${data.length} data didownload`
+  }catch(e:any){expMsg.value=e.message||'Export gagal'}
+  finally{exporting.value=false}
+}
 
 onMounted(()=>fetchData())
 </script>
