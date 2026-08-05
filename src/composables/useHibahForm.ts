@@ -52,13 +52,33 @@ export function useHibahForm(hibahId: Ref<number | null>) {
   //    Skema tampil parent + child + description (tanpa filter internal/eksternal).
   const prodiTerms = ref<string[]>([])
   const skemaTerms = ref<SkemaOption[]>([])
+  const prodiIdName = ref<Record<string, number>>({}) // nama → post ID (CPT)
+  const skemaIdByLabel = ref<Record<string, number>>({}) // label → term ID
   const taxonomyLoaded = ref(false)
 
   async function loadTaxonomies() {
     if (taxonomyLoaded.value) return
     const base = SITE.apiBase.replace('/wp/v2', '')
     try {
-      // Prodi: CPT program_studi → map title.rendered (data tidak dobel, satu sumber).
+      // Prioritas: /form-config (backend terstruktur, id+label+desc). Fallback /wp/v2/*.
+      const cfg = await fetch(`${base}/lp2m/v1/hibah/${hibahId.value || 0}/form-config`)
+        .then(r => r.ok ? r.json() : null).catch(() => null)
+
+      if (cfg?.success) {
+        const prodi = (cfg.prodi_options || []).map((p: any) => p.name).filter(Boolean)
+        prodiTerms.value = prodi.length ? prodi : (HIBAH_FORM_PRODI_FALLBACK as string[])
+        const idName: Record<string, number> = {}
+        ;(cfg.prodi_options || []).forEach((p: any) => { if (p.name) idName[p.name] = p.id })
+        prodiIdName.value = idName
+        skemaTerms.value = cfg.skema_options?.length ? cfg.skema_options : []
+        const idByLabel: Record<string, number> = {}
+        ;(cfg.skema_options || []).forEach((s: any) => { if (s.label) idByLabel[s.label] = s.id })
+        skemaIdByLabel.value = idByLabel
+        taxonomyLoaded.value = true
+        return
+      }
+
+      // Fallback: fetch langsung /wp/v2/* (kalau form-config belum ada).
       const [prodiPosts, skemaRaw] = await Promise.all([
         fetch(`${base}/wp/v2/program_studi?per_page=100&_fields=id,title`).then(r => r.ok ? r.json() : []).catch(() => []),
         fetch(`${base}/wp/v2/skema_hibah?per_page=100&_fields=id,name,slug,description,parent`).then(r => r.ok ? r.json() : []).catch(() => []),
@@ -66,8 +86,10 @@ export function useHibahForm(hibahId: Ref<number | null>) {
 
       const prodi = (prodiPosts || []).map((p: any) => p?.title?.rendered || p?.title || '').filter(Boolean)
       prodiTerms.value = prodi.length ? prodi : (HIBAH_FORM_PRODI_FALLBACK as string[])
+      const idName2: Record<string, number> = {}
+      ;(prodiPosts || []).forEach((p: any) => { const n = p?.title?.rendered || p?.title || ''; if (n) idName2[n] = p.id })
+      prodiIdName.value = idName2
 
-      // Flatten skema hierarchical: root = parent, child punya parent id → label "Parent — Child".
       const terms: SkemaOption[] = (skemaRaw || []).map((t: any) => ({
         id: t.id, label: t.name, name: t.name, parent: t.parent || 0, desc: t.description || ''
       }))
@@ -82,6 +104,9 @@ export function useHibahForm(hibahId: Ref<number | null>) {
         return t
       })
       skemaTerms.value = flattened.length ? flattened : (HIBAH_FORM_SKEMA_FALLBACK as unknown as SkemaOption[])
+      const idByLabel2: Record<string, number> = {}
+      flattened.forEach(s => { idByLabel2[s.label] = s.id })
+      skemaIdByLabel.value = idByLabel2
       taxonomyLoaded.value = true
     } catch {
       // fallback statis
@@ -175,6 +200,9 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     submitting.value = true
     try {
       const payload: Record<string, unknown> = { ...form }
+      // Sertakan ID term/post untuk sinkronisasi data (backend simpan _skema_id/_prodi_id).
+      payload.skema_id = skemaIdByLabel.value[form.skema] || ''
+      payload.prodi_id = prodiIdName.value[form.prodi] || ''
       for (const f of customFields.value) {
         payload[f.key] = customValues[f.key] || ''
       }
@@ -233,6 +261,7 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     form, submitting, success, regNo, fieldErrors, checkError,
     customFields, customValues, loadingConfig,
     prodiTerms, skemaTerms, skemaOptionsAll,
+    prodiIdName, skemaIdByLabel,
     validate, submit, reset, loadFormConfig
   }
 }
