@@ -13,7 +13,7 @@
         <SkeletonBlock v-for="i in 6" :key="i" variant="card" style="margin-bottom:8px" />
       </div>
       <div v-else-if="error" class="pub-error">{{ error }}</div>
-      <RevealBlock v-else class="pub-grid">
+      <div v-else class="pub-grid">
         <div v-for="post in posts" :key="post.id" class="pub-card">
           <div class="pub-thumb" :style="thumbStyle(post)">
             <span class="cat">{{ categoryName(post) }}</span>
@@ -25,7 +25,7 @@
             <router-link :to="`/artikel/${post.slug}`" class="rd">Baca selengkapnya &rarr;</router-link>
           </div>
         </div>
-      </RevealBlock>
+      </div>
     </div>
   </section>
 </template>
@@ -34,7 +34,6 @@
 import { computed, onMounted } from 'vue'
 import { useNewsStore } from '@/stores/news'
 import { SITE } from '@/data'
-import RevealBlock from './RevealBlock.vue'
 import SkeletonBlock from './SkeletonBlock.vue'
 
 const store = useNewsStore()
