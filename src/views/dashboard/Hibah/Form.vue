@@ -127,15 +127,6 @@
         </details>
 
         <details class="wp-detail-group" open>
-          <summary class="wp-detail-group__title">Program Studi</summary>
-          <div class="wp-detail-group__body">
-            <TagSelect :terms="pTerms" :selected="selProdis" placeholder="Cari atau buat program studi..."
-              @add="(t:any)=>selProdis.push(t.id)" @remove="(id:number)=>selProdis=selProdis.filter(x=>x!==id)"
-              @create="addTerm('program_studi_hibah',$event,pTerms,selProdis)" />
-          </div>
-        </details>
-
-        <details class="wp-detail-group" open>
           <summary class="wp-detail-group__title">Thumbnail</summary>
           <div class="wp-detail-group__body">
             <ThumbnailPicker v-model:media-id="f.featured_media" v-model:preview-url="thumb" />
@@ -160,8 +151,8 @@ import { useToast } from '@/composables/useToast'
 const route=useRoute(),router=useRouter(),auth=useAuthStore()
 const toast=useToast()
 const editId=ref<number|null>(null),saving=ref(false),err=ref(''),thumb=ref('')
-const kTerms=ref<{id:number;name:string}[]>([]),sTerms=ref<{id:number;name:string}[]>([]),pTerms=ref<{id:number;name:string}[]>([])
-const selKats=ref<number[]>([]),selSkms=ref<number[]>([]),selProdis=ref<number[]>([])
+const kTerms=ref<{id:number;name:string}[]>([]),sTerms=ref<{id:number;name:string}[]>([])
+const selKats=ref<number[]>([]),selSkms=ref<number[]>([])
 const activeTab=ref('info')
 const tabs=[{id:'info',label:'Info Dasar'},{id:'timeline',label:'Timeline'},{id:'panduan',label:'Panduan & Dokumen'}]
 interface TL{date:string;label:string}
@@ -178,12 +169,12 @@ async function handleFileUpload(e:Event,key:'panduan_penulisan'|'template_dokume
   }catch(e:any){err.value=e.message}
 }
 
-async function loadTerms(){try{const[k,s,p]=await Promise.all([window.fetch(`${SITE.apiBase}/kategori_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/skema_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/program_studi_hibah?per_page=100`)]);if(k.ok)kTerms.value=await k.json();if(s.ok)sTerms.value=await s.json();if(p.ok)pTerms.value=await p.json()}catch{}}
-async function loadItem(id:number){try{const r=await window.fetch(`${SITE.apiBase}/hibah/${id}?_embed`);if(!r.ok)return;const p=await r.json();editId.value=p.id;f.title=clean(p.title?.rendered||'');f.content=p.content?.rendered||'';f.status=p.status||'draft';f.deadline=p.deadline?p.deadline.slice(0,10):'';f.deadline_time=p.deadline_time||'';f.dana_maks_num=parseInt(p.dana_maks)||0;f.event_eyebrow=p.event_eyebrow||'';f.info_tambahan=p.info_tambahan||'';f.link_panduan=p.link_panduan||'';f.timeline_items=p.timeline_items||[];f.featured_media=p.featured_media||null;f.panduan_penulisan_id=p.panduan_penulisan_id||null;f.template_dokumen_id=p.template_dokumen_id||null;selKats.value=p.kategori_hibah||[];selSkms.value=p.skema_hibah||[];selProdis.value=p.program_studi_hibah||[];thumb.value=p._embedded?.['wp:featuredmedia']?.[0]?.source_url||''}catch{}}
+async function loadTerms(){try{const[k,s]=await Promise.all([window.fetch(`${SITE.apiBase}/kategori_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/skema_hibah?per_page=100`)]);if(k.ok)kTerms.value=await k.json();if(s.ok)sTerms.value=await s.json()}catch{}}
+async function loadItem(id:number){try{const r=await window.fetch(`${SITE.apiBase}/hibah/${id}?_embed`);if(!r.ok)return;const p=await r.json();editId.value=p.id;f.title=clean(p.title?.rendered||'');f.content=p.content?.rendered||'';f.status=p.status||'draft';f.deadline=p.deadline?p.deadline.slice(0,10):'';f.deadline_time=p.deadline_time||'';f.dana_maks_num=parseInt(p.dana_maks)||0;f.event_eyebrow=p.event_eyebrow||'';f.info_tambahan=p.info_tambahan||'';f.link_panduan=p.link_panduan||'';f.timeline_items=p.timeline_items||[];f.featured_media=p.featured_media||null;f.panduan_penulisan_id=p.panduan_penulisan_id||null;f.template_dokumen_id=p.template_dokumen_id||null;selKats.value=p.kategori_hibah||[];selSkms.value=p.skema_hibah||[];thumb.value=p._embedded?.['wp:featuredmedia']?.[0]?.source_url||''}catch{}}
 async function addTerm(tax:string,name:string,arr:{id:number;name:string}[],sel:number[]){err.value='';const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'-');try{const r=await window.fetch(`${SITE.apiBase}/${tax}`,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify({name,slug})});if(!r.ok)throw new Error((await r.json().catch(()=>({}))).message||'Gagal');const c=await r.json();arr.push({id:c.id,name:c.name});sel.push(c.id)}catch(e:any){err.value='Gagal: '+e.message}}
 function previewDraft(){if(editId.value)window.open(`https://itsi.ac.id/?p=${editId.value}&preview=true`,'_blank')}
-async function save(){if(!f.title.trim()){err.value='Judul wajib diisi.';return};saving.value=true;err.value='';const p:any={title:f.title,content:f.content,status:f.status,deadline:f.deadline||'',deadline_time:f.deadline_time||'',dana_maks:f.dana_maks_num?String(f.dana_maks_num):'',event_eyebrow:f.event_eyebrow,info_tambahan:f.info_tambahan,link_panduan:f.link_panduan,kategori_hibah:selKats.value,skema_hibah:selSkms.value,program_studi_hibah:selProdis.value,timeline_items:f.timeline_items,panduan_penulisan_id:f.panduan_penulisan_id,template_dokumen_id:f.template_dokumen_id};if(f.featured_media)p.featured_media=f.featured_media;try{const url=editId.value?`${SITE.apiBase}/hibah/${editId.value}`:`${SITE.apiBase}/hibah`;const r=await window.fetch(url,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify(p)});if(!r.ok){const e=await r.json().catch(()=>({}));err.value=e.message||'HTTP '+r.status;toast.error(e.message||'Gagal menyimpan');saving.value=false;return};const c=await r.json();if(!editId.value){editId.value=c.id;router.replace('/dashboard/hibah/'+c.id)};saving.value=false;err.value='';toast.success(editId.value?'Hibah berhasil diperbarui!':'Hibah berhasil dibuat!')}catch(e:any){err.value=e.message;saving.value=false}}
-function resetForm(){Object.assign(f,{title:'',content:'',status:'draft',deadline:'',deadline_time:'',dana_maks_num:0,event_eyebrow:'',info_tambahan:'',link_panduan:'',timeline_items:[],featured_media:null,panduan_penulisan_id:null,template_dokumen_id:null});selKats.value=[];selSkms.value=[];selProdis.value=[];thumb.value='';editId.value=null;err.value='';activeTab.value='info'}
+async function save(){if(!f.title.trim()){err.value='Judul wajib diisi.';return};saving.value=true;err.value='';const p:any={title:f.title,content:f.content,status:f.status,deadline:f.deadline||'',deadline_time:f.deadline_time||'',dana_maks:f.dana_maks_num?String(f.dana_maks_num):'',event_eyebrow:f.event_eyebrow,info_tambahan:f.info_tambahan,link_panduan:f.link_panduan,kategori_hibah:selKats.value,skema_hibah:selSkms.value,timeline_items:f.timeline_items,panduan_penulisan_id:f.panduan_penulisan_id,template_dokumen_id:f.template_dokumen_id};if(f.featured_media)p.featured_media=f.featured_media;try{const url=editId.value?`${SITE.apiBase}/hibah/${editId.value}`:`${SITE.apiBase}/hibah`;const r=await window.fetch(url,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify(p)});if(!r.ok){const e=await r.json().catch(()=>({}));err.value=e.message||'HTTP '+r.status;toast.error(e.message||'Gagal menyimpan');saving.value=false;return};const c=await r.json();if(!editId.value){editId.value=c.id;router.replace('/dashboard/hibah/'+c.id)};saving.value=false;err.value='';toast.success(editId.value?'Hibah berhasil diperbarui!':'Hibah berhasil dibuat!')}catch(e:any){err.value=e.message;saving.value=false}}
+function resetForm(){Object.assign(f,{title:'',content:'',status:'draft',deadline:'',deadline_time:'',dana_maks_num:0,event_eyebrow:'',info_tambahan:'',link_panduan:'',timeline_items:[],featured_media:null,panduan_penulisan_id:null,template_dokumen_id:null});selKats.value=[];selSkms.value=[];thumb.value='';editId.value=null;err.value='';activeTab.value='info'}
 watch(()=>route.params.id,(id)=>{if(id)loadItem(parseInt(id as string));else resetForm()})
 onMounted(()=>{loadTerms();const id=route.params.id as string;if(id)loadItem(parseInt(id));else resetForm()})
 </script>

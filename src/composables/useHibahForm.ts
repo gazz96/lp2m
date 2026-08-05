@@ -6,6 +6,14 @@ import { useAuthStore } from '@/stores/auth'
 const HIBAH_FORM_PRODI_FALLBACK: string[] = HIBAH.form.prodiOptions || []
 const HIBAH_FORM_SKEMA_FALLBACK: string[] = HIBAH.form.skemaOptions || []
 
+export interface SkemaOption {
+  id: number
+  label: string      // "Parent — Child" atau nama tunggal
+  name: string       // nama term (child jika ada, else parent)
+  parent: string     // nama parent ('' kalau root)
+  desc: string       // description term
+}
+
 export interface FormField {
   key: string
   label: string
@@ -40,62 +48,47 @@ export function useHibahForm(hibahId: Ref<number | null>) {
   const customValues = reactive<Record<string, string>>({})
   const loadingConfig = ref(false)
 
-  // ── Dinamis: prodi (taxonomy program_studi_hibah) + skema (taxonomy skema_hibah)
-  //    Relasi implisit: skema yang dipasang di hibah yang punya prodi terpilih.
+  // ── Dinamis: prodi (CPT program_studi) + skema (taxonomy skema_hibah hierarchical)
+  //    Skema tampil parent + child + description (tanpa filter internal/eksternal).
   const prodiTerms = ref<string[]>([])
-  const skemaTerms = ref<string[]>([])
-  const skemaByProdi = reactive<Record<string, string[]>>({})
+  const skemaTerms = ref<SkemaOption[]>([])
   const taxonomyLoaded = ref(false)
-
-  function fetchTerms(url: string): Promise<string[]> {
-    return fetch(url)
-      .then(r => r.ok ? r.json() : [])
-      .then((list: any[]) => (list || []).map((t: any) => t.name || '').filter(Boolean))
-      .catch(() => [])
-  }
 
   async function loadTaxonomies() {
     if (taxonomyLoaded.value) return
     const base = SITE.apiBase.replace('/wp/v2', '')
     try {
-      const [prodi, skema, hibahList] = await Promise.all([
-        fetchTerms(`${base}/wp/v2/program_studi_hibah?per_page=100&_fields=id,name`),
-        fetchTerms(`${base}/wp/v2/skema_hibah?per_page=100&_fields=id,name`),
-        fetch(`${base}/wp/v2/hibah?per_page=100&status_hibah=aktif&_fields=id,program_studi_hibah,skema_hibah`).then(r => r.ok ? r.json() : []).catch(() => []),
+      // Prodi: CPT program_studi → map title.rendered (data tidak dobel, satu sumber).
+      const [prodiPosts, skemaRaw] = await Promise.all([
+        fetch(`${base}/wp/v2/program_studi?per_page=100&_fields=id,title`).then(r => r.ok ? r.json() : []).catch(() => []),
+        fetch(`${base}/wp/v2/skema_hibah?per_page=100&_fields=id,name,slug,description,parent`).then(r => r.ok ? r.json() : []).catch(() => []),
       ])
 
+      const prodi = (prodiPosts || []).map((p: any) => p?.title?.rendered || p?.title || '').filter(Boolean)
       prodiTerms.value = prodi.length ? prodi : (HIBAH_FORM_PRODI_FALLBACK as string[])
-      skemaTerms.value = skema.length ? skema : (HIBAH_FORM_SKEMA_FALLBACK as string[])
 
-      // Bangun relasi prodi → skema (dari hibah aktif yang punya prodi tsb).
-      // Perlu map term id → nama.
-      const prodiIdName: Record<number, string> = {}
-      const skemaIdName: Record<number, string> = {}
-      const [prodiFull, skemaFull] = await Promise.all([
-        fetch(`${base}/wp/v2/program_studi_hibah?per_page=100&_fields=id,name`).then(r => r.ok ? r.json() : []).catch(() => []),
-        fetch(`${base}/wp/v2/skema_hibah?per_page=100&_fields=id,name`).then(r => r.ok ? r.json() : []).catch(() => []),
-      ])
-      prodiFull.forEach((t: any) => { prodiIdName[t.id] = t.name })
-      skemaFull.forEach((t: any) => { skemaIdName[t.id] = t.name })
-
-      const map: Record<string, Set<string>> = {}
-      for (const h of hibahList) {
-        const hProdi = (h.program_studi_hibah || []).map((id: number) => prodiIdName[id]).filter(Boolean)
-        const hSkema = (h.skema_hibah || []).map((id: number) => skemaIdName[id]).filter(Boolean)
-        for (const p of hProdi) {
-          if (!map[p]) map[p] = new Set<string>()
-          hSkema.forEach((s: string) => map[p].add(s))
+      // Flatten skema hierarchical: root = parent, child punya parent id → label "Parent — Child".
+      const terms: SkemaOption[] = (skemaRaw || []).map((t: any) => ({
+        id: t.id, label: t.name, name: t.name, parent: t.parent || 0, desc: t.description || ''
+      }))
+      const byId: Record<number, SkemaOption> = {}
+      terms.forEach(t => { byId[t.id] = t })
+      const flattened = terms.map(t => {
+        const pid = typeof t.parent === 'number' ? t.parent : 0
+        if (pid && byId[pid]) {
+          const p = byId[pid]
+          return { ...t, label: `${p.name} — ${t.name}`, parent: p.name }
         }
-      }
-      Object.keys(map).forEach(k => { skemaByProdi[k] = [...map[k]] })
+        return t
+      })
+      skemaTerms.value = flattened.length ? flattened : (HIBAH_FORM_SKEMA_FALLBACK as unknown as SkemaOption[])
       taxonomyLoaded.value = true
     } catch {
       // fallback statis
     }
   }
 
-  function skemaForProdi(prodi: string): string[] {
-    if (prodi && skemaByProdi[prodi]?.length) return skemaByProdi[prodi]
+  function skemaOptionsAll(): SkemaOption[] {
     return skemaTerms.value
   }
 
@@ -239,7 +232,7 @@ export function useHibahForm(hibahId: Ref<number | null>) {
   return {
     form, submitting, success, regNo, fieldErrors, checkError,
     customFields, customValues, loadingConfig,
-    prodiTerms, skemaTerms, skemaByProdi, skemaForProdi,
+    prodiTerms, skemaTerms, skemaOptionsAll,
     validate, submit, reset, loadFormConfig
   }
 }

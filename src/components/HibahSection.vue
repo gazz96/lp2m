@@ -91,10 +91,33 @@
               </div>
               <div class="field" :class="{ invalid: fieldErrors.skema }">
                 <label for="skema">Skema Hibah yang Diikuti *</label>
-                <select id="skema" v-model="form.skema" :disabled="!form.prodi">
-                  <option value="">{{ form.prodi ? 'Pilih skema hibah' : 'Pilih program studi dulu' }}</option>
-                  <option v-for="o in skemaOptions" :key="o" :value="o">{{ o }}</option>
-                </select>
+                <div class="combobox" :class="{ open: skemaOpen }">
+                  <input
+                    type="text"
+                    id="skema"
+                    v-model="skemaQuery"
+                    placeholder="Ketik untuk cari skema (parent & sub-skema)..."
+                    @focus="skemaOpen = true"
+                    @input="onSkemaInput"
+                    @blur="onSkemaBlur"
+                    @keydown.down.prevent="skemaMove(1)"
+                    @keydown.up.prevent="skemaMove(-1)"
+                    @keydown.enter.prevent="skemaSelect(skemaHighlight)"
+                    @keydown.esc="skemaOpen = false"
+                    autocomplete="off"
+                  />
+                  <ul v-if="skemaOpen && filteredSkema.length" class="combobox-list">
+                    <li
+                      v-for="(s, i) in filteredSkema"
+                      :key="s.id"
+                      :class="{ active: i === skemaHighlight }"
+                      @mousedown.prevent="selectSkema(s)"
+                    >
+                      <span class="sk-label">{{ s.label }}</span>
+                      <span v-if="s.desc" class="sk-desc">{{ s.desc }}</span>
+                    </li>
+                  </ul>
+                </div>
                 <div class="error-msg">{{ fieldErrors.skema }}</div>
               </div>
               <div class="field full" :class="{ invalid: fieldErrors.judul }">
@@ -168,7 +191,7 @@ const activeHibahId = ref<number | null>(null)
 const {
   form, submitting, success: successForm, regNo,
   fieldErrors, checkError, submit, reset,
-  prodiTerms, skemaForProdi
+  prodiTerms, skemaOptionsAll
 } = useHibahForm(activeHibahId)
 
 // ── Combobox prodi (searchable) ──
@@ -190,7 +213,6 @@ function prodiMove(d: number) {
 function selectProdi(p: string) {
   form.prodi = p
   prodiQuery.value = p
-  form.skema = ''
   prodiOpen.value = false
 }
 function prodiSelect(idx: number) {
@@ -198,10 +220,37 @@ function prodiSelect(idx: number) {
   if (p) selectProdi(p)
 }
 function onProdiBlur() {
-  // Simpan query kalau cocok persis; kalau tidak, biarkan (validasi menangani).
   setTimeout(() => { prodiOpen.value = false }, 150)
 }
-const skemaOptions = computed(() => skemaForProdi(form.prodi))
+
+// ── Combobox skema (searchable, parent+child+desc) ──
+const skemaQuery = ref('')
+const skemaOpen = ref(false)
+const skemaHighlight = ref(0)
+const filteredSkema = computed(() => {
+  const q = skemaQuery.value.trim().toLowerCase()
+  const list = skemaOptionsAll()
+  if (!q) return list
+  return list.filter(s => s.label.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q))
+})
+function onSkemaInput() { skemaOpen.value = true; skemaHighlight.value = 0 }
+function skemaMove(d: number) {
+  const n = filteredSkema.value.length
+  if (!n) return
+  skemaHighlight.value = (skemaHighlight.value + d + n) % n
+}
+function selectSkema(s: { label: string }) {
+  form.skema = s.label
+  skemaQuery.value = s.label
+  skemaOpen.value = false
+}
+function skemaSelect(idx: number) {
+  const s = filteredSkema.value[idx]
+  if (s) selectSkema(s)
+}
+function onSkemaBlur() {
+  setTimeout(() => { skemaOpen.value = false }, 150)
+}
 
 const eventData = ref({
   bannerTitle: HIBAH.banner.title,
@@ -282,4 +331,6 @@ function fmtTimelineDate(d: string) {
 }
 .combobox-list li.active,
 .combobox-list li:hover { background: var(--green-50, #eef4ef); }
+.sk-label { display: block; font-weight: 600; }
+.sk-desc { display: block; font-size: 0.76rem; color: var(--ink-soft, #6b6457); margin-top: 2px; }
 </style>
