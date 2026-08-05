@@ -3,9 +3,10 @@
     <div class="wrap">
       <nav class="main">
         <div class="brand">
-          <div class="brand-mark">LP</div>
+          <div class="brand-mark" v-if="!site?.logo_url">LP</div>
+          <img v-else :src="site.logo_url" class="brand-logo" alt="Logo LP2M" />
           <div class="brand-text">
-            <div class="name">{{ SITE.name }}</div>
+            <div class="name">{{ site?.nama || SITE.name }}</div>
             <div class="sub">{{ SITE.institute }}</div>
           </div>
         </div>
@@ -31,6 +32,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { SITE } from '@/data'
+import { useSiteSettings } from '@/composables/useSiteSettings'
+
+const { site } = useSiteSettings()
 
 const links = [
   { label: 'Beranda', href: '#beranda' },
@@ -48,6 +52,12 @@ const menuOpen = ref(false)
 <style scoped>
 .nav-btn {
   padding: 9px 18px;
+}
+.brand-logo {
+  height: 40px;
+  width: auto;
+  display: block;
+  object-fit: contain;
 }
 @media (max-width: 700px) {
   .nav-links { display: none; }
