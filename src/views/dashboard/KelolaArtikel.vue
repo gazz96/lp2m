@@ -95,6 +95,7 @@ const columns=ref<WpColumn[]>([
   {key:'_title',label:'Judul',primary:true,accessor:(r)=>clean(r.title?.rendered||''),
     rowActions:(r)=>isOwner(r as any)?[
       {label:'Edit',className:'edit',to:'/dashboard/artikel/'+r.id},
+      {label:'Lihat',className:'view',to:'/artikel/'+r.slug},
       {label:'Hapus',className:'trash',onClick:()=>confirmDelete(r as any)}
     ]:[]
   },

@@ -73,9 +73,9 @@ const tableColumns = computed<WpColumn[]>(() => [
   {
     key: '_title', label: 'Judul', primary: true, sortable: true,
     accessor: (r) => r._title || '(tanpa judul)',
-    rowActions: (r) => [
-      { label: 'Edit', className: 'edit', to: '/dashboard/hibah/' + r.id },
-      { label: 'Lihat', className: 'view', href: 'https://itsi.ac.id/?p=' + r.id + '&preview=true', target: '_blank' },
+    rowActions:(r)=>[
+      {label:'Edit',className:'edit',to:'/dashboard/hibah/'+r.id},
+      {label:'Lihat',className:'view',to:'/hibah/'+r.slug},
     ]
   },
   { key: '_cats', label: 'Kategori', type: 'tags' },

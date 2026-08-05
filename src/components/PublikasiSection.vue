@@ -20,7 +20,7 @@
             <div class="date">{{ formatDate(post.date) }}</div>
             <h4>{{ cleanTitle(post.title.rendered) }}</h4>
             <p>{{ excerpt(post) }}</p>
-            <a :href="post.link" target="_blank" rel="noopener" class="rd">Baca selengkapnya &rarr;</a>
+            <router-link :to="`/artikel/${post.slug}`" class="rd">Baca selengkapnya &rarr;</router-link>
           </div>
         </div>
       </RevealBlock>
