@@ -16,8 +16,8 @@
           <h2>{{ eventData.bannerTitle }}</h2>
           <p>{{ eventData.bannerDesc }}</p>
           <div class="timeline">
-            <div v-for="t in eventData.timeline" :key="t.date" class="t-row">
-              <span class="date">{{ t.date }}</span>
+            <div v-for="t in eventData.timeline" :key="t.date + t.label" class="t-row">
+              <span class="date">{{ fmtTimelineDate(t.date) }}</span>
               <span>{{ t.label }}</span>
             </div>
           </div>
@@ -184,6 +184,16 @@ onMounted(async () => {
 
 function submitForm() { submit() }
 function resetForm() { reset() }
+function fmtTimelineDate(d: string) {
+  if (!d) return ''
+  // Terima YYYY-MM-DD atau "01 Agu 2026" (format lama) → tampilkan id-ID pendek.
+  const m = d.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (m) {
+    const dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+    return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+  }
+  return d
+}
 </script>
 
 <style scoped>

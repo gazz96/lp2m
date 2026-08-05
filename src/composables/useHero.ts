@@ -49,6 +49,16 @@ export interface HeroData {
   } | null
 }
 
+export function fmtDate(d: string) {
+  if (!d) return ''
+  const m = d.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (m) {
+    const dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+    return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+  }
+  return d
+}
+
 const defaultHero: HeroData = {
   eyebrow: HERO.eyebrow,
   titleHtml: HERO.titleHtml,
@@ -119,7 +129,7 @@ export function useHero() {
       const schedule: string[] = []
       if (event.timeline_items?.length) {
         event.timeline_items.forEach(t => {
-          if (t.date && t.label) schedule.push(`${t.date} — ${t.label}`)
+          if (t.date && t.label) schedule.push(`${fmtDate(t.date)} — ${t.label}`)
         })
       }
       if (event.deadline_label) {
