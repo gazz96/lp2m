@@ -63,17 +63,37 @@
               </div>
               <div class="field" :class="{ invalid: fieldErrors.prodi }">
                 <label for="prodi">Program Studi / Unit Kerja *</label>
-                <select id="prodi" v-model="form.prodi">
-                  <option value="">Pilih program studi / unit</option>
-                  <option v-for="o in HIBAH.form.prodiOptions" :key="o" :value="o">{{ o }}</option>
-                </select>
+                <div class="combobox" :class="{ open: prodiOpen }">
+                  <input
+                    type="text"
+                    id="prodi"
+                    v-model="prodiQuery"
+                    placeholder="Ketik untuk cari program studi..."
+                    @focus="prodiOpen = true"
+                    @input="onProdiInput"
+                    @blur="onProdiBlur"
+                    @keydown.down.prevent="prodiMove(1)"
+                    @keydown.up.prevent="prodiMove(-1)"
+                    @keydown.enter.prevent="prodiSelect(prodiHighlight)"
+                    @keydown.esc="prodiOpen = false"
+                    autocomplete="off"
+                  />
+                  <ul v-if="prodiOpen && filteredProdi.length" class="combobox-list">
+                    <li
+                      v-for="(p, i) in filteredProdi"
+                      :key="p"
+                      :class="{ active: i === prodiHighlight }"
+                      @mousedown.prevent="selectProdi(p)"
+                    >{{ p }}</li>
+                  </ul>
+                </div>
                 <div class="error-msg">{{ fieldErrors.prodi }}</div>
               </div>
               <div class="field" :class="{ invalid: fieldErrors.skema }">
                 <label for="skema">Skema Hibah yang Diikuti *</label>
-                <select id="skema" v-model="form.skema">
-                  <option value="">Pilih skema hibah</option>
-                  <option v-for="o in HIBAH.form.skemaOptions" :key="o" :value="o">{{ o }}</option>
+                <select id="skema" v-model="form.skema" :disabled="!form.prodi">
+                  <option value="">{{ form.prodi ? 'Pilih skema hibah' : 'Pilih program studi dulu' }}</option>
+                  <option v-for="o in skemaOptions" :key="o" :value="o">{{ o }}</option>
                 </select>
                 <div class="error-msg">{{ fieldErrors.skema }}</div>
               </div>
@@ -136,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { HIBAH, SITE } from '@/data'
 import type { HibahEvent } from '@/types'
 import { useHibahForm } from '@/composables/useHibahForm'
@@ -147,8 +167,41 @@ const activeHibahId = ref<number | null>(null)
 
 const {
   form, submitting, success: successForm, regNo,
-  fieldErrors, checkError, submit, reset
+  fieldErrors, checkError, submit, reset,
+  prodiTerms, skemaForProdi
 } = useHibahForm(activeHibahId)
+
+// ── Combobox prodi (searchable) ──
+const prodiQuery = ref('')
+const prodiOpen = ref(false)
+const prodiHighlight = ref(0)
+const filteredProdi = computed(() => {
+  const q = prodiQuery.value.trim().toLowerCase()
+  const list = prodiTerms.value
+  if (!q) return list
+  return list.filter(p => p.toLowerCase().includes(q))
+})
+function onProdiInput() { prodiOpen.value = true; prodiHighlight.value = 0 }
+function prodiMove(d: number) {
+  const n = filteredProdi.value.length
+  if (!n) return
+  prodiHighlight.value = (prodiHighlight.value + d + n) % n
+}
+function selectProdi(p: string) {
+  form.prodi = p
+  prodiQuery.value = p
+  form.skema = ''
+  prodiOpen.value = false
+}
+function prodiSelect(idx: number) {
+  const p = filteredProdi.value[idx]
+  if (p) selectProdi(p)
+}
+function onProdiBlur() {
+  // Simpan query kalau cocok persis; kalau tidak, biarkan (validasi menangani).
+  setTimeout(() => { prodiOpen.value = false }, 150)
+}
+const skemaOptions = computed(() => skemaForProdi(form.prodi))
 
 const eventData = ref({
   bannerTitle: HIBAH.banner.title,
@@ -202,4 +255,31 @@ function fmtTimelineDate(d: string) {
 .mt-16 { margin-top: 16px; }
 .mt-22 { margin-top: 22px; }
 .full-width { width: 100%; justify-content: center; }
+
+/* Combobox prodi searchable */
+.combobox { position: relative; }
+.combobox input { width: 100%; }
+.combobox-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--line, #d8d0c0);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  max-height: 220px;
+  overflow-y: auto;
+}
+.combobox-list li {
+  padding: 9px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.combobox-list li.active,
+.combobox-list li:hover { background: var(--green-50, #eef4ef); }
 </style>

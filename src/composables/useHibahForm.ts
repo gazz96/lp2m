@@ -1,7 +1,10 @@
 import { reactive, ref, type Ref } from 'vue'
 import type { HibahFormData } from '@/types'
-import { SITE } from '@/data'
+import { HIBAH, SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
+
+const HIBAH_FORM_PRODI_FALLBACK: string[] = HIBAH.form.prodiOptions || []
+const HIBAH_FORM_SKEMA_FALLBACK: string[] = HIBAH.form.skemaOptions || []
 
 export interface FormField {
   key: string
@@ -36,6 +39,65 @@ export function useHibahForm(hibahId: Ref<number | null>) {
   const customFields = ref<FormField[]>([])
   const customValues = reactive<Record<string, string>>({})
   const loadingConfig = ref(false)
+
+  // ── Dinamis: prodi (taxonomy program_studi_hibah) + skema (taxonomy skema_hibah)
+  //    Relasi implisit: skema yang dipasang di hibah yang punya prodi terpilih.
+  const prodiTerms = ref<string[]>([])
+  const skemaTerms = ref<string[]>([])
+  const skemaByProdi = reactive<Record<string, string[]>>({})
+  const taxonomyLoaded = ref(false)
+
+  function fetchTerms(url: string): Promise<string[]> {
+    return fetch(url)
+      .then(r => r.ok ? r.json() : [])
+      .then((list: any[]) => (list || []).map((t: any) => t.name || '').filter(Boolean))
+      .catch(() => [])
+  }
+
+  async function loadTaxonomies() {
+    if (taxonomyLoaded.value) return
+    const base = SITE.apiBase.replace('/wp/v2', '')
+    try {
+      const [prodi, skema, hibahList] = await Promise.all([
+        fetchTerms(`${base}/wp/v2/program_studi_hibah?per_page=100&_fields=id,name`),
+        fetchTerms(`${base}/wp/v2/skema_hibah?per_page=100&_fields=id,name`),
+        fetch(`${base}/wp/v2/hibah?per_page=100&status_hibah=aktif&_fields=id,program_studi_hibah,skema_hibah`).then(r => r.ok ? r.json() : []).catch(() => []),
+      ])
+
+      prodiTerms.value = prodi.length ? prodi : (HIBAH_FORM_PRODI_FALLBACK as string[])
+      skemaTerms.value = skema.length ? skema : (HIBAH_FORM_SKEMA_FALLBACK as string[])
+
+      // Bangun relasi prodi → skema (dari hibah aktif yang punya prodi tsb).
+      // Perlu map term id → nama.
+      const prodiIdName: Record<number, string> = {}
+      const skemaIdName: Record<number, string> = {}
+      const [prodiFull, skemaFull] = await Promise.all([
+        fetch(`${base}/wp/v2/program_studi_hibah?per_page=100&_fields=id,name`).then(r => r.ok ? r.json() : []).catch(() => []),
+        fetch(`${base}/wp/v2/skema_hibah?per_page=100&_fields=id,name`).then(r => r.ok ? r.json() : []).catch(() => []),
+      ])
+      prodiFull.forEach((t: any) => { prodiIdName[t.id] = t.name })
+      skemaFull.forEach((t: any) => { skemaIdName[t.id] = t.name })
+
+      const map: Record<string, Set<string>> = {}
+      for (const h of hibahList) {
+        const hProdi = (h.program_studi_hibah || []).map((id: number) => prodiIdName[id]).filter(Boolean)
+        const hSkema = (h.skema_hibah || []).map((id: number) => skemaIdName[id]).filter(Boolean)
+        for (const p of hProdi) {
+          if (!map[p]) map[p] = new Set<string>()
+          hSkema.forEach((s: string) => map[p].add(s))
+        }
+      }
+      Object.keys(map).forEach(k => { skemaByProdi[k] = [...map[k]] })
+      taxonomyLoaded.value = true
+    } catch {
+      // fallback statis
+    }
+  }
+
+  function skemaForProdi(prodi: string): string[] {
+    if (prodi && skemaByProdi[prodi]?.length) return skemaByProdi[prodi]
+    return skemaTerms.value
+  }
 
   async function loadFormConfig() {
     const id = hibahId.value
@@ -172,10 +234,12 @@ export function useHibahForm(hibahId: Ref<number | null>) {
 
   // Auto-load config when hibahId changes
   loadFormConfig()
+  loadTaxonomies()
 
   return {
     form, submitting, success, regNo, fieldErrors, checkError,
     customFields, customValues, loadingConfig,
+    prodiTerms, skemaTerms, skemaByProdi, skemaForProdi,
     validate, submit, reset, loadFormConfig
   }
 }
