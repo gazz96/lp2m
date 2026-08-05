@@ -61,7 +61,7 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     const base = SITE.apiBase.replace('/wp/v2', '')
     try {
       // Prioritas: /form-config (backend terstruktur, id+label+desc). Hanya kalau hibah dipilih.
-      // (hibahId 0 = belum pilih → langsung fallback /wp/v2/*, jangan fetch /hibah/0/form-config)
+      // (hibahId 0 = belum pilih → langsung fallback /wp/v2/*, tanpa fetch form-config)
       const hasHibah = (hibahId.value ?? 0) > 0
       const cfg = hasHibah
         ? await fetch(`${base}/lp2m/v1/hibah/${hibahId.value}/form-config`)
