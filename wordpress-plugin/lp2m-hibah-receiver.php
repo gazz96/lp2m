@@ -42,6 +42,9 @@ class LP2M_Hibah_Receiver {
 			jenis VARCHAR(30) NOT NULL,
 			prodi VARCHAR(255) NOT NULL,
 			skema VARCHAR(255) NOT NULL,
+			jenis_hibah VARCHAR(255) DEFAULT '',
+			sdgs VARCHAR(255) DEFAULT '',
+			kelompok_keahlian VARCHAR(255) DEFAULT '',
 			judul TEXT NOT NULL,
 			ringkasan TEXT NOT NULL,
 			jml_tim VARCHAR(5) DEFAULT '',
@@ -54,6 +57,19 @@ class LP2M_Hibah_Receiver {
 		) $charset;";
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
+
+		// --- Migration: tambahkan kolom baru jika tabel sudah ada (versi lama) ---
+		$existing_cols = $wpdb->get_col( "DESC {$this->table}", 0 );
+		$new_cols      = [
+			'jenis_hibah'       => "ALTER TABLE {$this->table} ADD COLUMN jenis_hibah VARCHAR(255) DEFAULT '' AFTER skema",
+			'sdgs'              => "ALTER TABLE {$this->table} ADD COLUMN sdgs VARCHAR(255) DEFAULT '' AFTER jenis_hibah",
+			'kelompok_keahlian' => "ALTER TABLE {$this->table} ADD COLUMN kelompok_keahlian VARCHAR(255) DEFAULT '' AFTER sdgs",
+		];
+		foreach ( $new_cols as $col => $sql_add ) {
+			if ( ! in_array( $col, $existing_cols, true ) ) {
+				$wpdb->query( $sql_add );
+			}
+		}
 	}
 
 	/** ── Register REST routes ── */
@@ -139,6 +155,7 @@ class LP2M_Hibah_Receiver {
 		$allowed = [
 			'nama', 'nip', 'jenis', 'prodi', 'skema', 'judul',
 			'ringkasan', 'jml_tim', 'anggota', 'email', 'hp',
+			'jenis_hibah', 'sdgs', 'kelompok_keahlian',
 		];
 
 		$clean = [];
@@ -176,9 +193,14 @@ class LP2M_Hibah_Receiver {
 		$clean['email'] = sanitize_email( $clean['email'] );
 
 		// --- Text fields: strip HTML tags ---
-		$text_fields = [ 'nama', 'prodi', 'skema', 'judul', 'ringkasan', 'anggota' ];
+		$text_fields = [ 'nama', 'prodi', 'skema', 'judul', 'ringkasan', 'anggota', 'jenis_hibah', 'sdgs', 'kelompok_keahlian' ];
 		foreach ( $text_fields as $f ) {
 			$clean[ $f ] = wp_strip_all_tags( $clean[ $f ], true );
+		}
+
+		// --- taxonomy-ish fields: cap to 255 chars ---
+		foreach ( [ 'jenis_hibah', 'sdgs', 'kelompok_keahlian' ] as $f ) {
+			$clean[ $f ] = mb_substr( $clean[ $f ], 0, 255 );
 		}
 
 		// --- anggota: cap to 500 characters ---
@@ -205,7 +227,7 @@ class LP2M_Hibah_Receiver {
 			'nip'       => 'NIDN / NIDK / NIM',
 			'jenis'     => 'Jenis Pengusul',
 			'prodi'     => 'Program Studi / Unit Kerja',
-			'skema'     => 'Skema Hibah',
+			'skema'     => 'Model Hibah',
 			'judul'     => 'Judul Usulan',
 			'ringkasan' => 'Ringkasan Usulan',
 			'email'     => 'Email Aktif',
@@ -249,18 +271,21 @@ class LP2M_Hibah_Receiver {
 
 		// --- Insert ---
 		$inserted = $wpdb->insert( $this->table, [
-			'reg_no'    => $reg_no,
-			'nama'      => $params['nama'],
-			'nip'       => $params['nip'],
-			'jenis'     => $params['jenis'],
-			'prodi'     => $params['prodi'],
-			'skema'     => $params['skema'],
-			'judul'     => $params['judul'],
-			'ringkasan' => $params['ringkasan'],
-			'jml_tim'   => $params['jml_tim'],
-			'anggota'   => $params['anggota'],
-			'email'     => $params['email'],
-			'hp'        => $params['hp'],
+			'reg_no'             => $reg_no,
+			'nama'               => $params['nama'],
+			'nip'                => $params['nip'],
+			'jenis'              => $params['jenis'],
+			'prodi'              => $params['prodi'],
+			'skema'              => $params['skema'],
+			'jenis_hibah'        => $params['jenis_hibah'] ?? '',
+			'sdgs'               => $params['sdgs'] ?? '',
+			'kelompok_keahlian'  => $params['kelompok_keahlian'] ?? '',
+			'judul'              => $params['judul'],
+			'ringkasan'          => $params['ringkasan'],
+			'jml_tim'            => $params['jml_tim'],
+			'anggota'            => $params['anggota'],
+			'email'              => $params['email'],
+			'hp'                 => $params['hp'],
 		] );
 
 		if ( false === $inserted ) {
@@ -301,7 +326,7 @@ class LP2M_Hibah_Receiver {
 		$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->table}" );
 		$items = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT id, reg_no, nama, jenis, prodi, skema, judul, email, hp, created_at
+				"SELECT id, reg_no, nama, jenis, prodi, skema, jenis_hibah, sdgs, kelompok_keahlian, judul, email, hp, created_at
 				 FROM {$this->table}
 				 ORDER BY created_at DESC
 				 LIMIT %d OFFSET %d",
@@ -363,12 +388,15 @@ class LP2M_Hibah_Receiver {
 			$admin_email,
 			sprintf( '[LP2M] Pendaftaran Hibah Baru — %s', $reg_no ),
 			sprintf(
-				"Nomor Registrasi: %s\nNama: %s\nNIP/NIDN: %s\nJenis: %s\nSkema: %s\nJudul: %s\nEmail: %s\nWhatsApp: %s\n\nCek dashboard: %s/wp-admin/",
+				"Nomor Registrasi: %s\nNama: %s\nNIP/NIDN: %s\nJenis: %s\nModel Hibah: %s\nJenis Hibah: %s\nSDGs: %s\nKel. Keahlian: %s\nJudul: %s\nEmail: %s\nWhatsApp: %s\n\nCek dashboard: %s/wp-admin/",
 				$reg_no,
 				$params['nama'],
 				$params['nip'],
 				$params['jenis'],
 				$params['skema'],
+				$params['jenis_hibah'] ?? '',
+				$params['sdgs'] ?? '',
+				$params['kelompok_keahlian'] ?? '',
 				$params['judul'],
 				$params['email'],
 				$params['hp'],
@@ -413,6 +441,27 @@ class LP2M_Hibah_Receiver {
 				'required'          => true,
 				'sanitize_callback' => function ( $v ) {
 					return wp_strip_all_tags( trim( (string) $v ), true );
+				},
+			],
+			'jenis_hibah'       => [
+				'required'          => false,
+				'sanitize_callback' => function ( $v ) {
+					$v = wp_strip_all_tags( trim( (string) $v ), true );
+					return mb_substr( $v, 0, 255 );
+				},
+			],
+			'sdgs'              => [
+				'required'          => false,
+				'sanitize_callback' => function ( $v ) {
+					$v = wp_strip_all_tags( trim( (string) $v ), true );
+					return mb_substr( $v, 0, 255 );
+				},
+			],
+			'kelompok_keahlian' => [
+				'required'          => false,
+				'sanitize_callback' => function ( $v ) {
+					$v = wp_strip_all_tags( trim( (string) $v ), true );
+					return mb_substr( $v, 0, 255 );
 				},
 			],
 			'judul'     => [

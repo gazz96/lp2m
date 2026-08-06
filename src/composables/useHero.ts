@@ -19,7 +19,11 @@ export interface HibahEventData {
   excerpt: string
   permalink: string
   thumbnail_url: string
-  jenis_hibah: string
+  jenis_hibah: string[]
+  model_hibah_names: string[]
+  jenis_hibah_names: string[]
+  sdgs_names: string[]
+  kelompok_keahlian_names: string[]
   deadline: string
   deadline_label: string
   event_eyebrow: string

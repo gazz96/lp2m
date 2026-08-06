@@ -22,7 +22,10 @@
           <router-link to="/dashboard/hibah" active-class="active" class="dash-link sub">Lihat Hibah</router-link>
           <router-link to="/dashboard/hibah/tambah" active-class="active" class="dash-link sub">Tambah Hibah</router-link>
           <router-link to="/dashboard/hibah/kategori" active-class="active" class="dash-link sub">Kategori Hibah</router-link>
-          <router-link to="/dashboard/hibah/skema" active-class="active" class="dash-link sub">Skema Hibah</router-link>
+          <router-link to="/dashboard/hibah/model" active-class="active" class="dash-link sub">Model Hibah</router-link>
+          <router-link to="/dashboard/hibah/jenis" active-class="active" class="dash-link sub">Jenis Hibah</router-link>
+          <router-link to="/dashboard/hibah/sdgs" active-class="active" class="dash-link sub">SDGs</router-link>
+          <router-link to="/dashboard/hibah/kelompok-keahlian" active-class="active" class="dash-link sub">Kelompok Keahlian</router-link>
         </div>
 
         <button class="nav-group" @click="toggleGroup('artikel')" :class="{ open: groups.artikel }">

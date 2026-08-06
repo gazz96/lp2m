@@ -16,7 +16,7 @@ export const useHibahStore = defineStore('hibahCRUD', () => {
     loading.value = true
     error.value = ''
     try {
-      const url = `${SITE.apiBase}/hibah?per_page=${perPage}&page=${p}&orderby=date&order=desc&_fields=id,date,title,excerpt,status,jenis_hibah,status_hibah,deadline,deadline_label,kategori_hibah,skema_hibah,dana_maks,event_eyebrow,timeline_items,file_panduan,file_template,category_names`
+      const url = `${SITE.apiBase}/hibah?per_page=${perPage}&page=${p}&orderby=date&order=desc&_fields=id,date,title,excerpt,status,jenis_hibah,status_hibah,deadline,deadline_label,kategori_hibah,model_hibah,sdgs,kelompok_keahlian,dana_maks,event_eyebrow,timeline_items,file_panduan,file_template,category_names,model_hibah_names,jenis_hibah_names,sdgs_names,kelompok_keahlian_names`
       const res = await fetch(url)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       items.value = await res.json()
@@ -39,7 +39,10 @@ export const useHibahStore = defineStore('hibahCRUD', () => {
     event_eyebrow: string
     info_tambahan: string
     kategori_hibah: number[]
-    skema_hibah: number[]
+    model_hibah: number[]
+    jenis_hibah: number[]
+    sdgs: number[]
+    kelompok_keahlian: number[]
   }): Promise<{ ok: boolean; id?: number; error?: string }> {
     const auth = useAuthStore()
     try {

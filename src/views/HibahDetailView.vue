@@ -44,12 +44,18 @@ function clean(s:string){return new DOMParser().parseFromString(s,'text/html').b
 
 const hasMeta = computed(() => !!item.value && (
   item.value.deadline_label || item.value.dana_maks || item.value.event_eyebrow
+  || item.value.model_hibah_names?.length || item.value.jenis_hibah_names?.length
+  || item.value.sdgs_names?.length || item.value.kelompok_keahlian_names?.length
 ))
 const metaRows = computed(() => {
   const p = item.value
   if (!p) return []
   const rows: {label:string;value:string}[] = []
   if (p.event_eyebrow) rows.push({label:'Tahun Akademik',value:clean(p.event_eyebrow)})
+  if (p.model_hibah_names?.length) rows.push({label:'Model Hibah',value:p.model_hibah_names.join(', ')})
+  if (p.jenis_hibah_names?.length) rows.push({label:'Jenis Hibah',value:p.jenis_hibah_names.join(', ')})
+  if (p.sdgs_names?.length) rows.push({label:'SDGs',value:p.sdgs_names.join(', ')})
+  if (p.kelompok_keahlian_names?.length) rows.push({label:'Kelompok Keahlian',value:p.kelompok_keahlian_names.join(', ')})
   if (p.deadline_label) rows.push({label:'Deadline',value:p.deadline_label})
   if (p.dana_maks) rows.push({label:'Dana Maks',value:'Rp '+Number(p.dana_maks).toLocaleString('id-ID')})
   return rows

@@ -81,10 +81,14 @@
             </div>
             <div class="field">
               <label>Jenis Hibah</label>
-              <select v-model="form.jenis_hibah">
-                <option value="internal">Internal</option>
-                <option value="eksternal">Eksternal</option>
-              </select>
+              <TagSelect
+                :terms="jenisTerms"
+                :selected="selectedJenis"
+                placeholder="Cari atau buat jenis..."
+                @add="(t: any) => selectedJenis.push(t.id)"
+                @remove="(id: number) => selectedJenis = selectedJenis.filter(x => x !== id)"
+                @create="createTerm('jenis_hibah', $event, jenisTerms, selectedJenis)"
+              />
             </div>
 
             <!-- Kategori — taxonomy searchable -->
@@ -101,16 +105,42 @@
               <div v-if="terr" class="hint-error">{{ terr }}</div>
             </div>
 
-            <!-- Skema — taxonomy searchable -->
+            <!-- Model — taxonomy searchable -->
             <div class="field full">
-              <label>Skema Hibah</label>
+              <label>Model Hibah</label>
               <TagSelect
                 :terms="skmTerms"
                 :selected="selectedSkms"
-                placeholder="Cari atau buat skema..."
+                placeholder="Cari atau buat model hibah..."
                 @add="(t: any) => selectedSkms.push(t.id)"
                 @remove="(id: number) => selectedSkms = selectedSkms.filter(x => x !== id)"
-                @create="createTerm('skema_hibah', $event, skmTerms, selectedSkms)"
+                @create="createTerm('model_hibah', $event, skmTerms, selectedSkms)"
+              />
+            </div>
+
+            <!-- SDGs — taxonomy searchable -->
+            <div class="field full">
+              <label>SDGs</label>
+              <TagSelect
+                :terms="sdgsTerms"
+                :selected="selectedSdgs"
+                placeholder="Cari atau buat SDGs..."
+                @add="(t: any) => selectedSdgs.push(t.id)"
+                @remove="(id: number) => selectedSdgs = selectedSdgs.filter(x => x !== id)"
+                @create="createTerm('sdgs', $event, sdgsTerms, selectedSdgs)"
+              />
+            </div>
+
+            <!-- Kelompok Keahlian — taxonomy searchable -->
+            <div class="field full">
+              <label>Kelompok Keahlian</label>
+              <TagSelect
+                :terms="kkTerms"
+                :selected="selectedKk"
+                placeholder="Cari atau buat kelompok keahlian..."
+                @add="(t: any) => selectedKk.push(t.id)"
+                @remove="(id: number) => selectedKk = selectedKk.filter(x => x !== id)"
+                @create="createTerm('kelompok_keahlian', $event, kkTerms, selectedKk)"
               />
             </div>
 
@@ -192,8 +222,9 @@ const auth = useAuthStore()
 type RawHibah = {
   id: number; slug: string; status: string; date: string; featured_media: number
   title: { rendered: string }; content: { rendered: string }; excerpt: { rendered: string }
-  categories: number[]; skema_hibah: number[]
-  jenis_hibah: string; deadline: string; deadline_label: string
+  categories: number[]; skema_hibah: number[]; model_hibah: number[]
+  jenis_hibah: number[]; sdgs: number[]; kelompok_keahlian: number[]
+  deadline: string; deadline_label: string
   event_eyebrow: string; dana_maks: string; info_tambahan: string; link_panduan: string
   timeline_items: Array<{date:string;label:string}>
   _embedded?: { 'wp:featuredmedia'?: Array<{ source_url: string }> }
@@ -244,6 +275,9 @@ const filtered = computed(() => {
 
 const katTerms = ref<{id:number;name:string}[]>([])
 const skmTerms = ref<{id:number;name:string}[]>([])
+const jenisTerms = ref<{id:number;name:string}[]>([])
+const sdgsTerms = ref<{id:number;name:string}[]>([])
+const kkTerms = ref<{id:number;name:string}[]>([])
 
 // Modal
 const showModal = ref(false)
@@ -253,11 +287,14 @@ const modalError = ref('')
 const thumbPreview = ref('')
 const selectedKats = ref<number[]>([])
 const selectedSkms = ref<number[]>([])
+const selectedJenis = ref<number[]>([])
+const selectedSdgs = ref<number[]>([])
+const selectedKk = ref<number[]>([])
 const terr = ref('')
 
 interface TLItem { date: string; label: string }
 const emptyForm = () => ({
-  title: '', content: '', status: 'draft', jenis_hibah: 'internal',
+  title: '', content: '', status: 'draft',
   deadline: '', event_eyebrow: '', dana_maks_num: 0, info_tambahan: '', link_panduan: '',
   timeline_items: [] as TLItem[], featured_media: null as number | null
 })
@@ -269,7 +306,10 @@ async function fetchTerms(tax: string) {
     if (res.ok) {
       const data = await res.json()
       if (tax === 'kategori_hibah') katTerms.value = data
-      else skmTerms.value = data
+      else if (tax === 'model_hibah') skmTerms.value = data
+      else if (tax === 'jenis_hibah') jenisTerms.value = data
+      else if (tax === 'sdgs') sdgsTerms.value = data
+      else if (tax === 'kelompok_keahlian') kkTerms.value = data
     }
   } catch {}
 }
@@ -293,7 +333,7 @@ async function createTerm(tax: string, name: string, arr: {id:number;name:string
 async function fetchAll(p = 1) {
   loading.value = true; error.value = ''
   try {
-    const fields = 'id,slug,status,date,title,content,categories,skema_hibah,jenis_hibah,deadline,deadline_label,event_eyebrow,dana_maks,info_tambahan,link_panduan,timeline_items,featured_media'
+    const fields = 'id,slug,status,date,title,content,categories,model_hibah,jenis_hibah,sdgs,kelompok_keahlian,deadline,deadline_label,event_eyebrow,dana_maks,info_tambahan,link_panduan,timeline_items,featured_media'
     const url = `${SITE.apiBase}/hibah?per_page=${perPage}&page=${p}&orderby=date&order=desc&_fields=${fields}`
     const res = await fetch(url)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -313,7 +353,7 @@ async function fetchAll(p = 1) {
 function openCreate() {
   Object.assign(form, emptyForm())
   editingId.value = null; modalError.value = ''; thumbPreview.value = ''
-  selectedKats.value = []; selectedSkms.value = []
+  selectedKats.value = []; selectedSkms.value = []; selectedJenis.value = []; selectedSdgs.value = []; selectedKk.value = []
   showModal.value = true
 }
 
@@ -322,7 +362,6 @@ function openEdit(p: Row) {
   form.title = p._title
   form.content = p.content?.rendered || ''
   form.status = p.status
-  form.jenis_hibah = p.jenis_hibah || 'internal'
   form.deadline = p.deadline ? p.deadline.slice(0, 10) : ''
   form.event_eyebrow = p.event_eyebrow || ''
   form.dana_maks_num = parseInt(p.dana_maks) || 0
@@ -331,7 +370,10 @@ function openEdit(p: Row) {
   form.timeline_items = p.timeline_items || []
   form.featured_media = p.featured_media || null
   selectedKats.value = p.categories || []
-  selectedSkms.value = p.skema_hibah || []
+  selectedSkms.value = p.model_hibah || p.skema_hibah || []
+  selectedJenis.value = p.jenis_hibah || []
+  selectedSdgs.value = p.sdgs || []
+  selectedKk.value = p.kelompok_keahlian || []
   thumbPreview.value = p._embedded?.['wp:featuredmedia']?.[0]?.source_url || ''
   modalError.value = ''
   showModal.value = true
@@ -345,7 +387,6 @@ async function save() {
 
   const payload: any = {
     title: form.title, content: form.content, status: form.status,
-    jenis_hibah: form.jenis_hibah,
     deadline: form.deadline ? form.deadline + 'T23:59:59' : '',
     deadline_label: form.deadline ? new Date(form.deadline).toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : '',
     dana_maks: form.dana_maks_num ? String(form.dana_maks_num) : '',
@@ -353,7 +394,10 @@ async function save() {
     info_tambahan: form.info_tambahan,
     link_panduan: form.link_panduan,
     categories: selectedKats.value,
-    skema_hibah: selectedSkms.value,
+    model_hibah: selectedSkms.value,
+    jenis_hibah: selectedJenis.value,
+    sdgs: selectedSdgs.value,
+    kelompok_keahlian: selectedKk.value,
     timeline_items: form.timeline_items,
   }
   if (form.featured_media) payload.featured_media = form.featured_media
@@ -378,7 +422,7 @@ async function save() {
   } catch (e: any) { modalError.value = e.message; saving.value = false }
 }
 
-onMounted(() => { fetchAll(); fetchTerms('kategori_hibah'); fetchTerms('skema_hibah') })
+onMounted(() => { fetchAll(); fetchTerms('kategori_hibah'); fetchTerms('model_hibah'); fetchTerms('jenis_hibah'); fetchTerms('sdgs'); fetchTerms('kelompok_keahlian') })
 
 // Watch for re-filter
 watch([search, statusFilter], () => {})

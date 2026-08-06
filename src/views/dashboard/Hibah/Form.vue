@@ -118,11 +118,38 @@
         </details>
 
         <details class="wp-detail-group" open>
-          <summary class="wp-detail-group__title">Skema Hibah</summary>
+          <summary class="wp-detail-group__title">Model Hibah</summary>
           <div class="wp-detail-group__body">
-            <TagSelect :terms="sTerms" :selected="selSkms" placeholder="Cari atau buat skema..."
+            <TagSelect :terms="sTerms" :selected="selSkms" placeholder="Cari atau buat model hibah..."
               @add="(t:any)=>selSkms.push(t.id)" @remove="(id:number)=>selSkms=selSkms.filter(x=>x!==id)"
-              @create="addTerm('skema_hibah',$event,sTerms,selSkms)" />
+              @create="addTerm('model_hibah',$event,sTerms,selSkms)" />
+          </div>
+        </details>
+
+        <details class="wp-detail-group" open>
+          <summary class="wp-detail-group__title">Jenis Hibah</summary>
+          <div class="wp-detail-group__body">
+            <TagSelect :terms="jTerms" :selected="selJenis" placeholder="Cari atau buat jenis hibah..."
+              @add="(t:any)=>selJenis.push(t.id)" @remove="(id:number)=>selJenis=selJenis.filter(x=>x!==id)"
+              @create="addTerm('jenis_hibah',$event,jTerms,selJenis)" />
+          </div>
+        </details>
+
+        <details class="wp-detail-group" open>
+          <summary class="wp-detail-group__title">SDGs</summary>
+          <div class="wp-detail-group__body">
+            <TagSelect :terms="sgsTerms" :selected="selSdgs" placeholder="Cari atau buat SDGs..."
+              @add="(t:any)=>selSdgs.push(t.id)" @remove="(id:number)=>selSdgs=selSdgs.filter(x=>x!==id)"
+              @create="addTerm('sdgs',$event,sgsTerms,selSdgs)" />
+          </div>
+        </details>
+
+        <details class="wp-detail-group" open>
+          <summary class="wp-detail-group__title">Kelompok Keahlian</summary>
+          <div class="wp-detail-group__body">
+            <TagSelect :terms="kkTerms" :selected="selKk" placeholder="Cari atau buat kelompok keahlian..."
+              @add="(t:any)=>selKk.push(t.id)" @remove="(id:number)=>selKk=selKk.filter(x=>x!==id)"
+              @create="addTerm('kelompok_keahlian',$event,kkTerms,selKk)" />
           </div>
         </details>
 
@@ -152,7 +179,9 @@ const route=useRoute(),router=useRouter(),auth=useAuthStore()
 const toast=useToast()
 const editId=ref<number|null>(null),saving=ref(false),err=ref(''),thumb=ref('')
 const kTerms=ref<{id:number;name:string}[]>([]),sTerms=ref<{id:number;name:string}[]>([])
+const jTerms=ref<{id:number;name:string}[]>([]),sgsTerms=ref<{id:number;name:string}[]>([]),kkTerms=ref<{id:number;name:string}[]>([])
 const selKats=ref<number[]>([]),selSkms=ref<number[]>([])
+const selJenis=ref<number[]>([]),selSdgs=ref<number[]>([]),selKk=ref<number[]>([])
 const activeTab=ref('info')
 const tabs=[{id:'info',label:'Info Dasar'},{id:'timeline',label:'Timeline'},{id:'panduan',label:'Panduan & Dokumen'}]
 interface TL{date:string;label:string}
@@ -169,12 +198,12 @@ async function handleFileUpload(e:Event,key:'panduan_penulisan'|'template_dokume
   }catch(e:any){err.value=e.message}
 }
 
-async function loadTerms(){try{const[k,s]=await Promise.all([window.fetch(`${SITE.apiBase}/kategori_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/skema_hibah?per_page=100`)]);if(k.ok)kTerms.value=await k.json();if(s.ok)sTerms.value=await s.json()}catch{}}
-async function loadItem(id:number){try{const r=await window.fetch(`${SITE.apiBase}/hibah/${id}?_embed`);if(!r.ok)return;const p=await r.json();editId.value=p.id;f.title=clean(p.title?.rendered||'');f.content=p.content?.rendered||'';f.status=p.status||'draft';f.deadline=p.deadline?p.deadline.slice(0,10):'';f.deadline_time=p.deadline_time||'';f.dana_maks_num=parseInt(p.dana_maks)||0;f.event_eyebrow=p.event_eyebrow||'';f.info_tambahan=p.info_tambahan||'';f.link_panduan=p.link_panduan||'';f.timeline_items=p.timeline_items||[];f.featured_media=p.featured_media||null;f.panduan_penulisan_id=p.panduan_penulisan_id||null;f.template_dokumen_id=p.template_dokumen_id||null;selKats.value=p.kategori_hibah||[];selSkms.value=p.skema_hibah||[];thumb.value=p._embedded?.['wp:featuredmedia']?.[0]?.source_url||''}catch{}}
+async function loadTerms(){try{const[k,s,j,sg,kk]=await Promise.all([window.fetch(`${SITE.apiBase}/kategori_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/model_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/jenis_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/sdgs?per_page=100`),window.fetch(`${SITE.apiBase}/kelompok_keahlian?per_page=100`)]);if(k.ok)kTerms.value=await k.json();if(s.ok)sTerms.value=await s.json();if(j.ok)jTerms.value=await j.json();if(sg.ok)sgsTerms.value=await sg.json();if(kk.ok)kkTerms.value=await kk.json()}catch{}}
+async function loadItem(id:number){try{const r=await window.fetch(`${SITE.apiBase}/hibah/${id}?_embed`);if(!r.ok)return;const p=await r.json();editId.value=p.id;f.title=clean(p.title?.rendered||'');f.content=p.content?.rendered||'';f.status=p.status||'draft';f.deadline=p.deadline?p.deadline.slice(0,10):'';f.deadline_time=p.deadline_time||'';f.dana_maks_num=parseInt(p.dana_maks)||0;f.event_eyebrow=p.event_eyebrow||'';f.info_tambahan=p.info_tambahan||'';f.link_panduan=p.link_panduan||'';f.timeline_items=p.timeline_items||[];f.featured_media=p.featured_media||null;f.panduan_penulisan_id=p.panduan_penulisan_id||null;f.template_dokumen_id=p.template_dokumen_id||null;selKats.value=p.kategori_hibah||[];selSkms.value=p.model_hibah||[];selJenis.value=p.jenis_hibah||[];selSdgs.value=p.sdgs||[];selKk.value=p.kelompok_keahlian||[];thumb.value=p._embedded?.['wp:featuredmedia']?.[0]?.source_url||''}catch{}}
 async function addTerm(tax:string,name:string,arr:{id:number;name:string}[],sel:number[]){err.value='';const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'-');try{const r=await window.fetch(`${SITE.apiBase}/${tax}`,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify({name,slug})});if(!r.ok)throw new Error((await r.json().catch(()=>({}))).message||'Gagal');const c=await r.json();arr.push({id:c.id,name:c.name});sel.push(c.id)}catch(e:any){err.value='Gagal: '+e.message}}
 function previewDraft(){if(editId.value)window.open(`https://itsi.ac.id/?p=${editId.value}&preview=true`,'_blank')}
-async function save(){if(!f.title.trim()){err.value='Judul wajib diisi.';return};saving.value=true;err.value='';const p:any={title:f.title,content:f.content,status:f.status,deadline:f.deadline||'',deadline_time:f.deadline_time||'',dana_maks:f.dana_maks_num?String(f.dana_maks_num):'',event_eyebrow:f.event_eyebrow,info_tambahan:f.info_tambahan,link_panduan:f.link_panduan,kategori_hibah:selKats.value,skema_hibah:selSkms.value,timeline_items:f.timeline_items,panduan_penulisan_id:f.panduan_penulisan_id,template_dokumen_id:f.template_dokumen_id};if(f.featured_media)p.featured_media=f.featured_media;try{const url=editId.value?`${SITE.apiBase}/hibah/${editId.value}`:`${SITE.apiBase}/hibah`;const r=await window.fetch(url,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify(p)});if(!r.ok){const e=await r.json().catch(()=>({}));err.value=e.message||'HTTP '+r.status;toast.error(e.message||'Gagal menyimpan');saving.value=false;return};const c=await r.json();if(!editId.value){editId.value=c.id;router.replace('/dashboard/hibah/'+c.id)};saving.value=false;err.value='';toast.success(editId.value?'Hibah berhasil diperbarui!':'Hibah berhasil dibuat!')}catch(e:any){err.value=e.message;saving.value=false}}
-function resetForm(){Object.assign(f,{title:'',content:'',status:'draft',deadline:'',deadline_time:'',dana_maks_num:0,event_eyebrow:'',info_tambahan:'',link_panduan:'',timeline_items:[],featured_media:null,panduan_penulisan_id:null,template_dokumen_id:null});selKats.value=[];selSkms.value=[];thumb.value='';editId.value=null;err.value='';activeTab.value='info'}
+async function save(){if(!f.title.trim()){err.value='Judul wajib diisi.';return};saving.value=true;err.value='';const p:any={title:f.title,content:f.content,status:f.status,deadline:f.deadline||'',deadline_time:f.deadline_time||'',dana_maks:f.dana_maks_num?String(f.dana_maks_num):'',event_eyebrow:f.event_eyebrow,info_tambahan:f.info_tambahan,link_panduan:f.link_panduan,kategori_hibah:selKats.value,model_hibah:selSkms.value,jenis_hibah:selJenis.value,sdgs:selSdgs.value,kelompok_keahlian:selKk.value,timeline_items:f.timeline_items,panduan_penulisan_id:f.panduan_penulisan_id,template_dokumen_id:f.template_dokumen_id};if(f.featured_media)p.featured_media=f.featured_media;try{const url=editId.value?`${SITE.apiBase}/hibah/${editId.value}`:`${SITE.apiBase}/hibah`;const r=await window.fetch(url,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify(p)});if(!r.ok){const e=await r.json().catch(()=>({}));err.value=e.message||'HTTP '+r.status;toast.error(e.message||'Gagal menyimpan');saving.value=false;return};const c=await r.json();if(!editId.value){editId.value=c.id;router.replace('/dashboard/hibah/'+c.id)};saving.value=false;err.value='';toast.success(editId.value?'Hibah berhasil diperbarui!':'Hibah berhasil dibuat!')}catch(e:any){err.value=e.message;saving.value=false}}
+function resetForm(){Object.assign(f,{title:'',content:'',status:'draft',deadline:'',deadline_time:'',dana_maks_num:0,event_eyebrow:'',info_tambahan:'',link_panduan:'',timeline_items:[],featured_media:null,panduan_penulisan_id:null,template_dokumen_id:null});selKats.value=[];selSkms.value=[];selJenis.value=[];selSdgs.value=[];selKk.value=[];thumb.value='';editId.value=null;err.value='';activeTab.value='info'}
 watch(()=>route.params.id,(id)=>{if(id)loadItem(parseInt(id as string));else resetForm()})
 onMounted(()=>{loadTerms();const id=route.params.id as string;if(id)loadItem(parseInt(id));else resetForm()})
 </script>

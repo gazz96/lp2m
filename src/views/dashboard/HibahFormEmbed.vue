@@ -16,14 +16,7 @@
           <input type="text" id="nip" v-model="form.nip" placeholder="cth. 0112345601" />
           <div class="error-msg">{{ fieldErrors.nip }}</div>
         </div>
-        <div class="field full">
-          <label>Jenis Pengusul *</label>
-          <div class="radio-group">
-            <label><input type="radio" v-model="form.jenis" value="Dosen" /> Dosen</label>
-            <label><input type="radio" v-model="form.jenis" value="Mahasiswa" /> Mahasiswa</label>
-            <label><input type="radio" v-model="form.jenis" value="Tenaga Kependidikan" /> Tenaga Kependidikan</label>
-          </div>
-        </div>
+        <!-- jenis pengusul dihapus dari UI (backend tetap pakai default 'Dosen') -->
         <div class="field" :class="{ invalid: fieldErrors.prodi }">
           <label for="prodi2">Program Studi / Unit Kerja *</label>
           <select id="prodi2" v-model="form.prodi">
@@ -33,9 +26,9 @@
           <div class="error-msg">{{ fieldErrors.prodi }}</div>
         </div>
         <div class="field" :class="{ invalid: fieldErrors.skema }">
-          <label for="skema2">Skema Hibah *</label>
+          <label for="skema2">Model Hibah *</label>
           <select id="skema2" v-model="form.skema">
-            <option value="">Pilih skema hibah</option>
+            <option value="">Pilih model hibah</option>
             <option v-for="o in HIBAH.form.skemaOptions" :key="o" :value="o">{{ o }}</option>
           </select>
           <div class="error-msg">{{ fieldErrors.skema }}</div>

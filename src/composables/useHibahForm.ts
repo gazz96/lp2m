@@ -48,8 +48,8 @@ export function useHibahForm(hibahId: Ref<number | null>) {
   const customValues = reactive<Record<string, string>>({})
   const loadingConfig = ref(false)
 
-  // ── Dinamis: prodi (CPT program_studi) + skema (taxonomy skema_hibah hierarchical)
-  //    Skema tampil parent + child + description (tanpa filter internal/eksternal).
+  // ── Dinamis: prodi (CPT program_studi) + model hibah (taxonomy model_hibah hierarchical)
+  //    Model tampil parent + child + description (tanpa filter internal/eksternal).
   const prodiTerms = ref<string[]>([])
   const skemaTerms = ref<SkemaOption[]>([])
   const prodiIdName = ref<Record<string, number>>({}) // nama → post ID (CPT)
@@ -85,7 +85,7 @@ export function useHibahForm(hibahId: Ref<number | null>) {
       // Fallback: fetch langsung /wp/v2/* (kalau form-config belum ada).
       const [prodiPosts, skemaRaw] = await Promise.all([
         fetch(`${base}/wp/v2/program_studi?per_page=100&_fields=id,title`).then(r => r.ok ? r.json() : []).catch(() => []),
-        fetch(`${base}/wp/v2/skema_hibah?per_page=100&_fields=id,name,slug,description,parent`).then(r => r.ok ? r.json() : []).catch(() => []),
+        fetch(`${base}/wp/v2/model_hibah?per_page=100&_fields=id,name,slug,description,parent`).then(r => r.ok ? r.json() : []).catch(() => []),
       ])
 
       const prodi = (prodiPosts || []).map((p: any) => p?.title?.rendered || p?.title || '').filter(Boolean)

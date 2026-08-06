@@ -1,20 +1,20 @@
 <template>
   <div class="wrap">
-    <h1>Model Hibah</h1>
-    <p style="color:var(--wp-text-secondary);margin-top:-8px;margin-bottom:20px">Kelola model pendanaan untuk event hibah (menggantikan "Skema Hibah").</p>
+    <h1>Kelompok Keahlian</h1>
+    <p style="color:var(--wp-text-secondary);margin-top:-8px;margin-bottom:20px">Kelola kelompok keahlian (pusat kajian/riset) yang terkait dengan hibah.</p>
 
     <div class="components-panel" style="margin-bottom:20px">
       <div class="components-panel__body">
         <div style="display:flex;gap:12px;align-items:flex-end">
           <div style="flex:1">
-            <label class="components-base-control__label">Nama Model</label>
-            <input class="components-text-control__input" type="text" v-model="newName" placeholder="cth. Hibah Kompetitif Riset" @keyup.enter="addSkm" />
+            <label class="components-base-control__label">Nama Kelompok Keahlian</label>
+            <input class="components-text-control__input" type="text" v-model="newName" placeholder="cth. Pusat Kajian Sawit" @keyup.enter="addTerm" />
           </div>
           <div style="flex:1">
             <label class="components-base-control__label">Slug <span style="font-weight:400;text-transform:none">(opsional)</span></label>
-            <input class="components-text-control__input" type="text" v-model="newSlug" placeholder="hibah-kompetitif-riset" />
+            <input class="components-text-control__input" type="text" v-model="newSlug" placeholder="pusat-kajian-sawit" />
           </div>
-          <WpButton variant="primary" @click="addSkm" :disabled="!newName.trim()||adding">{{ adding?'Menyimpan...':'Tambah' }}</WpButton>
+          <WpButton variant="primary" @click="addTerm" :disabled="!newName.trim()||adding">{{ adding?'Menyimpan...':'Tambah' }}</WpButton>
         </div>
         <div v-if="err" class="components-notice is-error" style="margin-top:12px;margin-bottom:0"><div class="components-notice__content">{{ err }}</div></div>
       </div>
@@ -23,7 +23,7 @@
     <WpTable
       :columns="columns"
       :rows="terms"
-      :emptyTitle="'Belum ada model.'"
+      :emptyTitle="'Belum ada kelompok keahlian.'"
       :emptySub="'Gunakan form di atas untuk menambah.'"
       :showFooter="false"
     />
@@ -39,6 +39,7 @@ import WpButton from '@/components/WpButton.vue'
 import type { WpColumn } from '@/components/WpTable.vue'
 
 const auth = useAuthStore()
+const tax = 'kelompok_keahlian'
 const terms = ref<{ id: number; name: string; slug: string; count: number }[]>([])
 const newName = ref(''), newSlug = ref(''), adding = ref(false), err = ref('')
 
@@ -46,23 +47,23 @@ const columns: WpColumn[] = [
   {
     key: 'name', label: 'Nama', primary: true,
     rowActions: (r) => [
-      { label: 'Edit', className: 'edit', to: '/dashboard/hibah/model' },
-      { label: 'Hapus', className: 'trash', to: '/dashboard/hibah/model' },
+      { label: 'Edit', className: 'edit', to: '/dashboard/hibah/kelompok-keahlian' },
+      { label: 'Hapus', className: 'trash', to: '/dashboard/hibah/kelompok-keahlian' },
     ]
   },
   { key: 'slug', label: 'Slug' },
   { key: 'count', label: 'Jumlah', width: '80px' },
 ]
 
-async function loadSkm() { try { const r = await window.fetch(`${SITE.apiBase}/model_hibah?per_page=100&orderby=name&order=asc`); if (r.ok) terms.value = await r.json() } catch { } }
-async function addSkm() {
+async function loadTerm() { try { const r = await window.fetch(`${SITE.apiBase}/${tax}?per_page=100&orderby=name&order=asc`); if (r.ok) terms.value = await r.json() } catch { } }
+async function addTerm() {
   const n = newName.value.trim(); if (!n) return; adding.value = true; err.value = ''
   const slug = newSlug.value.trim() || n.toLowerCase().replace(/[^a-z0-9]+/g, '-')
   try {
-    const r = await window.fetch(`${SITE.apiBase}/model_hibah`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...auth.authHeaders() }, body: JSON.stringify({ name: n, slug }) })
+    const r = await window.fetch(`${SITE.apiBase}/${tax}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...auth.authHeaders() }, body: JSON.stringify({ name: n, slug }) })
     if (!r.ok) throw new Error((await r.json().catch(() => ({}))).message || 'Gagal')
-    newName.value = ''; newSlug.value = ''; loadSkm()
+    newName.value = ''; newSlug.value = ''; loadTerm()
   } catch (e: any) { err.value = e.message } finally { adding.value = false }
 }
-onMounted(loadSkm)
+onMounted(loadTerm)
 </script>

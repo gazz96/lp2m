@@ -97,9 +97,12 @@ export interface HibahEvent {
   content: { rendered: string }
   link: string
   date: string
-  jenis_hibah: 'internal' | 'eksternal'
+  jenis_hibah: number[]
   status_hibah: 'aktif' | 'ditutup' | 'arsip'
   kategori_hibah: string
+  model_hibah: number[]
+  sdgs: number[]
+  kelompok_keahlian: number[]
   deadline: string
   deadline_label: string
   skema: string
@@ -112,6 +115,10 @@ export interface HibahEvent {
   file_template: string[]
   link_panduan: string
   category_names: string[]
+  model_hibah_names: string[]
+  jenis_hibah_names: string[]
+  sdgs_names: string[]
+  kelompok_keahlian_names: string[]
   _embedded?: {
     'wp:featuredmedia'?: Array<{
       source_url: string

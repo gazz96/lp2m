@@ -49,10 +49,11 @@ import WpTable from '@/components/WpTable.vue'
 import WpButton from '@/components/WpButton.vue'
 import type { WpColumn } from '@/components/WpTable.vue'
 
-type Row = { id: number; slug: string; status: string; date: string; title: { rendered: string }; kategori_hibah: number[]; skema_hibah: number[]; _title: string; _date: string; _cats: string[]; _skms: string[]; _status: string; _editLink: string }
+type Row = { id: number; slug: string; status: string; date: string; title: { rendered: string }; kategori_hibah: number[]; model_hibah: number[]; jenis_hibah: number[]; sdgs: number[]; kelompok_keahlian: number[]; _title: string; _date: string; _cats: string[]; _skms: string[]; _jenis: string[]; _sdgs: string[]; _kk: string[]; _status: string; _editLink: string }
 const items = ref<Row[]>([]), loading = ref(true), total = ref(0), page = ref(1), perPage = 20
 const search = ref(''), statusFilter = ref('any'), sortCol = ref('date'), sortDir = ref<'asc' | 'desc'>('desc')
 const kTerms = ref<{ id: number; name: string }[]>([]), sTerms = ref<{ id: number; name: string }[]>([])
+const jTerms = ref<{ id: number; name: string }[]>([]), sgTerms = ref<{ id: number; name: string }[]>([]), kkTerms = ref<{ id: number; name: string }[]>([])
 
 function clean(s: string) { return new DOMParser().parseFromString(s, 'text/html').body.textContent || '' }
 function fmt(d: string) { return d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-' }
@@ -79,7 +80,10 @@ const tableColumns = computed<WpColumn[]>(() => [
     ]
   },
   { key: '_cats', label: 'Kategori', type: 'tags' },
-  { key: '_skms', label: 'Skema', type: 'tags' },
+  { key: '_skms', label: 'Model', type: 'tags' },
+  { key: '_jenis', label: 'Jenis', type: 'tags' },
+  { key: '_sdgs', label: 'SDGs', type: 'tags' },
+  { key: '_kk', label: 'Kel. Keahlian', type: 'tags' },
   { key: '_date', label: 'Tanggal', sortable: true, type: 'date', accessor: (r) => r._date },
   { key: '_status', label: 'Status', type: 'badge', accessor: (r) => r.status === 'publish' ? 'Publish' : r.status === 'draft' ? 'Draft' : r.status },
 ])
@@ -88,12 +92,12 @@ function onSort(col: string, dir: 'asc' | 'desc') { sortCol.value = col; sortDir
 
 const pageNumbers = computed(() => { const tp = Math.ceil(total.value / perPage); const n: number[] = []; for (let i = Math.max(1, page.value - 2); i <= Math.min(tp, page.value + 2); i++) n.push(i); return n })
 
-async function loadTerms() { try { const [k, s] = await Promise.all([window.fetch(`${SITE.apiBase}/kategori_hibah?per_page=100`), window.fetch(`${SITE.apiBase}/skema_hibah?per_page=100`)]); if (k.ok) kTerms.value = await k.json(); if (s.ok) sTerms.value = await s.json() } catch { } }
+async function loadTerms() { try { const [k, s, j, sg, kk] = await Promise.all([window.fetch(`${SITE.apiBase}/kategori_hibah?per_page=100`), window.fetch(`${SITE.apiBase}/model_hibah?per_page=100`), window.fetch(`${SITE.apiBase}/jenis_hibah?per_page=100`), window.fetch(`${SITE.apiBase}/sdgs?per_page=100`), window.fetch(`${SITE.apiBase}/kelompok_keahlian?per_page=100`)]); if (k.ok) kTerms.value = await k.json(); if (s.ok) sTerms.value = await s.json(); if (j.ok) jTerms.value = await j.json(); if (sg.ok) sgTerms.value = await sg.json(); if (kk.ok) kkTerms.value = await kk.json() } catch { } }
 
 async function load(p = 1) {
   loading.value = true
   try {
-    const url = `${SITE.apiBase}/hibah?per_page=${perPage}&page=${p}&orderby=${sortCol.value === 'date' ? 'date' : 'title'}&order=${sortDir.value}&_fields=id,slug,status,date,title,kategori_hibah,skema_hibah`
+    const url = `${SITE.apiBase}/hibah?per_page=${perPage}&page=${p}&orderby=${sortCol.value === 'date' ? 'date' : 'title'}&order=${sortDir.value}&_fields=id,slug,status,date,title,kategori_hibah,model_hibah,jenis_hibah,sdgs,kelompok_keahlian`
     const r = await window.fetch(url)
     if (!r.ok) throw new Error('HTTP ' + r.status)
     const raw = await r.json()
@@ -102,7 +106,10 @@ async function load(p = 1) {
       _title: clean(p.title?.rendered || ''),
       _date: fmt(p.date),
       _cats: (p.kategori_hibah || []).map((id: number) => kTerms.value.find(t => t.id === id)?.name || '').filter(Boolean),
-      _skms: (p.skema_hibah || []).map((id: number) => sTerms.value.find(t => t.id === id)?.name || '').filter(Boolean),
+      _skms: (p.model_hibah || p.skema_hibah || []).map((id: number) => sTerms.value.find(t => t.id === id)?.name || '').filter(Boolean),
+      _jenis: (p.jenis_hibah || []).map((id: number) => jTerms.value.find(t => t.id === id)?.name || '').filter(Boolean),
+      _sdgs: (p.sdgs || []).map((id: number) => sgTerms.value.find(t => t.id === id)?.name || '').filter(Boolean),
+      _kk: (p.kelompok_keahlian || []).map((id: number) => kkTerms.value.find(t => t.id === id)?.name || '').filter(Boolean),
       _status: p.status,
       _editLink: '/dashboard/hibah/' + p.id,
     }))

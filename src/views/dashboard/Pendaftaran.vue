@@ -50,7 +50,10 @@
             <tr><th>NIP/NIDN</th><td>{{ detail.nip }}</td></tr>
             <tr><th>Jenis</th><td>{{ detail.jenis }}</td></tr>
             <tr><th>Prodi</th><td>{{ detail.prodi }}</td></tr>
-            <tr><th>Skema</th><td>{{ detail.skema }}</td></tr>
+            <tr><th>Model Hibah</th><td>{{ detail.skema }}</td></tr>
+            <tr v-if="detail.sdgs"><th>SDGs</th><td>{{ detail.sdgs }}</td></tr>
+            <tr v-if="detail.kelompok_keahlian"><th>Kel. Keahlian</th><td>{{ detail.kelompok_keahlian }}</td></tr>
+            <tr v-if="detail.jenis_hibah"><th>Jenis Hibah</th><td>{{ detail.jenis_hibah }}</td></tr>
             <tr><th>Judul</th><td>{{ detail.judul }}</td></tr>
             <tr><th>Ringkasan</th><td>{{ detail.ringkasan }}</td></tr>
             <tr><th>Jml Tim</th><td>{{ detail.jml_tim || '—' }}</td></tr>
@@ -118,7 +121,7 @@ import WpButton from '@/components/WpButton.vue'
 import type { WpColumn } from '@/components/WpTable.vue'
 
 const auth=useAuthStore()
-interface Submission { id:number;reg_no:string;nama:string;nip:string;jenis:string;prodi:string;skema:string;judul:string;ringkasan:string;jml_tim:string;anggota:string;email:string;hp:string;hibah_id:number;created_at:string;status?:string }
+interface Submission { id:number;reg_no:string;nama:string;nip:string;jenis:string;prodi:string;skema:string;jenis_hibah?:string;sdgs?:string;kelompok_keahlian?:string;judul:string;ringkasan:string;jml_tim:string;anggota:string;email:string;hp:string;hibah_id:number;created_at:string;status?:string }
 const items=ref<Submission[]>([]),loading=ref(true),error=ref(''),total=ref(0),pg=ref(1),perPg=20
 const search=ref(''),statusFilter=ref('all')
 const detail=ref<Submission|null>(null),detailStatus=ref('submitted'),statusMsg=ref('')
@@ -130,7 +133,7 @@ const columns:WpColumn[]=[
   {key:'reg_no',label:'Reg No',accessor:(r:any)=>r.reg_no},
   {key:'nama',label:'Nama',primary:true,rowActions:(r:any)=>[{label:'Detail',className:'edit',onClick:()=>showDetail(r)}]},
   {key:'jenis',label:'Jenis'},
-  {key:'skema',label:'Skema'},
+  {key:'skema',label:'Model Hibah'},
   {key:'_status',label:'Status',type:'badge',accessor:(r:any)=>r.status==='approved'?'Approved':r.status==='rejected'?'Rejected':r.status==='reviewed'?'Reviewed':'Submitted'},
   {key:'_date',label:'Tanggal',type:'date',accessor:(r:any)=>fmtDate(r.created_at)},
 ]
@@ -170,12 +173,13 @@ async function doExport(){
     const titlePart=exp.value.status?'_'+exp.value.status:''
     const ws=XLSX.utils.json_to_sheet(data.map((d:Record<string,unknown>)=>({
       'No':(d.reg_no as string)||'','Nama':(d.nama as string)||'','NIP/NIDN':(d.nip as string)||'',
-      'Jenis':(d.jenis as string)||'','Prodi':(d.prodi as string)||'','Skema':(d.skema as string)||'',
+      'Jenis':(d.jenis as string)||'','Prodi':(d.prodi as string)||'','Model Hibah':(d.skema as string)||'',
+      'Jenis Hibah':(d.jenis_hibah as string)||'','SDGs':(d.sdgs as string)||'','Kel. Keahlian':(d.kelompok_keahlian as string)||'',
       'Judul':(d.judul as string)||'','Ringkasan':(d.ringkasan as string)||'',
       'Jml Tim':(d.jml_tim as string)||'','Anggota':(d.anggota as string)||'',
       'Email':(d.email as string)||'','WhatsApp':(d.hp as string)||'',
       'Status':(d.status as string)||'','Tanggal':(d.tanggal as string)||''
-    })),{header:['No','Nama','NIP/NIDN','Jenis','Prodi','Skema','Judul','Ringkasan','Jml Tim','Anggota','Email','WhatsApp','Status','Tanggal']})
+    })),{header:['No','Nama','NIP/NIDN','Jenis','Prodi','Model Hibah','Jenis Hibah','SDGs','Kel. Keahlian','Judul','Ringkasan','Jml Tim','Anggota','Email','WhatsApp','Status','Tanggal']})
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Pendaftaran Hibah LP2M')
     const fname='LP2M-Pendaftaran-Hibah_'+exp.value.dari.split('-').join('')+'_'+exp.value.sampai.split('-').join('')
     XLSX.writeFile(wb,(titlePart||'')+'.xlsx',{bookType:'xlsx'})

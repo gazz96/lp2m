@@ -7,7 +7,10 @@ import DashboardHome from '@/views/dashboard/HomePage.vue'
 import HibahIndex from '@/views/dashboard/Hibah/Index.vue'
 import HibahForm from '@/views/dashboard/Hibah/Form.vue'
 import HibahKategori from '@/views/dashboard/Hibah/Kategori.vue'
-import HibahSkema from '@/views/dashboard/Hibah/Skema.vue'
+import HibahModel from '@/views/dashboard/Hibah/Model.vue'
+import HibahJenis from '@/views/dashboard/Hibah/Jenis.vue'
+import HibahSdgs from '@/views/dashboard/Hibah/Sdgs.vue'
+import HibahKelompokKeahlian from '@/views/dashboard/Hibah/KelompokKeahlian.vue'
 import KelolaArtikel from '@/views/dashboard/KelolaArtikel.vue'
 import ArtikelForm from '@/views/dashboard/ArtikelForm.vue'
 import KategoriArtikel from '@/views/dashboard/KategoriArtikel.vue'
@@ -40,7 +43,11 @@ const router = createRouter({
         { path: 'hibah/tambah', name: 'hibah-tambah', component: HibahForm },
         { path: 'hibah/:id', name: 'hibah-edit', component: HibahForm },
         { path: 'hibah/kategori', name: 'hibah-kategori', component: HibahKategori },
-        { path: 'hibah/skema', name: 'hibah-skema', component: HibahSkema },
+        { path: 'hibah/skema', name: 'hibah-skema', redirect: { name: 'hibah-model' } },
+        { path: 'hibah/model', name: 'hibah-model', component: HibahModel },
+        { path: 'hibah/jenis', name: 'hibah-jenis', component: HibahJenis },
+        { path: 'hibah/sdgs', name: 'hibah-sdgs', component: HibahSdgs },
+        { path: 'hibah/kelompok-keahlian', name: 'hibah-kelompok-keahlian', component: HibahKelompokKeahlian },
         { path: 'kelola-artikel', name: 'kelola-artikel', component: KelolaArtikel },
         { path: 'artikel', name: 'artikel', component: KelolaArtikel },
         { path: 'artikel/tambah', name: 'artikel-tambah', component: ArtikelForm },

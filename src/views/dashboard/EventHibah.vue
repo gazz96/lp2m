@@ -10,7 +10,6 @@
         {{ tab.label }}
       </button>
     </div>
-
     <!-- Loading / error -->
     <div v-if="loading" class="loading-text">Memuat data event...</div>
     <div v-else-if="error" class="error-text">{{ error }}</div>
@@ -53,6 +52,7 @@ interface EventPost {
   excerpt: string
   kategori: string
   catId: number
+  tags: string[]
 }
 
 const posts = ref<EventPost[]>([])
@@ -61,11 +61,7 @@ const error = ref('')
 const activeTab = ref('all')
 const selectedHibahId = ref<number | null>(null)
 
-const tabs = [
-  { key: 'all', label: 'Semua' },
-  { key: 'internal', label: 'Internal' },
-  { key: 'eksternal', label: 'Eksternal' }
-]
+const tabs = ref([{ key: 'all', label: 'Semua' }])
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -73,12 +69,12 @@ function formatDate(d: string) {
 
 const filteredPosts = computed(() => {
   if (activeTab.value === 'all') return posts.value
-  return posts.value.filter(p => p.kategori === activeTab.value)
+  return posts.value.filter(p => p.tags.includes(activeTab.value))
 })
 
 onMounted(async () => {
   try {
-    const url = `${SITE.apiBase}/hibah?per_page=30&orderby=date&order=desc`
+    const url = `${SITE.apiBase}/hibah?per_page=30&orderby=date&order=desc&_fields=id,title,link,date,kategori_hibah,jenis_hibah_names,model_hibah_names`
     const res = await fetch(url)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data: HibahEvent[] = await res.json()
@@ -90,10 +86,18 @@ onMounted(async () => {
       title: new DOMParser().parseFromString(p.title.rendered, 'text/html').body.textContent || '',
       link: p.link,
       date: formatDate(p.date),
-      excerpt: p.kategori_hibah || p.skema || p.jenis_hibah || '',
-      kategori: p.jenis_hibah || 'internal',
-      catId: p.id
+      excerpt: p.kategori_hibah || p.model_hibah_names?.join(', ') || p.jenis_hibah_names?.join(', ') || '',
+      kategori: p.jenis_hibah_names?.[0] || '',
+      catId: p.id,
+      tags: [...(p.jenis_hibah_names || []), ...(p.model_hibah_names || [])]
     }))
+    // Build tabs from unique jenis_hibah_names
+    const jenisSet = new Set<string>()
+    data.forEach(p => (p.jenis_hibah_names || []).forEach(n => jenisSet.add(n)))
+    tabs.value = [
+      { key: 'all', label: 'Semua' },
+      ...Array.from(jenisSet).map(n => ({ key: n, label: n }))
+    ]
   } catch (e: any) {
     error.value = e.message
   } finally {

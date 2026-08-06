@@ -68,7 +68,7 @@ const rows = computed(() => {
     { key: 'hp', k: 'WhatsApp', v: all.hp || '—' },
     { key: 'judul', k: 'Judul Usulan', v: all.judul || '—' },
     { key: 'prodi', k: 'Prodi / Unit', v: all.prodi || '—' },
-    { key: 'skema', k: 'Skema Hibah', v: all.skema || '—' },
+    { key: 'skema', k: 'Model Hibah', v: all.skema || '—' },
     { key: 'jenis', k: 'Jenis Pengusul', v: all.jenis || '—' },
     { key: 'jml_tim', k: 'Jumlah Tim', v: all.jml_tim || '0' },
     { key: 'anggota', k: 'Anggota Tim', v: all.anggota || '—' },

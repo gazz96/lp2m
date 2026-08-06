@@ -8,6 +8,9 @@ interface HibahPayload {
   jenis: string
   prodi: string
   skema: string
+  jenis_hibah?: string
+  sdgs?: string
+  kelompok_keahlian?: string
   judul: string
   ringkasan: string
   jml_tim?: string
@@ -49,6 +52,9 @@ export async function onRequestPost(context: { request: Request }) {
     jenis: data.jenis,
     prodi: data.prodi,
     skema: data.skema,
+    jenis_hibah: data.jenis_hibah || '',
+    sdgs: data.sdgs || '',
+    kelompok_keahlian: data.kelompok_keahlian || '',
     judul: data.judul,
     ringkasan: data.ringkasan.slice(0, 200),
     email: data.email,

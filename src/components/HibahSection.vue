@@ -53,14 +53,6 @@
                 <input type="text" id="nip" v-model="form.nip" placeholder="cth. 0112345601" />
                 <div class="error-msg">{{ fieldErrors.nip }}</div>
               </div>
-              <div class="field full">
-                <label>Jenis Pengusul *</label>
-                <div class="radio-group">
-                  <label><input type="radio" v-model="form.jenis" value="Dosen" /> Dosen</label>
-                  <label><input type="radio" v-model="form.jenis" value="Mahasiswa" /> Mahasiswa</label>
-                  <label><input type="radio" v-model="form.jenis" value="Tenaga Kependidikan" /> Tenaga Kependidikan</label>
-                </div>
-              </div>
               <div class="field" :class="{ invalid: fieldErrors.prodi }">
                 <label for="prodi">Program Studi / Unit Kerja *</label>
                 <div class="combobox" :class="{ open: prodiOpen }">
@@ -90,13 +82,13 @@
                 <div class="error-msg">{{ fieldErrors.prodi }}</div>
               </div>
               <div class="field" :class="{ invalid: fieldErrors.skema }">
-                <label for="skema">Skema Hibah yang Diikuti *</label>
+                <label for="skema">Model Hibah yang Diikuti *</label>
                 <div class="combobox" :class="{ open: skemaOpen }">
                   <input
                     type="text"
                     id="skema"
                     v-model="skemaQuery"
-                    placeholder="Ketik untuk cari skema (parent & sub-skema)..."
+                    placeholder="Ketik untuk cari model hibah (parent & sub-model)..."
                     @focus="skemaOpen = true"
                     @input="onSkemaInput"
                     @blur="onSkemaBlur"
