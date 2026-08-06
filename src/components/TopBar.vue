@@ -3,7 +3,7 @@
     <div class="wrap">
       <div class="topbar-links">
         <a href="#tentang">Tentang LP2M</a>
-        <a href="#hibah">Hibah &amp; Event</a>
+        <a href="#hibah">Hibah</a>
         <a href="#kontak">Kontak</a>
       </div>
       <div class="topbar-links">

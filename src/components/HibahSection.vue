@@ -15,7 +15,7 @@
           <div class="eyebrow banner-eyebrow">{{ HIBAH.banner.eyebrow }}</div>
           <h2>{{ eventData.bannerTitle }}</h2>
           <p>{{ eventData.bannerDesc }}</p>
-          <div class="timeline">
+          <div class="timeline" id="jadwal">
             <div v-for="t in eventData.timeline" :key="t.date + t.label" class="t-row">
               <span class="date">{{ fmtTimelineDate(t.date) }}</span>
               <span>{{ t.label }}</span>
