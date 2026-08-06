@@ -23,6 +23,8 @@ export interface SkemaOption {
 export interface TaxonomyOption {
   id: number
   name: string
+  label?: string   // "Parent — Child" untuk term bertingkat
+  parent?: string  // nama parent ('' kalau root)
   desc?: string
 }
 
@@ -117,14 +119,15 @@ export function useHibahForm(hibahId: Ref<number | null>) {
         const cfgKk = ((cfg.kk_options?.length ? cfg.kk_options : (cfg.kelompok_options || [])) as any[])
           .filter((t: any) => t && String(t.name || '').trim())
         kkTerms.value = cfgKk
+        // Map ID berdasar label (parent-child) — sama seperti skema.
         const jid: Record<string, number> = {}
-        ;(cfg.jenis_options || []).forEach((t: any) => { if (t.name) jid[t.name] = t.id })
+        ;(cfg.jenis_options || []).forEach((t: any) => { const l = t.label || t.name; if (l) jid[l] = t.id })
         jenisIdByName.value = jid
         const sid: Record<string, number> = {}
         ;(cfgSdgs.length ? cfg.sdgs_options : (HIBAH_FORM_SDGS_FALLBACK as any[])).forEach((t: any) => { if (t.name) sid[t.name] = t.id })
         sdgsIdByName.value = sid
         const kid: Record<string, number> = {}
-        ;(cfgKk).forEach((t: any) => { if (t.name) kid[t.name] = t.id })
+        ;(cfgKk).forEach((t: any) => { const l = t.label || t.name; if (l) kid[l] = t.id })
         kkIdByName.value = kid
 
         taxonomyLoaded.value = true
@@ -135,9 +138,9 @@ export function useHibahForm(hibahId: Ref<number | null>) {
       const [prodiPosts, skemaRaw, jenisRaw, sdgsRaw, kkRaw] = await Promise.all([
         fetch(`${base}/wp/v2/program_studi?per_page=100&_fields=id,title`).then(r => r.ok ? r.json() : []).catch(() => []),
         fetch(`${base}/wp/v2/model_hibah?per_page=100&_fields=id,name,slug,description,parent`).then(r => r.ok ? r.json() : []).catch(() => []),
-        fetch(`${base}/wp/v2/jenis_hibah?per_page=100&_fields=id,name`).then(r => r.ok ? r.json() : []).catch(() => []),
+        fetch(`${base}/wp/v2/jenis_hibah?per_page=100&_fields=id,name,parent`).then(r => r.ok ? r.json() : []).catch(() => []),
         fetch(`${base}/wp/v2/sdgs?per_page=100&_fields=id,name`).then(r => r.ok ? r.json() : []).catch(() => []),
-        fetch(`${base}/wp/v2/kelompok_keahlian?per_page=100&_fields=id,name`).then(r => r.ok ? r.json() : []).catch(() => []),
+        fetch(`${base}/wp/v2/kelompok_keahlian?per_page=100&_fields=id,name,parent`).then(r => r.ok ? r.json() : []).catch(() => []),
       ])
 
       const prodi = (prodiPosts || []).map((p: any) => p?.title?.rendered || p?.title || '').filter(Boolean)
@@ -165,20 +168,35 @@ export function useHibahForm(hibahId: Ref<number | null>) {
       skemaIdByLabel.value = idByLabel2
 
       // Fallback taxonomy jenis/sdgs/kk.
+      // Flat parent-child: label "Parent — Child".
+      const flatTax = (arr: any[]) => {
+        const list = (arr || [])
+          .filter((t: any) => t && String(t.name || '').trim())
+          .map((t: any) => ({ id: t.id, name: t.name, parent: t.parent || 0 }))
+        const byId: Record<number, any> = {}
+        list.forEach(t => { byId[t.id] = t })
+        return list.map(t => {
+          const pid = typeof t.parent === 'number' ? t.parent : 0
+          if (pid && byId[pid]) {
+            return { ...t, label: `${byId[pid].name} — ${t.name}`, parent: byId[pid].name }
+          }
+          return { ...t, label: t.name, parent: '' }
+        })
+      }
       const toOpts = (arr: any[]) => (arr || [])
         .filter((t: any) => t && String(t.name || '').trim())
         .map((t: any) => ({ id: t.id, name: t.name }))
-      jenisTerms.value = toOpts(jenisRaw)
+      jenisTerms.value = flatTax(jenisRaw)
       sdgsTerms.value = toOpts(sdgsRaw).length ? toOpts(sdgsRaw) : (HIBAH_FORM_SDGS_FALLBACK as TaxonomyOption[])
-      kkTerms.value = toOpts(kkRaw)
+      kkTerms.value = flatTax(kkRaw)
       const jid2: Record<string, number> = {}
-      ;(jenisRaw || []).forEach((t: any) => { if (t.name) jid2[t.name] = t.id })
+      ;(jenisTerms.value as any[]).forEach((t: any) => { if (t.label) jid2[t.label] = t.id })
       jenisIdByName.value = jid2
       const sid2: Record<string, number> = {}
       ;(sdgsRaw || []).forEach((t: any) => { if (t.name) sid2[t.name] = t.id })
       sdgsIdByName.value = sid2
       const kid2: Record<string, number> = {}
-      ;(kkRaw || []).forEach((t: any) => { if (t.name) kid2[t.name] = t.id })
+      ;(kkTerms.value as any[]).forEach((t: any) => { if (t.label) kid2[t.label] = t.id })
       kkIdByName.value = kid2
 
       taxonomyLoaded.value = true

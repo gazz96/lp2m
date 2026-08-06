@@ -2,7 +2,7 @@
   <div class="tag-select">
     <div class="selected-tags" v-if="selectedTerms.length">
       <span v-for="t in selectedTerms" :key="t.id" class="tag-chip">
-        {{ t.name }}
+        {{ t.label || t.name }}
         <button type="button" class="tag-x" @click="$emit('remove', t.id)">✕</button>
       </span>
     </div>
@@ -22,7 +22,7 @@
           :key="t.id"
           class="drop-item"
           @mousedown.prevent="$emit('add', t); search = ''"
-        >{{ t.name }}</button>
+        >{{ t.label || t.name }}</button>
       </div>
       <div class="search-dropdown" v-if="open && search.trim() && !filteredOptions.length">
         <button type="button" class="drop-item new" @mousedown.prevent="$emit('create', search.trim()); search = ''">
@@ -37,7 +37,7 @@
 import { ref, computed } from 'vue'
 
 const props = defineProps<{
-  terms: Array<{ id: number; name: string }>
+  terms: Array<{ id: number; name: string; label?: string; parent?: number }>
   selected: number[]
   placeholder?: string
 }>()
@@ -58,7 +58,8 @@ const selectedTerms = computed(() =>
 const filteredOptions = computed(() => {
   const avail = props.terms.filter(t => !props.selected.includes(t.id))
   if (!search.value.trim()) return avail
-  return avail.filter(t => t.name.toLowerCase().includes(search.value.toLowerCase()))
+  const q = search.value.toLowerCase()
+  return avail.filter(t => (t.label || t.name).toLowerCase().includes(q))
 })
 
 function hideDropdown() { setTimeout(() => { open.value = false }, 150) }

@@ -11,6 +11,10 @@
             <input class="components-text-control__input" type="text" v-model="newName" placeholder="cth. Pusat Kajian Sawit" @keyup.enter="addTerm" />
           </div>
           <div style="flex:1">
+            <label class="components-base-control__label">Induk <span style="font-weight:400;text-transform:none">(opsional)</span></label>
+            <ParentTermSelect v-model="newParent" :terms="terms" />
+          </div>
+          <div style="flex:1">
             <label class="components-base-control__label">Slug <span style="font-weight:400;text-transform:none">(opsional)</span></label>
             <input class="components-text-control__input" type="text" v-model="newSlug" placeholder="pusat-kajian-sawit" />
           </div>
@@ -36,12 +40,16 @@ import { SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
 import WpTable from '@/components/WpTable.vue'
 import WpButton from '@/components/WpButton.vue'
+import ParentTermSelect from '@/components/ParentTermSelect.vue'
 import type { WpColumn } from '@/components/WpTable.vue'
 
 const auth = useAuthStore()
 const tax = 'kelompok_keahlian'
-const terms = ref<{ id: number; name: string; slug: string; count: number }[]>([])
-const newName = ref(''), newSlug = ref(''), adding = ref(false), err = ref('')
+type Term = { id: number; name: string; slug: string; count: number; parent?: number }
+const terms = ref<Term[]>([])
+const newName = ref(''), newSlug = ref(''), newParent = ref(0), adding = ref(false), err = ref('')
+
+const parentOf = (id: number) => terms.value.find(t => t.id === id)?.name || ''
 
 const columns: WpColumn[] = [
   {
@@ -51,6 +59,7 @@ const columns: WpColumn[] = [
       { label: 'Hapus', className: 'trash', to: '/dashboard/hibah/kelompok-keahlian' },
     ]
   },
+  { key: 'parent', label: 'Induk', accessor: (r) => parentOf(r.parent || 0) || '—' },
   { key: 'slug', label: 'Slug' },
   { key: 'count', label: 'Jumlah', width: '80px' },
 ]
@@ -60,9 +69,11 @@ async function addTerm() {
   const n = newName.value.trim(); if (!n) return; adding.value = true; err.value = ''
   const slug = newSlug.value.trim() || n.toLowerCase().replace(/[^a-z0-9]+/g, '-')
   try {
-    const r = await window.fetch(`${SITE.apiBase}/${tax}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...auth.authHeaders() }, body: JSON.stringify({ name: n, slug }) })
+    const body: Record<string, unknown> = { name: n, slug }
+    if (newParent.value > 0) body.parent = newParent.value
+    const r = await window.fetch(`${SITE.apiBase}/${tax}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...auth.authHeaders() }, body: JSON.stringify(body) })
     if (!r.ok) throw new Error((await r.json().catch(() => ({}))).message || 'Gagal')
-    newName.value = ''; newSlug.value = ''; loadTerm()
+    newName.value = ''; newSlug.value = ''; newParent.value = 0; loadTerm()
   } catch (e: any) { err.value = e.message } finally { adding.value = false }
 }
 onMounted(loadTerm)

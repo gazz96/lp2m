@@ -53,7 +53,18 @@ type Row = { id: number; slug: string; status: string; date: string; title: { re
 const items = ref<Row[]>([]), loading = ref(true), total = ref(0), page = ref(1), perPage = 20
 const search = ref(''), statusFilter = ref('any'), sortCol = ref('date'), sortDir = ref<'asc' | 'desc'>('desc')
 const kTerms = ref<{ id: number; name: string }[]>([]), sTerms = ref<{ id: number; name: string }[]>([])
-const jTerms = ref<{ id: number; name: string }[]>([]), sgTerms = ref<{ id: number; name: string }[]>([]), kkTerms = ref<{ id: number; name: string }[]>([])
+const jTerms = ref<{ id: number; name: string; parent?: number }[]>([]), sgTerms = ref<{ id: number; name: string }[]>([]), kkTerms = ref<{ id: number; name: string; parent?: number }[]>([])
+
+// Label term bertingkat: "Parent — Child"
+function termLabel(list: Array<{ id: number; name: string; parent?: number }>, id: number) {
+  const t = list.find(x => x.id === id)
+  if (!t) return ''
+  if (t.parent && t.parent > 0) {
+    const p = list.find(x => x.id === t.parent)
+    if (p) return `${p.name} — ${t.name}`
+  }
+  return t.name
+}
 
 function clean(s: string) { return new DOMParser().parseFromString(s, 'text/html').body.textContent || '' }
 function fmt(d: string) { return d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-' }
@@ -107,9 +118,9 @@ async function load(p = 1) {
       _date: fmt(p.date),
       _cats: (p.kategori_hibah || []).map((id: number) => kTerms.value.find(t => t.id === id)?.name || '').filter(Boolean),
       _skms: (p.model_hibah || p.skema_hibah || []).map((id: number) => sTerms.value.find(t => t.id === id)?.name || '').filter(Boolean),
-      _jenis: (p.jenis_hibah || []).map((id: number) => jTerms.value.find(t => t.id === id)?.name || '').filter(Boolean),
+      _jenis: (p.jenis_hibah || []).map((id: number) => termLabel(jTerms.value, id)).filter(Boolean),
       _sdgs: (p.sdgs || []).map((id: number) => sgTerms.value.find(t => t.id === id)?.name || '').filter(Boolean),
-      _kk: (p.kelompok_keahlian || []).map((id: number) => kkTerms.value.find(t => t.id === id)?.name || '').filter(Boolean),
+      _kk: (p.kelompok_keahlian || []).map((id: number) => termLabel(kkTerms.value, id)).filter(Boolean),
       _status: p.status,
       _editLink: '/dashboard/hibah/' + p.id,
     }))

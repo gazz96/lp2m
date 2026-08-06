@@ -126,7 +126,7 @@
                 <label for="jenis_hibah">Jenis Hibah *</label>
                 <select id="jenis_hibah" v-model="form.jenis_hibah">
                   <option value="">Pilih jenis hibah</option>
-                  <option v-for="o in jenisTerms" :key="o.id" :value="o.name">{{ o.name }}</option>
+                  <option v-for="o in jenisTerms" :key="o.id" :value="o.label || o.name">{{ o.label || o.name }}</option>
                 </select>
                 <div class="error-msg">{{ fieldErrors.jenis_hibah }}</div>
               </div>
@@ -142,7 +142,7 @@
                 <label for="kelompok_keahlian">Kelompok Keahlian *</label>
                 <select id="kelompok_keahlian" v-model="form.kelompok_keahlian">
                   <option value="">Pilih kelompok keahlian</option>
-                  <option v-for="o in kkTerms" :key="o.id" :value="o.name">{{ o.name }}</option>
+                  <option v-for="o in kkTerms" :key="o.id" :value="o.label || o.name">{{ o.label || o.name }}</option>
                 </select>
                 <div class="error-msg">{{ fieldErrors.kelompok_keahlian }}</div>
               </div>
