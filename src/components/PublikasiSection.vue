@@ -32,13 +32,15 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useNewsStore } from '@/stores/news'
 import { SITE } from '@/data'
 import SkeletonBlock from './SkeletonBlock.vue'
 
 const store = useNewsStore()
 
-const { posts, loading, error, fetchNews, stripHtml, formatDate, getCategoryName, getThumbnail } = store
+const { posts, loading, error } = storeToRefs(store)
+const { fetchNews, stripHtml, formatDate, getCategoryName, getThumbnail } = store
 
 // Category ID → name mapping from our API probe
 const catMap: Record<number, string> = {
