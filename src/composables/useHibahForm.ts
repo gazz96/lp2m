@@ -111,18 +111,20 @@ export function useHibahForm(hibahId: Ref<number | null>) {
         skemaIdByLabel.value = idByLabel
 
         // Jenis hibah / SDGs / Kelompok keahlian dari form-config.
-      jenisTerms.value = (cfg.jenis_options || []).filter((t: any) => t && String(t.name || '').trim())
-      sdgsTerms.value = (cfg.sdgs_options || []).filter((t: any) => t && String(t.name || '').trim())
-      kkTerms.value = ((cfg.kk_options?.length ? cfg.kk_options : (cfg.kelompok_options || [])) as any[])
-        .filter((t: any) => t && String(t.name || '').trim())
+        jenisTerms.value = (cfg.jenis_options || []).filter((t: any) => t && String(t.name || '').trim())
+        const cfgSdgs = (cfg.sdgs_options || []).filter((t: any) => t && String(t.name || '').trim())
+        sdgsTerms.value = cfgSdgs.length ? cfgSdgs : (HIBAH_FORM_SDGS_FALLBACK as TaxonomyOption[])
+        const cfgKk = ((cfg.kk_options?.length ? cfg.kk_options : (cfg.kelompok_options || [])) as any[])
+          .filter((t: any) => t && String(t.name || '').trim())
+        kkTerms.value = cfgKk
         const jid: Record<string, number> = {}
         ;(cfg.jenis_options || []).forEach((t: any) => { if (t.name) jid[t.name] = t.id })
         jenisIdByName.value = jid
         const sid: Record<string, number> = {}
-        ;(cfg.sdgs_options || []).forEach((t: any) => { if (t.name) sid[t.name] = t.id })
+        ;(cfgSdgs.length ? cfg.sdgs_options : (HIBAH_FORM_SDGS_FALLBACK as any[])).forEach((t: any) => { if (t.name) sid[t.name] = t.id })
         sdgsIdByName.value = sid
         const kid: Record<string, number> = {}
-        ;(cfg.kk_options || []).forEach((t: any) => { if (t.name) kid[t.name] = t.id })
+        ;(cfgKk).forEach((t: any) => { if (t.name) kid[t.name] = t.id })
         kkIdByName.value = kid
 
         taxonomyLoaded.value = true
