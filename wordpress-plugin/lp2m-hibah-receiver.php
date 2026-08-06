@@ -224,7 +224,7 @@ class LP2M_Hibah_Receiver {
 		// --- Validate required fields ---
 		$labels = [
 			'nama'      => 'Nama Lengkap & Gelar',
-			'nip'       => 'NIDN / NIDK / NIM',
+			'nip'       => 'NIDN / NIDK',
 			'jenis'     => 'Jenis Pengusul',
 			'prodi'     => 'Program Studi / Unit Kerja',
 			'skema'     => 'Model Hibah',

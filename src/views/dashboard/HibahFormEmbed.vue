@@ -12,7 +12,7 @@
           <div class="error-msg">{{ fieldErrors.nama }}</div>
         </div>
         <div class="field" :class="{ invalid: fieldErrors.nip }">
-          <label for="nip">NIDN / NIDK / NIM *</label>
+          <label for="nip">NIDN / NIDK *</label>
           <input type="text" id="nip" v-model="form.nip" placeholder="cth. 0112345601" />
           <div class="error-msg">{{ fieldErrors.nip }}</div>
         </div>
@@ -111,13 +111,13 @@
 		</div>
 	  </div>
 
-	  <!-- Anggota tim dinamis (maks 2) -->
+	  <!-- Anggota tim dinamis (maks 2 dosen + 2 mahasiswa) -->
 	  <div class="anggota-box mt-22">
 		<div class="anggota-head">
-		  <div class="anggota-title">Anggota Tim <span class="hint">(opsional, maks 2 orang)</span></div>
+		  <div class="anggota-title">Anggota Tim <span class="hint">(opsional, maks 2 dosen + 2 mahasiswa)</span></div>
 		  <div class="anggota-actions">
-			<button type="button" class="btn btn-outline is-small" :disabled="form.anggota_list.length >= 2" @click="addAnggota('dosen')">+ Dosen</button>
-			<button type="button" class="btn btn-outline is-small" :disabled="form.anggota_list.length >= 2" @click="addAnggota('mahasiswa')">+ Mahasiswa</button>
+			<button type="button" class="btn btn-outline is-small" :disabled="dosenCount >= 2" @click="addAnggota('dosen')">+ Dosen</button>
+			<button type="button" class="btn btn-outline is-small" :disabled="mhsCount >= 2" @click="addAnggota('mahasiswa')">+ Mahasiswa</button>
 		  </div>
 		</div>
 		<div v-if="!form.anggota_list.length" class="anggota-empty">Belum ada anggota. Klik "+ Dosen" atau "+ Mahasiswa" untuk menambah.</div>
@@ -169,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { HIBAH } from '@/data'
 import { useHibahForm } from '@/composables/useHibahForm'
 
@@ -183,6 +183,10 @@ const {
   addAnggota, removeAnggota,
   submit, reset, loadFormConfig
 } = useHibahForm(hibahIdRef)
+
+// Jumlah anggota per tipe untuk cap 2 dosen + 2 mahasiswa
+const dosenCount = computed(() => form.anggota_list.filter(m => m.tipe === 'dosen').length)
+const mhsCount = computed(() => form.anggota_list.filter(m => m.tipe === 'mahasiswa').length)
 
 function submitForm() { submit() }
 

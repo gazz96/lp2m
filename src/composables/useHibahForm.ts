@@ -5,9 +5,12 @@ import { useAuthStore } from '@/stores/auth'
 
 const HIBAH_FORM_PRODI_FALLBACK: string[] = HIBAH.form.prodiOptions || []
 const HIBAH_FORM_SKEMA_FALLBACK: string[] = HIBAH.form.skemaOptions || []
-const HIBAH_FORM_SDGS_FALLBACK: string[] = HIBAH.form.sdgsOptions || []
 
-const MAX_ANGGOTA = 2
+// Fallback SDGs: string[] dari content.json → objek { id, name } agar template `o.id`/`o.name` berfungsi.
+const HIBAH_FORM_SDGS_FALLBACK: TaxonomyOption[] = (HIBAH.form.sdgsOptions || [])
+  .map((s, i) => ({ id: i + 1, name: s }))
+
+const MAX_ANGGOTA_PER_TIPE = 2
 
 export interface SkemaOption {
   id: number
@@ -76,7 +79,8 @@ export function useHibahForm(hibahId: Ref<number | null>) {
   const taxonomyLoaded = ref(false)
 
   function addAnggota(tipe: 'dosen' | 'mahasiswa' = 'dosen') {
-    if (form.anggota_list.length >= MAX_ANGGOTA) return
+    const count = form.anggota_list.filter(m => m.tipe === tipe).length
+    if (count >= MAX_ANGGOTA_PER_TIPE) return
     form.anggota_list.push({ tipe, nomor: '', nama: '', prodi: '' })
   }
   function removeAnggota(idx: number) {
@@ -107,9 +111,10 @@ export function useHibahForm(hibahId: Ref<number | null>) {
         skemaIdByLabel.value = idByLabel
 
         // Jenis hibah / SDGs / Kelompok keahlian dari form-config.
-        jenisTerms.value = cfg.jenis_options || []
-        sdgsTerms.value = cfg.sdgs_options?.length ? cfg.sdgs_options : []
-        kkTerms.value = cfg.kk_options?.length ? cfg.kk_options : (cfg.kelompok_options || [])
+      jenisTerms.value = (cfg.jenis_options || []).filter((t: any) => t && String(t.name || '').trim())
+      sdgsTerms.value = (cfg.sdgs_options || []).filter((t: any) => t && String(t.name || '').trim())
+      kkTerms.value = ((cfg.kk_options?.length ? cfg.kk_options : (cfg.kelompok_options || [])) as any[])
+        .filter((t: any) => t && String(t.name || '').trim())
         const jid: Record<string, number> = {}
         ;(cfg.jenis_options || []).forEach((t: any) => { if (t.name) jid[t.name] = t.id })
         jenisIdByName.value = jid
@@ -158,9 +163,11 @@ export function useHibahForm(hibahId: Ref<number | null>) {
       skemaIdByLabel.value = idByLabel2
 
       // Fallback taxonomy jenis/sdgs/kk.
-      const toOpts = (arr: any[]) => (arr || []).map((t: any) => ({ id: t.id, name: t.name }))
+      const toOpts = (arr: any[]) => (arr || [])
+        .filter((t: any) => t && String(t.name || '').trim())
+        .map((t: any) => ({ id: t.id, name: t.name }))
       jenisTerms.value = toOpts(jenisRaw)
-      sdgsTerms.value = toOpts(sdgsRaw).length ? toOpts(sdgsRaw) : (HIBAH_FORM_SDGS_FALLBACK as any[])
+      sdgsTerms.value = toOpts(sdgsRaw).length ? toOpts(sdgsRaw) : (HIBAH_FORM_SDGS_FALLBACK as TaxonomyOption[])
       kkTerms.value = toOpts(kkRaw)
       const jid2: Record<string, number> = {}
       ;(jenisRaw || []).forEach((t: any) => { if (t.name) jid2[t.name] = t.id })
@@ -211,7 +218,7 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     let valid = true
     const required: [keyof HibahFormData, string][] = [
       ['nama', 'Nama lengkap wajib diisi.'],
-      ['nip', 'NIDN/NIDK/NIM wajib diisi.'],
+      ['nip', 'NIDN/NIDK wajib diisi.'],
       ['judul', 'Judul usulan wajib diisi.'],
       ['ringkasan', 'Ringkasan usulan wajib diisi.'],
       ['email', 'Email aktif wajib diisi.'],

@@ -49,7 +49,7 @@
                 <div class="error-msg">{{ fieldErrors.nama }}</div>
               </div>
               <div class="field" :class="{ invalid: fieldErrors.nip }">
-                <label for="nip">NIDN / NIDK / NIM *</label>
+                <label for="nip">NIDN / NIDK *</label>
                 <input type="text" id="nip" v-model="form.nip" placeholder="cth. 0112345601" />
                 <div class="error-msg">{{ fieldErrors.nip }}</div>
               </div>
@@ -171,15 +171,15 @@
               </div>
             </div>
 
-            <!-- Anggota tim dinamis (maks 2: dosen / mahasiswa) -->
+            <!-- Anggota tim dinamis (maks 2 dosen + 2 mahasiswa) -->
             <div class="anggota-box mt-22">
               <div class="anggota-head">
-                <div class="anggota-title">Anggota Tim <span class="hint">(opsional, maksimal 2 orang)</span></div>
+                <div class="anggota-title">Anggota Tim <span class="hint">(opsional, maks 2 dosen + 2 mahasiswa)</span></div>
                 <div class="anggota-actions">
-                  <button type="button" class="btn btn-outline is-small" :disabled="form.anggota_list.length >= 2" @click="addAnggota('dosen')">
+                  <button type="button" class="btn btn-outline is-small" :disabled="dosenCount >= 2" @click="addAnggota('dosen')">
                     + Dosen
                   </button>
-                  <button type="button" class="btn btn-outline is-small" :disabled="form.anggota_list.length >= 2" @click="addAnggota('mahasiswa')">
+                  <button type="button" class="btn btn-outline is-small" :disabled="mhsCount >= 2" @click="addAnggota('mahasiswa')">
                     + Mahasiswa
                   </button>
                 </div>
@@ -284,6 +284,10 @@ const {
   jenisTerms, sdgsTerms, kkTerms,
   addAnggota, removeAnggota
 } = useHibahForm(activeHibahId)
+
+// Jumlah anggota per tipe untuk cap 2 dosen + 2 mahasiswa
+const dosenCount = computed(() => form.anggota_list.filter(m => m.tipe === 'dosen').length)
+const mhsCount = computed(() => form.anggota_list.filter(m => m.tipe === 'mahasiswa').length)
 
 // ── Combobox prodi (searchable) ──
 const prodiQuery = ref('')
