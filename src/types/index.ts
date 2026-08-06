@@ -42,6 +42,8 @@ export interface HibahFormData {
   email: string
   hp: string
   pernyataan: boolean
+  proposal?: File | null
+  proposalName?: string
 }
 
 export interface BidangItem {

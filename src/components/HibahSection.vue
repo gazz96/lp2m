@@ -148,6 +148,46 @@
                 <input type="tel" id="hp" v-model="form.hp" placeholder="08xx-xxxx-xxxx" />
                 <div class="error-msg">{{ fieldErrors.hp }}</div>
               </div>
+              <div class="field full" :class="{ invalid: fieldErrors.proposal }">
+                <label for="proposal">Upload Proposal (PDF) *</label>
+                <input
+                  type="file"
+                  id="proposal"
+                  accept=".pdf"
+                  @change="onFileChange"
+                  class="file-input"
+                />
+                <div class="file-hint">Maksimal 10MB. Format: PDF.</div>
+                <div v-if="form.proposalName" class="file-name">{{ form.proposalName }}</div>
+                <div class="error-msg">{{ fieldErrors.proposal }}</div>
+              </div>
+            </div>
+
+            <!-- Download contoh penulisan -->
+            <div v-if="eventData.filePanduan.length || eventData.fileTemplate.length" class="download-box mt-22">
+              <div class="dl-label">Contoh Penulisan & Template</div>
+              <div class="dl-links">
+                <a
+                  v-for="(url, i) in eventData.filePanduan"
+                  :key="'panduan-' + i"
+                  :href="url"
+                  target="_blank"
+                  class="dl-link"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Panduan Penulisan {{ eventData.filePanduan.length > 1 ? i + 1 : '' }}
+                </a>
+                <a
+                  v-for="(url, i) in eventData.fileTemplate"
+                  :key="'template-' + i"
+                  :href="url"
+                  target="_blank"
+                  class="dl-link"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Template Proposal {{ eventData.fileTemplate.length > 1 ? i + 1 : '' }}
+                </a>
+              </div>
             </div>
 
             <div class="check-row mt-22">
@@ -255,6 +295,25 @@ function onSkemaBlur() {
 
 // eventData diambil dari useHibahEvent() — endpoint /itsi/v1/hibah/nearest-deadline
 
+function onFileChange(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  if (file.size > 10 * 1024 * 1024) {
+    fieldErrors.proposal = 'Ukuran file maksimal 10MB.'
+    input.value = ''
+    return
+  }
+  if (file.type !== 'application/pdf') {
+    fieldErrors.proposal = 'Hanya file PDF yang diperbolehkan.'
+    input.value = ''
+    return
+  }
+  fieldErrors.proposal = ''
+  form.proposal = file
+  form.proposalName = file.name
+}
+
 function submitForm() { submit() }
 function resetForm() { reset() }
 function fmtTimelineDate(d: string) {
@@ -304,4 +363,51 @@ function fmtTimelineDate(d: string) {
 .combobox-list li:hover { background: var(--green-50, #eef4ef); }
 .sk-label { display: block; font-weight: 600; }
 .sk-desc { display: block; font-size: 0.76rem; color: var(--ink-soft, #6b6457); margin-top: 2px; }
+
+/* File upload */
+.file-input {
+  padding: 10px;
+  border: 1px dashed var(--line, #d8d0c0);
+  border-radius: 6px;
+  background: var(--green-50, #f8faf8);
+  cursor: pointer;
+}
+.file-input:hover { border-color: var(--gold, #C99A3B); }
+.file-hint { font-size: 0.75rem; color: var(--ink-soft, #6b6457); margin-top: 4px; }
+.file-name { font-size: 0.82rem; color: var(--green-700, #2d5a3d); margin-top: 6px; font-weight: 600; }
+
+/* Download box */
+.download-box {
+  background: var(--green-50, #f0f5f0);
+  border: 1px solid var(--line, #d8d0c0);
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+.dl-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--green-800, #1e3d2a);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.dl-links { display: flex; flex-wrap: wrap; gap: 10px; }
+.dl-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid var(--line, #d8d0c0);
+  border-radius: 6px;
+  font-size: 0.82rem;
+  color: var(--green-700, #2d5a3d);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.dl-link:hover {
+  border-color: var(--gold, #C99A3B);
+  color: var(--gold, #C99A3B);
+  transform: translateY(-1px);
+}
 </style>

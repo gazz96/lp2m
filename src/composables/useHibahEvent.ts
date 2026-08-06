@@ -10,6 +10,9 @@ export interface HibahEventView {
   deadlineLabel: string
   timeline: Array<{ date: string; label: string }>
   info: string[]
+  thumbnailUrl: string
+  filePanduan: string[]
+  fileTemplate: string[]
 }
 
 const defaultEvent: HibahEventView = {
@@ -20,6 +23,9 @@ const defaultEvent: HibahEventView = {
   deadlineLabel: HIBAH.banner.deadlineLabel,
   timeline: HIBAH.banner.timeline,
   info: HIBAH.banner.info,
+  thumbnailUrl: '',
+  filePanduan: [],
+  fileTemplate: [],
 }
 
 export function useHibahEvent() {
@@ -56,6 +62,9 @@ export function useHibahEvent() {
       info: data.info_tambahan
         ? data.info_tambahan.split('\n').filter((l: string) => l.trim())
         : HIBAH.banner.info,
+      thumbnailUrl: data.thumbnail_url || '',
+      filePanduan: data.file_panduan || [],
+      fileTemplate: data.file_template || [],
     }
   }
 

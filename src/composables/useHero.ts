@@ -18,6 +18,7 @@ export interface HibahEventData {
   title: string
   excerpt: string
   permalink: string
+  thumbnail_url: string
   jenis_hibah: string
   deadline: string
   deadline_label: string
