@@ -1,4 +1,4 @@
-import { reactive, ref, type Ref } from 'vue'
+import { reactive, ref, watch, type Ref } from 'vue'
 import type { HibahFormData } from '@/types'
 import { HIBAH, SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
@@ -260,6 +260,12 @@ export function useHibahForm(hibahId: Ref<number | null>) {
   // Auto-load config when hibahId changes
   loadFormConfig()
   loadTaxonomies()
+
+  watch(hibahId, (newId) => {
+    if (newId && newId > 0) {
+      loadFormConfig()
+    }
+  })
 
   return {
     form, submitting, success, regNo, fieldErrors, checkError,

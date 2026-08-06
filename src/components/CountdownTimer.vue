@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 
 const props = defineProps<{
   deadline: string
@@ -12,11 +12,11 @@ const props = defineProps<{
 const el = ref<HTMLElement>()
 const days = ref<number>(0)
 
-onMounted(() => {
+function update() {
   const dl = new Date(props.deadline)
-  function update() {
-    days.value = Math.max(0, Math.ceil((dl.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-  }
-  update()
-})
+  days.value = Math.max(0, Math.ceil((dl.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+}
+
+onMounted(update)
+watch(() => props.deadline, update)
 </script>
