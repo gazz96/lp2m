@@ -70,11 +70,20 @@ const rows = computed(() => {
     { key: 'prodi', k: 'Prodi / Unit', v: all.prodi || '—' },
     { key: 'skema', k: 'Model Hibah', v: all.skema || '—' },
     { key: 'jenis', k: 'Jenis Pengusul', v: all.jenis || '—' },
-    { key: 'jml_tim', k: 'Jumlah Tim', v: all.jml_tim || '0' },
-    { key: 'anggota', k: 'Anggota Tim', v: all.anggota || '—' },
+    { key: 'anggota', k: 'Anggota Tim', v: fmtAnggota(all.anggota_list) },
     { key: 'tanggal', k: 'Tanggal Daftar', v: all.tanggal || '—' },
   ]
 })
+
+function fmtAnggota(list: any) {
+  const arr: any[] = Array.isArray(list) ? list : []
+  if (!arr.length) return '—'
+  return arr.map((m, i) =>
+    `${i + 1}. ${m.nama || ''} (${m.tipe === 'mahasiswa' ? 'Mahasiswa' : 'Dosen'}` +
+    `${m.tipe === 'mahasiswa' ? ' NIM ' + (m.nomor || '') : ' NIDN ' + (m.nomor || '')}` +
+    `${m.tipe === 'mahasiswa' && m.prodi ? ', Prodi ' + m.prodi : ''})`
+  ).join('; ')
+}
 
 function statusStyle(s = '') {
   if (s === 'approved') return { background: '#d5f5e3', color: '#1e8449', padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' as const }

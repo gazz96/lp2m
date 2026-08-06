@@ -122,13 +122,29 @@
                 <textarea id="ringkasan" v-model="form.ringkasan" maxlength="500" placeholder="Latar belakang, tujuan, dan luaran yang ditargetkan"></textarea>
                 <div class="error-msg">{{ fieldErrors.ringkasan }}</div>
               </div>
-              <div class="field">
-                <label for="jml_tim">Jumlah Anggota Tim</label>
-                <input type="number" id="jml_tim" v-model="form.jml_tim" min="0" max="3" placeholder="0–3 orang" />
+              <div class="field" :class="{ invalid: fieldErrors.jenis_hibah }">
+                <label for="jenis_hibah">Jenis Hibah *</label>
+                <select id="jenis_hibah" v-model="form.jenis_hibah">
+                  <option value="">Pilih jenis hibah</option>
+                  <option v-for="o in jenisTerms" :key="o.id" :value="o.name">{{ o.name }}</option>
+                </select>
+                <div class="error-msg">{{ fieldErrors.jenis_hibah }}</div>
               </div>
-              <div class="field">
-                <label for="anggota">Nama Anggota Tim <span class="hint">(opsional)</span></label>
-                <input type="text" id="anggota" v-model="form.anggota" placeholder="Pisahkan dengan koma" />
+              <div class="field" :class="{ invalid: fieldErrors.sdgs }">
+                <label for="sdgs">SDGs (Sustainable Development Goals) *</label>
+                <select id="sdgs" v-model="form.sdgs">
+                  <option value="">Pilih SDGs</option>
+                  <option v-for="o in sdgsTerms" :key="o.id" :value="o.name">{{ o.name }}</option>
+                </select>
+                <div class="error-msg">{{ fieldErrors.sdgs }}</div>
+              </div>
+              <div class="field" :class="{ invalid: fieldErrors.kelompok_keahlian }">
+                <label for="kelompok_keahlian">Kelompok Keahlian *</label>
+                <select id="kelompok_keahlian" v-model="form.kelompok_keahlian">
+                  <option value="">Pilih kelompok keahlian</option>
+                  <option v-for="o in kkTerms" :key="o.id" :value="o.name">{{ o.name }}</option>
+                </select>
+                <div class="error-msg">{{ fieldErrors.kelompok_keahlian }}</div>
               </div>
               <div class="field" :class="{ invalid: fieldErrors.email }">
                 <label for="email">Email Aktif *</label>
@@ -152,6 +168,46 @@
                 <div class="file-hint">Maksimal 10MB. Format: PDF.</div>
                 <div v-if="form.proposalName" class="file-name">{{ form.proposalName }}</div>
                 <div class="error-msg">{{ fieldErrors.proposal }}</div>
+              </div>
+            </div>
+
+            <!-- Anggota tim dinamis (maks 2: dosen / mahasiswa) -->
+            <div class="anggota-box mt-22">
+              <div class="anggota-head">
+                <div class="anggota-title">Anggota Tim <span class="hint">(opsional, maksimal 2 orang)</span></div>
+                <div class="anggota-actions">
+                  <button type="button" class="btn btn-outline is-small" :disabled="form.anggota_list.length >= 2" @click="addAnggota('dosen')">
+                    + Dosen
+                  </button>
+                  <button type="button" class="btn btn-outline is-small" :disabled="form.anggota_list.length >= 2" @click="addAnggota('mahasiswa')">
+                    + Mahasiswa
+                  </button>
+                </div>
+              </div>
+              <div v-if="!form.anggota_list.length" class="anggota-empty">Belum ada anggota. Klik "+ Dosen" atau "+ Mahasiswa" untuk menambah.</div>
+              <div v-for="(m, i) in form.anggota_list" :key="i" class="anggota-item" :class="{ invalid: fieldErrors['anggota_list_' + i] }">
+                <div class="anggota-item-head">
+                  <span class="anggota-badge" :class="m.tipe">Anggota #{{ i + 1 }} — {{ m.tipe === 'mahasiswa' ? 'Mahasiswa' : 'Dosen' }}</span>
+                  <button type="button" class="anggota-remove" @click="removeAnggota(i)">✕ Hapus</button>
+                </div>
+                <div class="anggota-grid">
+                  <div class="field">
+                    <label :for="'ang_nomor_' + i">{{ m.tipe === 'mahasiswa' ? 'NIM' : 'NIDN' }} *</label>
+                    <input :id="'ang_nomor_' + i" type="text" v-model="m.nomor" :placeholder="m.tipe === 'mahasiswa' ? 'cth. 2024xxxxxx' : 'cth. 0112345601'" />
+                  </div>
+                  <div class="field">
+                    <label :for="'ang_nama_' + i">Nama Lengkap *</label>
+                    <input :id="'ang_nama_' + i" type="text" v-model="m.nama" placeholder="Nama lengkap tanpa gelar" />
+                  </div>
+                  <div v-if="m.tipe === 'mahasiswa'" class="field">
+                    <label :for="'ang_prodi_' + i">Program Studi *</label>
+                    <select :id="'ang_prodi_' + i" v-model="m.prodi">
+                      <option value="">Pilih prodi</option>
+                      <option v-for="p in prodiTerms" :key="p" :value="p">{{ p }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="error-msg">{{ fieldErrors['anggota_list_' + i] }}</div>
               </div>
             </div>
 
@@ -224,7 +280,9 @@ const activeHibahId = computed(() => eventData.value.id)
 const {
   form, submitting, success: successForm, regNo,
   fieldErrors, checkError, submit, reset,
-  prodiTerms, skemaOptionsAll
+  prodiTerms, skemaOptionsAll,
+  jenisTerms, sdgsTerms, kkTerms,
+  addAnggota, removeAnggota
 } = useHibahForm(activeHibahId)
 
 // ── Combobox prodi (searchable) ──
@@ -401,5 +459,74 @@ function fmtTimelineDate(d: string) {
   border-color: var(--gold, #C99A3B);
   color: var(--gold, #C99A3B);
   transform: translateY(-1px);
+}
+
+/* Anggota tim dinamis */
+.anggota-box {
+  background: var(--green-50, #f0f5f0);
+  border: 1px solid var(--line, #d8d0c0);
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+.anggota-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.anggota-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--green-800, #1e3d2a);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.anggota-title .hint { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.anggota-actions { display: flex; gap: 8px; }
+.btn.is-small { padding: 5px 12px; font-size: 0.78rem; }
+.anggota-empty {
+  font-size: 0.8rem;
+  color: var(--ink-soft, #6b6457);
+  padding: 10px 0;
+}
+.anggota-item {
+  border: 1px solid var(--line, #d8d0c0);
+  background: #fff;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-top: 10px;
+}
+.anggota-item.invalid { border-color: var(--rust, #b3541e); }
+.anggota-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.anggota-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--green-100, #dceadf);
+  color: var(--green-800, #1e3d2a);
+}
+.anggota-badge.mahasiswa { background: #e8ecf7; color: #2c4a8f; }
+.anggota-remove {
+  border: none;
+  background: none;
+  color: var(--rust, #b3541e);
+  font-size: 0.76rem;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+.anggota-remove:hover { text-decoration: underline; }
+.anggota-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px 16px;
 }
 </style>

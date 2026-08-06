@@ -28,6 +28,13 @@ export interface WpCategory {
   count: number
 }
 
+export interface AnggotaItem {
+  tipe: 'dosen' | 'mahasiswa'
+  nomor: string
+  nama: string
+  prodi: string
+}
+
 export interface HibahFormData {
   hibah_id: number | null
   nama: string
@@ -39,6 +46,10 @@ export interface HibahFormData {
   ringkasan: string
   jml_tim: string
   anggota: string
+  jenis_hibah: string
+  sdgs: string
+  kelompok_keahlian: string
+  anggota_list: AnggotaItem[]
   email: string
   hp: string
   pernyataan: boolean

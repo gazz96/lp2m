@@ -1,10 +1,13 @@
 import { reactive, ref, watch, type Ref } from 'vue'
-import type { HibahFormData } from '@/types'
+import type { HibahFormData, AnggotaItem } from '@/types'
 import { HIBAH, SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
 
 const HIBAH_FORM_PRODI_FALLBACK: string[] = HIBAH.form.prodiOptions || []
 const HIBAH_FORM_SKEMA_FALLBACK: string[] = HIBAH.form.skemaOptions || []
+const HIBAH_FORM_SDGS_FALLBACK: string[] = HIBAH.form.sdgsOptions || []
+
+const MAX_ANGGOTA = 2
 
 export interface SkemaOption {
   id: number
@@ -12,6 +15,12 @@ export interface SkemaOption {
   name: string       // nama term (child jika ada, else parent)
   parent: string     // nama parent ('' kalau root)
   desc: string       // description term
+}
+
+export interface TaxonomyOption {
+  id: number
+  name: string
+  desc?: string
 }
 
 export interface FormField {
@@ -34,6 +43,10 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     ringkasan: '',
     jml_tim: '',
     anggota: '',
+    jenis_hibah: '',
+    sdgs: '',
+    kelompok_keahlian: '',
+    anggota_list: [],
     email: '',
     hp: '',
     pernyataan: false
@@ -52,9 +65,23 @@ export function useHibahForm(hibahId: Ref<number | null>) {
   //    Model tampil parent + child + description (tanpa filter internal/eksternal).
   const prodiTerms = ref<string[]>([])
   const skemaTerms = ref<SkemaOption[]>([])
+  const jenisTerms = ref<TaxonomyOption[]>([])
+  const sdgsTerms = ref<TaxonomyOption[]>([])
+  const kkTerms = ref<TaxonomyOption[]>([])
   const prodiIdName = ref<Record<string, number>>({}) // nama → post ID (CPT)
   const skemaIdByLabel = ref<Record<string, number>>({}) // label → term ID
+  const jenisIdByName = ref<Record<string, number>>({})
+  const sdgsIdByName = ref<Record<string, number>>({})
+  const kkIdByName = ref<Record<string, number>>({})
   const taxonomyLoaded = ref(false)
+
+  function addAnggota(tipe: 'dosen' | 'mahasiswa' = 'dosen') {
+    if (form.anggota_list.length >= MAX_ANGGOTA) return
+    form.anggota_list.push({ tipe, nomor: '', nama: '', prodi: '' })
+  }
+  function removeAnggota(idx: number) {
+    form.anggota_list.splice(idx, 1)
+  }
 
   async function loadTaxonomies() {
     if (taxonomyLoaded.value) return
@@ -78,14 +105,32 @@ export function useHibahForm(hibahId: Ref<number | null>) {
         const idByLabel: Record<string, number> = {}
         ;(cfg.skema_options || []).forEach((s: any) => { if (s.label) idByLabel[s.label] = s.id })
         skemaIdByLabel.value = idByLabel
+
+        // Jenis hibah / SDGs / Kelompok keahlian dari form-config.
+        jenisTerms.value = cfg.jenis_options || []
+        sdgsTerms.value = cfg.sdgs_options?.length ? cfg.sdgs_options : []
+        kkTerms.value = cfg.kk_options?.length ? cfg.kk_options : (cfg.kelompok_options || [])
+        const jid: Record<string, number> = {}
+        ;(cfg.jenis_options || []).forEach((t: any) => { if (t.name) jid[t.name] = t.id })
+        jenisIdByName.value = jid
+        const sid: Record<string, number> = {}
+        ;(cfg.sdgs_options || []).forEach((t: any) => { if (t.name) sid[t.name] = t.id })
+        sdgsIdByName.value = sid
+        const kid: Record<string, number> = {}
+        ;(cfg.kk_options || []).forEach((t: any) => { if (t.name) kid[t.name] = t.id })
+        kkIdByName.value = kid
+
         taxonomyLoaded.value = true
         return
       }
 
       // Fallback: fetch langsung /wp/v2/* (kalau form-config belum ada).
-      const [prodiPosts, skemaRaw] = await Promise.all([
+      const [prodiPosts, skemaRaw, jenisRaw, sdgsRaw, kkRaw] = await Promise.all([
         fetch(`${base}/wp/v2/program_studi?per_page=100&_fields=id,title`).then(r => r.ok ? r.json() : []).catch(() => []),
         fetch(`${base}/wp/v2/model_hibah?per_page=100&_fields=id,name,slug,description,parent`).then(r => r.ok ? r.json() : []).catch(() => []),
+        fetch(`${base}/wp/v2/jenis_hibah?per_page=100&_fields=id,name`).then(r => r.ok ? r.json() : []).catch(() => []),
+        fetch(`${base}/wp/v2/sdgs?per_page=100&_fields=id,name`).then(r => r.ok ? r.json() : []).catch(() => []),
+        fetch(`${base}/wp/v2/kelompok_keahlian?per_page=100&_fields=id,name`).then(r => r.ok ? r.json() : []).catch(() => []),
       ])
 
       const prodi = (prodiPosts || []).map((p: any) => p?.title?.rendered || p?.title || '').filter(Boolean)
@@ -111,6 +156,22 @@ export function useHibahForm(hibahId: Ref<number | null>) {
       const idByLabel2: Record<string, number> = {}
       flattened.forEach(s => { idByLabel2[s.label] = s.id })
       skemaIdByLabel.value = idByLabel2
+
+      // Fallback taxonomy jenis/sdgs/kk.
+      const toOpts = (arr: any[]) => (arr || []).map((t: any) => ({ id: t.id, name: t.name }))
+      jenisTerms.value = toOpts(jenisRaw)
+      sdgsTerms.value = toOpts(sdgsRaw).length ? toOpts(sdgsRaw) : (HIBAH_FORM_SDGS_FALLBACK as any[])
+      kkTerms.value = toOpts(kkRaw)
+      const jid2: Record<string, number> = {}
+      ;(jenisRaw || []).forEach((t: any) => { if (t.name) jid2[t.name] = t.id })
+      jenisIdByName.value = jid2
+      const sid2: Record<string, number> = {}
+      ;(sdgsRaw || []).forEach((t: any) => { if (t.name) sid2[t.name] = t.id })
+      sdgsIdByName.value = sid2
+      const kid2: Record<string, number> = {}
+      ;(kkRaw || []).forEach((t: any) => { if (t.name) kid2[t.name] = t.id })
+      kkIdByName.value = kid2
+
       taxonomyLoaded.value = true
     } catch {
       // fallback statis
@@ -177,6 +238,17 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     if (!form.skema) { fieldErrors.skema = 'Wajib dipilih.'; valid = false }
     else fieldErrors.skema = ''
 
+    // Anggota tim dinamis (max 2): tiap entry butuh nomor + nama.
+    form.anggota_list.forEach((m, i) => {
+      const k = 'anggota_list_' + i
+      if (!m.nomor.trim() || !m.nama.trim()) {
+        fieldErrors[k] = 'Nomor & nama anggota #' + (i + 1) + ' wajib diisi.'
+        valid = false
+      } else {
+        fieldErrors[k] = ''
+      }
+    })
+
     if (!form.pernyataan) {
       checkError.value = 'Anda harus menyetujui pernyataan orisinalitas.'
       valid = false
@@ -207,6 +279,11 @@ export function useHibahForm(hibahId: Ref<number | null>) {
       // Sertakan ID term/post untuk sinkronisasi data (backend simpan _skema_id/_prodi_id).
       payload.skema_id = skemaIdByLabel.value[form.skema] || ''
       payload.prodi_id = prodiIdName.value[form.prodi] || ''
+      payload.jenis_hibah_id = jenisIdByName.value[form.jenis_hibah] || ''
+      payload.sdgs_id = sdgsIdByName.value[form.sdgs] || ''
+      payload.kk_id = kkIdByName.value[form.kelompok_keahlian] || ''
+      // Kirim hanya anggota terisi (skip kosong).
+      payload.anggota_list = form.anggota_list.filter(m => m.nomor.trim() || m.nama.trim())
       for (const f of customFields.value) {
         payload[f.key] = customValues[f.key] || ''
       }
@@ -246,6 +323,7 @@ export function useHibahForm(hibahId: Ref<number | null>) {
       hibah_id: hibahId.value,
       nama: '', nip: '', jenis: 'Dosen' as const, prodi: '', skema: '',
       judul: '', ringkasan: '', jml_tim: '', anggota: '',
+      jenis_hibah: '', sdgs: '', kelompok_keahlian: '', anggota_list: [],
       email: '', hp: '', pernyataan: false
     })
     Object.keys(fieldErrors).forEach(k => delete fieldErrors[k])
@@ -271,7 +349,9 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     form, submitting, success, regNo, fieldErrors, checkError,
     customFields, customValues, loadingConfig,
     prodiTerms, skemaTerms, skemaOptionsAll,
-    prodiIdName, skemaIdByLabel,
+    jenisTerms, sdgsTerms, kkTerms,
+    prodiIdName, skemaIdByLabel, jenisIdByName, sdgsIdByName, kkIdByName,
+    anggotaList: form.anggota_list, addAnggota, removeAnggota,
     validate, submit, reset, loadFormConfig
   }
 }
