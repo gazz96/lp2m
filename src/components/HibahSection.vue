@@ -179,14 +179,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { HIBAH, SITE } from '@/data'
-import type { HibahEvent } from '@/types'
+import { ref, computed } from 'vue'
+import { HIBAH } from '@/data'
 import { useHibahForm } from '@/composables/useHibahForm'
+import { useHibahEvent } from '@/composables/useHibahEvent'
 import RevealBlock from './RevealBlock.vue'
 import CountdownTimer from './CountdownTimer.vue'
 
-const activeHibahId = ref<number | null>(null)
+const { event: eventData } = useHibahEvent()
+const activeHibahId = computed(() => eventData.value.id)
 
 const {
   form, submitting, success: successForm, regNo,
@@ -252,37 +253,7 @@ function onSkemaBlur() {
   setTimeout(() => { skemaOpen.value = false }, 150)
 }
 
-const eventData = ref({
-  bannerTitle: HIBAH.banner.title,
-  bannerDesc: HIBAH.banner.desc,
-  deadline: HIBAH.banner.deadline,
-  deadlineLabel: HIBAH.banner.deadlineLabel,
-  timeline: HIBAH.banner.timeline,
-  info: HIBAH.banner.info,
-})
-
-onMounted(async () => {
-  try {
-    const url = `${SITE.apiBase}/hibah?status_hibah=aktif&per_page=1`
-    const res = await fetch(url)
-    if (!res.ok) return
-    const data: HibahEvent[] = await res.json()
-    if (data.length > 0) {
-      const ev = data[0]
-      activeHibahId.value = ev.id
-      eventData.value = {
-        bannerTitle: new DOMParser().parseFromString(ev.title.rendered, 'text/html').body.textContent || HIBAH.banner.title,
-        bannerDesc: new DOMParser().parseFromString(ev.excerpt.rendered, 'text/html').body.textContent || HIBAH.banner.desc,
-        deadline: ev.deadline || HIBAH.banner.deadline,
-        deadlineLabel: ev.deadline_label || HIBAH.banner.deadlineLabel,
-        timeline: ev.timeline_items?.length ? ev.timeline_items : HIBAH.banner.timeline,
-        info: ev.info_tambahan ? ev.info_tambahan.split('\n').filter((l: string) => l.trim()) : HIBAH.banner.info,
-      }
-    }
-  } catch {
-    // Network error — use static content.json
-  }
-})
+// eventData diambil dari useHibahEvent() — endpoint /itsi/v1/hibah/nearest-deadline
 
 function submitForm() { submit() }
 function resetForm() { reset() }
