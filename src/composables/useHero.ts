@@ -33,6 +33,7 @@ export interface HibahEventData {
   link_panduan: string
   file_panduan: string[]
   file_template: string[]
+  file_kelompok_keahlian: string[]
   timeline_items: Array<{ date: string; label: string }>
   category_names: string[]
 }

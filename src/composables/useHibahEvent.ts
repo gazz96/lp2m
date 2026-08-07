@@ -13,6 +13,7 @@ export interface HibahEventView {
   thumbnailUrl: string
   filePanduan: string[]
   fileTemplate: string[]
+  fileKelompokKeahlian: string[]
 }
 
 const defaultEvent: HibahEventView = {
@@ -26,6 +27,7 @@ const defaultEvent: HibahEventView = {
   thumbnailUrl: '',
   filePanduan: [],
   fileTemplate: [],
+  fileKelompokKeahlian: [],
 }
 
 export function useHibahEvent() {
@@ -65,6 +67,7 @@ export function useHibahEvent() {
       thumbnailUrl: data.thumbnail_url || '',
       filePanduan: data.file_panduan || [],
       fileTemplate: data.file_template || [],
+      fileKelompokKeahlian: data.file_kelompok_keahlian || [],
     }
   }
 

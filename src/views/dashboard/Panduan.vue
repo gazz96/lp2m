@@ -99,6 +99,16 @@ onMounted(async () => {
         }))
       }
 
+      // Map file template kelompok keahlian
+      if (data[0].file_kelompok_keahlian?.length) {
+        templates.value = templates.value.concat(data[0].file_kelompok_keahlian.map((url: string, i: number) => ({
+          title: `Template Kelompok Keahlian ${i + 1}`,
+          desc: 'File template/berkas kelompok keahlian yang siap diisi.',
+          link: url,
+          file: url.split('/').pop() || `template-kk-${i + 1}.docx`
+        })))
+      }
+
       // Link panduan alternatif
       if (data[0].link_panduan) {
         panduan.value.push({

@@ -124,6 +124,7 @@ export interface HibahEvent {
   timeline_items: Array<{ date: string; label: string }>
   file_panduan: string[]
   file_template: string[]
+  file_kelompok_keahlian: string[]
   link_panduan: string
   category_names: string[]
   model_hibah_names: string[]

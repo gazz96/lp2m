@@ -16,7 +16,7 @@ export const useHibahStore = defineStore('hibahCRUD', () => {
     loading.value = true
     error.value = ''
     try {
-      const url = `${SITE.apiBase}/hibah?per_page=${perPage}&page=${p}&orderby=date&order=desc&_fields=id,date,title,excerpt,status,jenis_hibah,status_hibah,deadline,deadline_label,kategori_hibah,model_hibah,sdgs,kelompok_keahlian,dana_maks,event_eyebrow,timeline_items,file_panduan,file_template,category_names,model_hibah_names,jenis_hibah_names,sdgs_names,kelompok_keahlian_names`
+      const url = `${SITE.apiBase}/hibah?per_page=${perPage}&page=${p}&orderby=date&order=desc&_fields=id,date,title,excerpt,status,jenis_hibah,status_hibah,deadline,deadline_label,kategori_hibah,model_hibah,sdgs,kelompok_keahlian,dana_maks,event_eyebrow,timeline_items,file_panduan,file_template,file_kelompok_keahlian,category_names,model_hibah_names,jenis_hibah_names,sdgs_names,kelompok_keahlian_names`
       const res = await fetch(url)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       items.value = await res.json()

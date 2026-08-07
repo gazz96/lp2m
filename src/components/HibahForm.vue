@@ -5,7 +5,7 @@
       <p class="cap">Lengkapi seluruh data dengan benar. Kolom bertanda <span style="color:var(--rust)">*</span> wajib diisi.</p>
       <form @submit.prevent="submitForm" novalidate>
         <!-- Download contoh penulisan (di atas agar bisa langsung diunduh) -->
-        <div v-if="filePanduan.length || fileTemplate.length" class="download-box" style="margin-bottom:22px">
+        <div v-if="filePanduan.length || fileTemplate.length || fileKelompokKeahlian.length" class="download-box" style="margin-bottom:22px">
           <div class="dl-label">Contoh Penulisan &amp; Template</div>
           <div class="dl-links">
             <a
@@ -27,6 +27,16 @@
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Template Proposal {{ fileTemplate.length > 1 ? i + 1 : '' }}
+            </a>
+            <a
+              v-for="(url, i) in fileKelompokKeahlian"
+              :key="'kk-' + i"
+              :href="url"
+              target="_blank"
+              class="dl-link"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Template Kelompok Keahlian {{ fileKelompokKeahlian.length > 1 ? i + 1 : '' }}
             </a>
           </div>
         </div>
@@ -234,10 +244,12 @@ const props = withDefaults(defineProps<{
   hibahId?: number | null
   filePanduan?: string[]
   fileTemplate?: string[]
+  fileKelompokKeahlian?: string[]
 }>(), {
   hibahId: null,
   filePanduan: () => [],
-  fileTemplate: () => []
+  fileTemplate: () => [],
+  fileKelompokKeahlian: () => []
 })
 
 const activeHibahId = computed(() => props.hibahId ?? null)

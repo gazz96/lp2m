@@ -50,6 +50,7 @@
             :hibah-id="item.id"
             :file-panduan="item.file_panduan || []"
             :file-template="item.file_template || []"
+            :file-kelompok-keahlian="item.file_kelompok_keahlian || []"
           />
         </div>
       </article>
