@@ -46,9 +46,9 @@ const newName = ref(''), newSlug = ref(''), adding = ref(false), err = ref('')
 const columns: WpColumn[] = [
   {
     key: 'name', label: 'Nama', primary: true,
-    rowActions: (r) => [
+    rowActions: (r: any) => [
       { label: 'Edit', className: 'edit', to: '/dashboard/hibah/model' },
-      { label: 'Hapus', className: 'trash', to: '/dashboard/hibah/model' },
+      { label: 'Hapus', className: 'trash', onClick: () => deleteTerm(r) },
     ]
   },
   { key: 'slug', label: 'Slug' },
@@ -56,6 +56,15 @@ const columns: WpColumn[] = [
 ]
 
 async function loadTerm() { try { const r = await window.fetch(`${SITE.apiBase}/${tax}?per_page=100&orderby=name&order=asc`); if (r.ok) terms.value = await r.json() } catch { } }
+
+async function deleteTerm(t: { id: number; name: string; slug: string; count: number }) {
+  if (!confirm(`Hapus model hibah "${t.name}"?`)) return
+  try {
+    const r = await window.fetch(`${SITE.apiBase}/${tax}/${t.id}?force=true`, { method: 'DELETE', headers: auth.authHeaders() })
+    if (!r.ok) { alert('Gagal menghapus: ' + ((await r.json().catch(() => ({}))).message || r.status)); return }
+    loadTerm()
+  } catch (e: any) { alert('Gagal menghapus: ' + (e.message || '')) }
+}
 async function addTerm() {
   const n = newName.value.trim(); if (!n) return; adding.value = true; err.value = ''
   const slug = newSlug.value.trim() || n.toLowerCase().replace(/[^a-z0-9]+/g, '-')

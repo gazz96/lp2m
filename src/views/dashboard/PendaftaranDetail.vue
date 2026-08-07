@@ -1,0 +1,208 @@
+<template>
+  <div class="wrap">
+    <h1>
+      <WpButton variant="link" class="is-small" to="/dashboard/pendaftaran">‹ Kembali</WpButton>
+      Detail Pendaftaran
+      <span v-if="detail" style="color:var(--wp-text-muted);font-size:13px;font-weight:400;margin-left:8px">
+        <code>{{ detail.reg_no }}</code>
+      </span>
+    </h1>
+
+    <div v-if="loading" style="text-align:center;padding:40px"><span class="spinner" style="display:inline-block"></span></div>
+    <div v-else-if="error" class="notice notice-error inline"><p>{{ error }}</p></div>
+    <div v-else-if="detail" class="components-panel" style="max-width:860px">
+      <div class="components-panel__body">
+
+        <!-- Status -->
+        <div style="margin-bottom:20px;padding:14px 16px;border-radius:8px;background:#f0f7ff;border-left:3px solid #2271b3">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <label style="font-weight:600;font-size:13px">Status</label>
+            <select class="components-select-control__input" v-model="form.status" style="width:200px">
+              <option value="submitted">Submitted (baru dikirim)</option>
+              <option value="under_review">Under Review (sedang dinilai)</option>
+              <option value="revised">Revised (revisi)</option>
+              <option value="approved">Approved (diterima)</option>
+              <option value="rejected">Rejected (ditolak)</option>
+              <option value="done">Done (selesai)</option>
+            </select>
+            <WpButton variant="primary" :disabled="saving" @click="save">{{ saving ? 'Menyimpan...' : 'Simpan Status' }}</WpButton>
+            <span v-if="saveMsg" style="font-size:12px;color:var(--green-700)">{{ saveMsg }}</span>
+          </div>
+        </div>
+
+        <!-- Data (read-only + field inti bisa edit) -->
+        <h2 style="font-size:14px;margin:0 0 12px">Data Pendaftar</h2>
+        <table class="form-table" style="width:100%">
+          <tr>
+            <th style="width:180px">Reg No</th>
+            <td><code>{{ detail.reg_no }}</code></td>
+          </tr>
+          <tr>
+            <th>Event Hibah</th>
+            <td>{{ detail.event || '—' }}</td>
+          </tr>
+          <tr>
+            <th>Nama Lengkap & Gelar</th>
+            <td><input class="components-text-control__input" style="width:100%" v-model="form.nama" /></td>
+          </tr>
+          <tr>
+            <th>NIP / NIDN</th>
+            <td><input class="components-text-control__input" style="width:100%" v-model="form.nip" /></td>
+          </tr>
+          <tr>
+            <th>Jenis Pengusul</th>
+            <td>
+              <select class="components-select-control__input" v-model="form.jenis" style="width:220px">
+                <option value="Dosen">Dosen</option>
+                <option value="Mahasiswa">Mahasiswa</option>
+                <option value="Tenaga Kependidikan">Tenaga Kependidikan</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <th>Program Studi</th>
+            <td><input class="components-text-control__input" style="width:100%" v-model="form.prodi" /></td>
+          </tr>
+          <tr>
+            <th>Model Hibah</th>
+            <td><input class="components-text-control__input" style="width:100%" v-model="form.skema" /></td>
+          </tr>
+          <tr v-if="form.jenis_hibah !== undefined">
+            <th>Jenis Hibah</th>
+            <td><input class="components-text-control__input" style="width:100%" v-model="form.jenis_hibah" /></td>
+          </tr>
+          <tr v-if="form.sdgs">
+            <th>SDGs</th>
+            <td><input class="components-text-control__input" style="width:100%" v-model="form.sdgs" /></td>
+          </tr>
+          <tr v-if="form.kelompok_keahlian">
+            <th>Kelompok Keahlian</th>
+            <td><input class="components-text-control__input" style="width:100%" v-model="form.kelompok_keahlian" /></td>
+          </tr>
+          <tr>
+            <th>Judul Usulan</th>
+            <td><input class="components-text-control__input" style="width:100%" v-model="form.judul" /></td>
+          </tr>
+          <tr>
+            <th>Ringkasan Usulan</th>
+            <td><textarea class="components-textarea-control__input" rows="5" style="width:100%" v-model="form.ringkasan"></textarea></td>
+          </tr>
+          <tr>
+            <th>Jumlah Tim</th>
+            <td><input class="components-text-control__input" style="width:120px" type="number" min="1" v-model="form.jml_tim" /></td>
+          </tr>
+          <tr>
+            <th>Anggota Tim</th>
+            <td>
+              <template v-if="detail.anggota_list && detail.anggota_list.length">
+                <div v-for="(m, i) in detail.anggota_list" :key="i" style="margin-bottom:4px">
+                  <strong>{{ i + 1 }}.</strong> {{ m.nama }} —
+                  <span v-if="m.tipe === 'mahasiswa'">Mahasiswa (NIM: {{ m.nomor }}{{ m.prodi ? ', Prodi: ' + m.prodi : '' }})</span>
+                  <span v-else>Dosen (NIDN: {{ m.nomor }})</span>
+                </div>
+              </template>
+              <span v-else>—</span>
+            </td>
+          </tr>
+          <tr>
+            <th>Email</th>
+            <td><input class="components-text-control__input" style="width:100%" type="email" v-model="form.email" /></td>
+          </tr>
+          <tr>
+            <th>WhatsApp</th>
+            <td><input class="components-text-control__input" style="width:100%" v-model="form.hp" /></td>
+          </tr>
+          <tr>
+            <th>Dikirim Pada</th>
+            <td>{{ fmtDate(detail.created_at) }}</td>
+          </tr>
+        </table>
+
+        <div style="margin-top:20px;display:flex;gap:10px;align-items:center">
+          <WpButton variant="primary" :disabled="saving" @click="save">{{ saving ? 'Menyimpan...' : 'Simpan Perubahan' }}</WpButton>
+          <WpButton variant="link" to="/dashboard/pendaftaran">Kembali ke Daftar</WpButton>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { SITE } from '@/data'
+import { useAuthStore } from '@/stores/auth'
+import WpButton from '@/components/WpButton.vue'
+
+const route = useRoute()
+const auth = useAuthStore()
+const base = SITE.apiBase.replace('/wp/v2', '')
+const id = Number(route.params.id)
+
+const detail = ref<any>(null)
+const form = ref<any>({})
+const loading = ref(true)
+const error = ref('')
+const saving = ref(false)
+const saveMsg = ref('')
+
+function fmtDate(d: string) {
+  return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+async function load() {
+  loading.value = true; error.value = ''
+  try {
+    const r = await fetch(`${base}/lp2m/v1/hibah/${id}`)
+    if (!r.ok) throw new Error('HTTP ' + r.status)
+    const json = await r.json()
+    if (!json.success) throw new Error(json.message || 'Data tidak ditemukan')
+    detail.value = json.data
+    form.value = {
+      status: json.data.status || 'submitted',
+      nama: json.data.nama || '', nip: json.data.nip || '',
+      jenis: json.data.jenis || '', prodi: json.data.prodi || '',
+      skema: json.data.skema || '', jenis_hibah: json.data.jenis_hibah || '',
+      sdgs: json.data.sdgs || '', kelompok_keahlian: json.data.kelompok_keahlian || '',
+      judul: json.data.judul || '', ringkasan: json.data.ringkasan || '',
+      jml_tim: json.data.jml_tim || '', email: json.data.email || '', hp: json.data.hp || '',
+    }
+    // Event name → tampilkan dari hibah_id bila API tidak menyediakan 'event'
+    if (!json.data.event && json.data.hibah_id) {
+      try {
+        const r2 = await fetch(`${SITE.apiBase}/hibah/${json.data.hibah_id}`)
+        if (r2.ok) { const j = await r2.json(); detail.value.event = j.title?.rendered || '' }
+      } catch { /* abaikan */ }
+    }
+  } catch (e: any) { error.value = e.message } finally { loading.value = false }
+}
+
+async function save() {
+  saving.value = true; saveMsg.value = ''
+  try {
+    const body: Record<string, unknown> = {
+      status: form.value.status,
+      nama: form.value.nama, nip: form.value.nip, jenis: form.value.jenis,
+      prodi: form.value.prodi, skema: form.value.skema,
+      judul: form.value.judul, ringkasan: form.value.ringkasan,
+      jml_tim: form.value.jml_tim, email: form.value.email, hp: form.value.hp,
+    }
+    // Hanya kirim field opsional yang ada di form
+    for (const k of ['jenis_hibah', 'sdgs', 'kelompok_keahlian'] as const) {
+      if (form.value[k] !== undefined && form.value[k] !== '') body[k] = form.value[k]
+    }
+    const r = await fetch(`${base}/lp2m/v1/hibah/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...auth.authHeaders() },
+      body: JSON.stringify(body),
+    })
+    const json = await r.json()
+    if (!json.success) throw new Error(json.message || 'Gagal menyimpan')
+    saveMsg.value = '✓ Tersimpan'
+    detail.value.status = form.value.status
+    setTimeout(() => { saveMsg.value = '' }, 2500)
+  } catch (e: any) { saveMsg.value = 'Gagal: ' + (e.message || '') } finally { saving.value = false }
+}
+
+onMounted(load)
+</script>
