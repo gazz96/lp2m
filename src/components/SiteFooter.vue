@@ -6,7 +6,11 @@
 
       <div v-else class="footer-grid">
         <div class="footer-brand">
+          <div class="footer-logo" v-if="site?.logo_url">
+            <img :src="site.logo_url" :alt="site?.nama || SITE.name" class="footer-logo__img" />
+          </div>
           <div class="name">{{ site?.nama || SITE.name }}</div>
+          <p class="sub">{{ site?.nama_panjang || SITE.institute }}</p>
           <p>{{ d?.tagline || FOOTER.tagline }}</p>
         </div>
         <div>

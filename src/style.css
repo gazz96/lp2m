@@ -638,6 +638,9 @@ footer.site { background: var(--green-900); color: var(--green-100); padding: 64
 .footer-grid h5 { color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
 .footer-brand .name { font-family: 'Fraunces', serif; color: #fff; font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
 .footer-brand p { font-size: 0.86rem; color: var(--green-100); max-width: 34ch; }
+.footer-logo { margin-bottom: 14px; }
+.footer-logo__img { height: 48px; width: auto; object-fit: contain; filter: brightness(0) invert(1); }
+.footer-brand .sub { margin-bottom: 10px; font-weight: 600; color: #fff; opacity: 0.9; }
 .footer-links { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .footer-links li, .footer-links a { font-size: 0.86rem; color: var(--green-100); }
 .footer-links a:hover { color: var(--gold-soft); }

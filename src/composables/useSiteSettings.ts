@@ -61,10 +61,18 @@ function applyFavicon(url: string) {
   link.href = url
 }
 
+// Apply browser tab title dari settings (fallback ke SITE).
+function applyTitle(nama: string, namaPanjang: string) {
+  const parts = [nama, namaPanjang].filter(Boolean)
+  if (!parts.length) return
+  document.title = parts.join(' — ')
+}
+
 // Inisialisasi sekali di aplikasi (main.ts).
 export async function initSiteBranding() {
   const s = await fetchSiteSettings()
   if (s?.favicon_url) applyFavicon(s.favicon_url)
+  if (s) applyTitle(s.nama, s.nama_panjang)
 }
 
 export function useSiteSettings() {

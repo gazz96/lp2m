@@ -4,10 +4,10 @@
       <nav class="main">
         <div class="brand">
           <div class="brand-mark" v-if="!site?.logo_url">LP</div>
-          <img v-else :src="site.logo_url" class="brand-logo" alt="Logo LP2M" />
+          <img v-else :src="site.logo_url" class="brand-logo" :alt="site?.nama || SITE.name" />
           <div class="brand-text">
             <div class="name">{{ site?.nama || SITE.name }}</div>
-            <div class="sub">{{ SITE.institute }}</div>
+            <div class="sub">{{ site?.nama_panjang || SITE.institute }}</div>
           </div>
         </div>
 
