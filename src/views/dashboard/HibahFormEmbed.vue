@@ -21,7 +21,7 @@
           <label for="prodi2">Program Studi / Unit Kerja *</label>
           <select id="prodi2" v-model="form.prodi">
             <option value="">Pilih program studi / unit</option>
-            <option v-for="o in HIBAH.form.prodiOptions" :key="o" :value="o">{{ o }}</option>
+            <option v-for="o in prodiTerms" :key="o" :value="o">{{ o }}</option>
           </select>
           <div class="error-msg">{{ fieldErrors.prodi }}</div>
         </div>
@@ -29,7 +29,7 @@
           <label for="skema2">Model Hibah *</label>
           <select id="skema2" v-model="form.skema">
             <option value="">Pilih model hibah</option>
-            <option v-for="o in HIBAH.form.skemaOptions" :key="o" :value="o">{{ o }}</option>
+            <option v-for="o in skemaTerms" :key="o.id" :value="o.label || o.name">{{ o.label || o.name }}</option>
           </select>
           <div class="error-msg">{{ fieldErrors.skema }}</div>
         </div>
@@ -145,6 +145,7 @@
 		  </div>
 		  <div class="error-msg">{{ fieldErrors['anggota_list_' + i] }}</div>
       </div>
+      </div>
 
       <div class="check-row mt-22">
         <input type="checkbox" id="pernyataan2" v-model="form.pernyataan" />
@@ -170,7 +171,6 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { HIBAH } from '@/data'
 import { useHibahForm } from '@/composables/useHibahForm'
 
 const props = defineProps<{ hibahId?: number | null }>()
@@ -179,7 +179,7 @@ const hibahIdRef = ref<number | null>(props.hibahId ?? null)
 const {
   form, submitting, success: successForm, regNo,
   fieldErrors, checkError, customFields, customValues, loadingConfig,
-  prodiTerms, jenisTerms, sdgsTerms, kkTerms,
+  prodiTerms, skemaTerms, jenisTerms, sdgsTerms, kkTerms,
   addAnggota, removeAnggota,
   submit, reset, loadFormConfig
 } = useHibahForm(hibahIdRef)
