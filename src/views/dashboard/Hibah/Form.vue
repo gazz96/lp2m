@@ -106,11 +106,6 @@
                 <input class="components-text-control__input" type="file" accept=".pdf,.doc,.docx" @change="handleFileUpload($event, 'file_kelompok_keahlian')" />
                 <div class="components-base-control__help">Upload atau ganti file template kelompok keahlian (PDF/DOC).</div>
               </div>
-
-              <div class="components-base-control" style="margin-top:12px">
-                <label class="components-base-control__label">Eyebrow</label>
-                <input class="components-text-control__input" type="text" v-model="f.event_eyebrow" placeholder="Event Aktif..." />
-              </div>
             </div>
           </div>
         </div>
@@ -214,10 +209,10 @@ function fileLabel(url:string){const n=decodeURIComponent(url.split('/').pop()||
 async function handleFileUpload(e:Event,key:'file_panduan'|'file_template'|'file_kelompok_keahlian'){
   const file=(e.target as HTMLInputElement).files?.[0];if(!file)return
   const formData=new FormData();formData.append('file',file)
-  try{const r=await window.fetch(`${SITE.apiBase.replace('/wp/v2','')}/media`,{method:'POST',headers:{...auth.authHeaders()},body:formData})
+  try{const r=await window.fetch(`${SITE.apiBase}/media`,{method:'POST',headers:{...auth.authHeaders()},body:formData})
     if(!r.ok)throw new Error('Upload gagal');const media=await r.json()
     if(media.source_url)f[key].push(media.source_url)
-    else if(media.id)f[key].push(`${SITE.apiBase.replace('/wp/v2','')}/media/${media.id}`)
+    else if(media.id)f[key].push(`${SITE.apiBase}/media/${media.id}`)
     toast.success('File berhasil diupload')
   }catch(e:any){err.value=e.message}
 }
