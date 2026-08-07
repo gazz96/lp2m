@@ -29,7 +29,7 @@ export interface HibahEventData {
   event_eyebrow: string
   dana_maks: string
   jumlah_tim_maks: string
-  info_tambahan: string
+  info_tambahan: string | string[]
   link_panduan: string
   file_panduan: string[]
   file_template: string[]
@@ -167,7 +167,7 @@ export function useHero() {
 
       h.event = {
         title: event.title,
-        desc: event.excerpt || event.info_tambahan || HERO.eventDesc,
+        desc: event.excerpt || (Array.isArray(event.info_tambahan) ? event.info_tambahan.join(' ') : event.info_tambahan || '') || HERO.eventDesc,
         schedule: schedule.length ? schedule : HERO.schedule,
         link: event.permalink || '#hibah'
       }

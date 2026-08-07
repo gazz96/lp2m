@@ -57,13 +57,13 @@ export function useHibahEvent() {
     event.value = {
       id: data.id,
       bannerTitle: data.title || HIBAH.banner.title,
-      bannerDesc: data.excerpt || data.info_tambahan || HIBAH.banner.desc,
+      bannerDesc: data.excerpt || (Array.isArray(data.info_tambahan) ? data.info_tambahan.join(' ') : data.info_tambahan || '') || HIBAH.banner.desc,
       deadline: data.deadline || HIBAH.banner.deadline,
       deadlineLabel: data.deadline_label || HIBAH.banner.deadlineLabel,
       timeline: data.timeline_items?.length ? data.timeline_items : HIBAH.banner.timeline,
-      info: data.info_tambahan
-        ? data.info_tambahan.split('\n').filter((l: string) => l.trim())
-        : HIBAH.banner.info,
+      info: Array.isArray(data.info_tambahan)
+        ? data.info_tambahan
+        : (data.info_tambahan ? String(data.info_tambahan).split('\n').filter((l: string) => l.trim()) : HIBAH.banner.info),
       thumbnailUrl: data.thumbnail_url || '',
       filePanduan: data.file_panduan || [],
       fileTemplate: data.file_template || [],
