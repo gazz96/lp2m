@@ -170,14 +170,15 @@
   "footer": {
     "tagline": "Lembaga Penelitian dan Pengabdian kepada Masyarakat, Institut Teknologi Sawit Indonesia. Mengelola riset dan pengabdian dari kebun sawit menuju inovasi bangsa.",
     "tautan": [
-      { "label": "Tentang LP2M", "href": "#tentang" },
-      { "label": "Bidang Unggulan", "href": "#bidang" },
-      { "label": "Infografis Kinerja", "href": "#infografis" },
-      { "label": "Hibah & Event", "href": "#hibah" },
-      { "label": "Publikasi", "href": "#publikasi" }
+      { "label": "Tentang LP2M", "href": "/#tentang" },
+      { "label": "Bidang Unggulan", "href": "/#bidang" },
+      { "label": "Infografis Kinerja", "href": "/#infografis" },
+      { "label": "Hibah & Event", "href": "/hibah" },
+      { "label": "Blog", "href": "/blog" }
     ],
     "layanan": [
-      { "label": "Pendaftaran Hibah", "href": "#hibah" },
+      { "label": "Pendaftaran Hibah", "href": "/hibah" },
+      { "label": "Track Status Pendaftaran", "href": "/daftar/status" },
       { "label": "Panduan Penulisan Proposal", "href": "#" },
       { "label": "Layanan HKI & Paten", "href": "#" },
       { "label": "Portal Utama ITSI", "href": "https://itsi.ac.id" }

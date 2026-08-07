@@ -2,6 +2,9 @@ import { reactive, ref, watch, type Ref } from 'vue'
 import type { HibahFormData, AnggotaItem } from '@/types'
 import { HIBAH, SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
+
+const { error: toastError } = useToast()
 
 const HIBAH_FORM_PRODI_FALLBACK: string[] = HIBAH.form.prodiOptions || []
 const HIBAH_FORM_SKEMA_FALLBACK: string[] = HIBAH.form.skemaOptions || []
@@ -334,11 +337,20 @@ export function useHibahForm(hibahId: Ref<number | null>) {
         window.location.href = `/v/sukses/${regNo}`
       } else {
         const d = await res.json().catch(() => ({}))
-        // Fallback: redirect with warning
-        window.location.href = `/v/sukses/000000000000`
+        // Tampilkan error dari server — jangan redirect palsu.
+        if (d?.errors && typeof d.errors === 'object') {
+          Object.keys(d.errors).forEach(k => {
+            fieldErrors[k] = d.errors[k]
+          })
+        }
+        const msg = d?.message || d?.errors?.proposal || 'Pendaftaran gagal. Periksa kembali data Anda lalu coba lagi.'
+        checkError.value = msg
+        toastError(msg)
       }
-    } catch {
-      window.location.href = `/v/sukses/000000000000`
+    } catch (e: any) {
+      const msg = (e?.message || 'Gagal terhubung ke server. Periksa koneksi lalu coba lagi.')
+      checkError.value = msg
+      toastError(msg)
     } finally {
       submitting.value = false
     }

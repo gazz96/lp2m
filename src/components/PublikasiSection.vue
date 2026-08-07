@@ -26,6 +26,9 @@
           </div>
         </div>
       </div>
+      <div class="pub-more">
+        <router-link to="/blog" class="btn btn-outline">Semua Artikel &rarr;</router-link>
+      </div>
     </div>
   </section>
 </template>
@@ -88,4 +91,8 @@ onMounted(() => {
   font-size: 0.95rem;
 }
 .pub-error { color: var(--rust); }
+.pub-more {
+  text-align: center;
+  margin-top: 40px;
+}
 </style>
