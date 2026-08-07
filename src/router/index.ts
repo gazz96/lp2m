@@ -27,7 +27,16 @@ import ArtikelDetailView from '@/views/ArtikelDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
-  scrollBehavior() { return { top: 0 } },
+  scrollBehavior(to, _from, savedPosition) {
+    if (savedPosition) return savedPosition
+    if (to.hash) {
+      const el = document.querySelector(to.hash)
+      if (el) {
+        return { el: to.hash, behavior: 'smooth', top: 80 }
+      }
+    }
+    return { top: 0 }
+  },
   routes: [
     { path: '/', name: 'home', component: HomeView },
     { path: '/login', name: 'login', component: LoginView },

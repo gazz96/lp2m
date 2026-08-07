@@ -12,20 +12,20 @@
         </div>
 
         <div class="nav-links" :class="{ open: menuOpen }">
-          <a v-for="link in links" :key="link.href" :href="link.href" @click="menuOpen = false">{{ link.label }}</a>
+          <RouterLink v-for="link in links" :key="link.to" :to="link.to" @click="onLinkClick(link)">{{ link.label }}</RouterLink>
           <div
             class="nav-item dropdown"
             :class="{ open: hibahOpen }"
             @mouseenter="hibahOpen = true"
             @mouseleave="hibahOpen = false"
           >
-            <a href="#hibah" class="drop-trigger" @click="onHibahClick">Hibah</a>
+            <RouterLink to="/#hibah" class="drop-trigger" @click="onHibahClick">Hibah</RouterLink>
             <div class="dropdown-menu">
-              <a v-for="sub in hibahSubs" :key="sub.href" :href="sub.href" @click="menuOpen = false">{{ sub.label }}</a>
+              <RouterLink v-for="sub in hibahSubs" :key="sub.to" :to="sub.to" @click="onSubClick">{{ sub.label }}</RouterLink>
             </div>
           </div>
-          <a href="#kontak" class="nav-contact" @click="menuOpen = false">Kontak</a>
-          <a href="/daftar/status" @click="menuOpen = false">Cek Formulir</a>
+          <RouterLink to="/#kontak" class="nav-contact" @click="menuOpen = false">Kontak</RouterLink>
+          <RouterLink to="/daftar/status" @click="menuOpen = false">Cek Formulir</RouterLink>
         </div>
 
         <div class="nav-cta">
@@ -43,25 +43,53 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { SITE } from '@/data'
 import { useSiteSettings } from '@/composables/useSiteSettings'
 
 const { site } = useSiteSettings()
+const route = useRoute()
 
 const links = [
-  { label: 'Beranda', href: '#beranda' },
-  { label: 'Tentang', href: '#tentang' },
-  { label: 'Bidang Unggulan', href: '#bidang' }
+  { label: 'Beranda', to: '/' },
+  { label: 'Tentang', to: '/#tentang' },
+  { label: 'Bidang Unggulan', to: '/#bidang' }
 ]
 
 const hibahSubs = [
-  { label: 'Jadwal', href: '#jadwal' },
-  { label: 'Publikasi', href: '#publikasi' },
-  { label: 'Infografis', href: '#infografis' }
+  { label: 'Jadwal', to: '/#jadwal' },
+  { label: 'Publikasi', to: '/#publikasi' },
+  { label: 'Infografis', to: '/#infografis' }
 ]
 
 const menuOpen = ref(false)
 const hibahOpen = ref(false)
+
+// Jika menu item menunjuk ke section di halaman beranda, scroll ke sana
+// (mis. saat user ada di /daftar/status lalu klik "Tentang").
+function scrollToSection(id: string) {
+  const el = document.querySelector(id)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const header = document.querySelector('.site-header')
+    if (header) {
+      const top = el.getBoundingClientRect().top + window.scrollY - header.clientHeight
+      window.scrollTo({ top, behavior: 'smooth' })
+    }
+  }
+}
+
+function onLinkClick(link: { to: string }) {
+  menuOpen.value = false
+  if (link.to.startsWith('/#')) {
+    const id = link.to.slice(1) // "#tentang"
+    if (route.path !== '/') {
+      // Pindah dulu ke beranda, lalu scroll — ditangani router scrollBehavior.
+      return
+    }
+    scrollToSection(id)
+  }
+}
 
 function onHibahClick() {
   // Mobile: klik trigger membuka/tutup submenu. Desktop: navigasi ke #hibah.
@@ -70,6 +98,11 @@ function onHibahClick() {
   } else {
     menuOpen.value = false
   }
+}
+
+function onSubClick() {
+  menuOpen.value = false
+  hibahOpen.value = false
 }
 </script>
 
