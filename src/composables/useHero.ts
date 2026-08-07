@@ -81,6 +81,13 @@ const defaultHero: HeroData = {
   }
 }
 
+const CACHE_KEY = 'lp2m_cache_hero'
+
+/** Hapus cache hero — dipanggil setelah settings hero disimpan dari dashboard. */
+export function clearHeroCache() {
+  try { localStorage.removeItem(CACHE_KEY) } catch { }
+}
+
 export function useHero() {
   const hero = ref<HeroData | null>(null) // null = belum siap → skeleton
   const loading = ref(true)
@@ -89,7 +96,6 @@ export function useHero() {
   const apiBase = SITE.apiBase.replace('/wp/v2', '')
 
   // Cache-first: hero settings (TTL 10 menit).
-  const CACHE_KEY = 'lp2m_cache_hero'
   function readCache(): HeroSettings | null {
     try {
       const raw = localStorage.getItem(CACHE_KEY)

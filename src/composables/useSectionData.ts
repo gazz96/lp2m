@@ -29,6 +29,22 @@ function writeCache(key: string, v: unknown) {
   } catch { /* quota — ignore */ }
 }
 
+/** Hapus cache section tertentu (setelah settings disimpan dari dashboard). */
+export function clearSectionCache(key: string) {
+  try { localStorage.removeItem(CACHE_PREFIX + key) } catch { /* ignore */ }
+}
+/** Hapus SEMUA cache section (saat bulk edit / reset). */
+export function clearAllSectionCache() {
+  try {
+    const toRemove: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && k.startsWith(CACHE_PREFIX)) toRemove.push(k)
+    }
+    toRemove.forEach(k => localStorage.removeItem(k))
+  } catch { /* ignore */ }
+}
+
 /**
  * Cache-first section data loader.
  * - Cache fresh → ready langsung (cepat, tanpa flash).
