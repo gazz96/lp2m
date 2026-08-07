@@ -112,6 +112,14 @@
             <th>WhatsApp</th>
             <td><input class="components-text-control__input" style="width:100%" v-model="form.hp" /></td>
           </tr>
+          <tr v-if="detail.proposal_url">
+            <th>File Proposal</th>
+            <td>
+              <a :href="detail.proposal_url" target="_blank" rel="noopener" class="components-button is-primary is-small" style="text-decoration:none">
+                ⬇ Download Proposal (PDF)
+              </a>
+            </td>
+          </tr>
           <tr>
             <th>Dikirim Pada</th>
             <td>{{ fmtDate(detail.created_at) }}</td>

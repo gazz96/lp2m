@@ -49,6 +49,15 @@
           <!-- Status badge -->
           <span v-else-if="col.type === 'badge'" class="post-state" :class="row._status === 'draft' ? 'draft' : ''">{{ getCellValue(row, col) }}</span>
 
+          <!-- Link / download -->
+          <template v-else-if="col.type === 'link'">
+            <a v-if="getCellValue(row, col)" :href="getCellValue(row, col)" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              {{ col.linkLabel || 'Download' }}
+            </a>
+            <span v-else style="color:var(--wp-text-muted)">—</span>
+          </template>
+
           <!-- Tags/pills -->
           <template v-else-if="col.type === 'tags'">
             <span v-for="t in getCellValue(row, col)" :key="t" style="display:inline-block;padding:1px 6px;margin:1px;background:#f0f0f1;border-radius:3px;font-size:12px">{{ t }}</span>
@@ -103,8 +112,9 @@ export interface WpColumn {
   label: string
   primary?: boolean
   sortable?: boolean
-  type?: 'text' | 'badge' | 'tags' | 'date'
+  type?: 'text' | 'badge' | 'tags' | 'date' | 'link'
   width?: string
+  linkLabel?: string
   format?: (val: any) => string
   accessor?: (row: Record<string, any>) => any
   rowActions?: (row: Record<string, any>) => WpRowAction[]

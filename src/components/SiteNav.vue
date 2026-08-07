@@ -25,6 +25,7 @@
             </div>
           </div>
           <a href="#kontak" class="nav-contact" @click="menuOpen = false">Kontak</a>
+          <a v-for="l in extraLinks" :key="l.href" :href="l.href" class="nav-track" @click="menuOpen = false">{{ l.label }}</a>
         </div>
 
         <div class="nav-cta">
@@ -59,6 +60,10 @@ const hibahSubs = [
   { label: 'Infografis', href: '#infografis' }
 ]
 
+const extraLinks = [
+  { label: 'Cek Formulir', href: '/daftar/status' }
+]
+
 const menuOpen = ref(false)
 const hibahOpen = ref(false)
 
@@ -75,6 +80,22 @@ function onHibahClick() {
 <style scoped>
 .nav-btn {
   padding: 9px 18px;
+}
+.nav-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  color: var(--green-800, #1f4d36);
+  white-space: nowrap;
+}
+.nav-track::before {
+  content: "✓";
+  font-size: 0.8em;
+  opacity: 0.75;
+}
+.nav-track:hover {
+  color: var(--gold, #c99a3b);
 }
 .brand-logo {
   height: 40px;

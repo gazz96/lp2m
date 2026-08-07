@@ -305,29 +305,49 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     form.hibah_id = hibahId.value
     submitting.value = true
     try {
-      const payload: Record<string, unknown> = { ...form }
-      // Sertakan ID term/post untuk sinkronisasi data (backend simpan _skema_id/_prodi_id).
-      payload.skema_id = skemaIdByLabel.value[form.skema] || ''
-      payload.prodi_id = prodiIdName.value[form.prodi] || ''
-      payload.jenis_hibah_id = jenisIdByName.value[form.jenis_hibah] || ''
-      payload.sdgs_id = sdgsIdByName.value[form.sdgs] || ''
-      payload.kk_id = kkIdByName.value[form.kelompok_keahlian] || ''
-      // Kirim hanya anggota terisi (skip kosong).
-      payload.anggota_list = form.anggota_list.filter(m => m.nomor.trim() || m.nama.trim())
+      // Multipart/form-data agar file proposal (PDF) ikut terkirim.
+      const fd = new FormData()
+      const keys: (keyof HibahFormData)[] = [
+        'hibah_id', 'nama', 'nip', 'jenis', 'prodi', 'skema', 'judul', 'ringkasan',
+        'jml_tim', 'anggota', 'jenis_hibah', 'sdgs', 'kelompok_keahlian', 'email', 'hp'
+      ]
+      for (const k of keys) {
+        const v = form[k]
+        if (v !== undefined && v !== null) fd.append(k, String(v))
+      }
+      fd.append('pernyataan', form.pernyataan ? '1' : '0')
+      // ID term/post untuk sinkronisasi (backend simpan _skema_id/_prodi_id dkk).
+      fd.append('skema_id', String(skemaIdByLabel.value[form.skema] || ''))
+      fd.append('prodi_id', String(prodiIdName.value[form.prodi] || ''))
+      fd.append('jenis_hibah_id', String(jenisIdByName.value[form.jenis_hibah] || ''))
+      fd.append('sdgs_id', String(sdgsIdByName.value[form.sdgs] || ''))
+      fd.append('kk_id', String(kkIdByName.value[form.kelompok_keahlian] || ''))
+      // Anggota tim — hanya terisi (skip kosong).
+      const anggota = form.anggota_list.filter(m => m.nomor.trim() || m.nama.trim())
+      anggota.forEach((m, i) => {
+        fd.append(`anggota_list[${i}][tipe]`, m.tipe)
+        fd.append(`anggota_list[${i}][nomor]`, m.nomor)
+        fd.append(`anggota_list[${i}][nama]`, m.nama)
+        fd.append(`anggota_list[${i}][prodi]`, m.prodi)
+      })
       for (const f of customFields.value) {
-        payload[f.key] = customValues[f.key] || ''
+        fd.append(f.key, customValues[f.key] || '')
+      }
+      // File proposal PDF (wajib di form).
+      if (form.proposal instanceof File) {
+        fd.append('proposal', form.proposal, form.proposal.name)
       }
 
       const auth = useAuthStore()
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
         ...auth.authHeaders()
       }
+      // JANGAN set Content-Type manual — biarkan browser set boundary multipart.
 
       const res = await fetch(SITE.formEndpoint, {
         method: 'POST',
         headers,
-        body: JSON.stringify(payload)
+        body: fd
       })
 
       if (res.ok) {
@@ -363,7 +383,8 @@ export function useHibahForm(hibahId: Ref<number | null>) {
       nama: '', nip: '', jenis: 'Dosen' as const, prodi: '', skema: '',
       judul: '', ringkasan: '', jml_tim: '', anggota: '',
       jenis_hibah: '', sdgs: '', kelompok_keahlian: '', anggota_list: [],
-      email: '', hp: '', pernyataan: false
+      email: '', hp: '', pernyataan: false,
+      proposal: null, proposalName: ''
     })
     Object.keys(fieldErrors).forEach(k => delete fieldErrors[k])
     for (const f of customFields.value) {

@@ -80,7 +80,7 @@ import WpButton from '@/components/WpButton.vue'
 import type { WpColumn } from '@/components/WpTable.vue'
 
 const auth=useAuthStore()
-interface Submission { id:number;reg_no:string;nama:string;nip:string;jenis:string;prodi:string;skema:string;jenis_hibah?:string;sdgs?:string;kelompok_keahlian?:string;judul:string;ringkasan:string;jml_tim?:string;anggota?:string;anggota_list?:{tipe:'dosen'|'mahasiswa';nomor:string;nama:string;prodi:string}[];email:string;hp:string;hibah_id:number;created_at:string;status?:string }
+interface Submission { id:number;reg_no:string;nama:string;nip:string;jenis:string;prodi:string;skema:string;jenis_hibah?:string;sdgs?:string;kelompok_keahlian?:string;judul:string;ringkasan:string;jml_tim?:string;anggota?:string;anggota_list?:{tipe:'dosen'|'mahasiswa';nomor:string;nama:string;prodi:string}[];email:string;hp:string;hibah_id:number;created_at:string;status?:string;proposal_id?:number|string;proposal_url?:string }
 const items=ref<Submission[]>([]),loading=ref(true),error=ref(''),total=ref(0),pg=ref(1),perPg=20
 const search=ref(''),statusFilter=ref('all')
 
@@ -98,6 +98,7 @@ const columns:WpColumn[]=[
   {key:'jenis',label:'Jenis'},
   {key:'skema',label:'Model Hibah'},
   {key:'_status',label:'Status',type:'badge',accessor:(r:any)=>STATUS_LABEL[(r.status||'submitted')]||r.status},
+  {key:'proposal_url',label:'Proposal',type:'link',linkLabel:'Download',accessor:(r:any)=>r.proposal_url||''},
   {key:'_date',label:'Tanggal',type:'date',accessor:(r:any)=>fmtDate(r.created_at)},
 ]
 

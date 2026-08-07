@@ -178,7 +178,7 @@
     ],
     "layanan": [
       { "label": "Pendaftaran Hibah", "href": "/hibah" },
-      { "label": "Track Status Pendaftaran", "href": "/daftar/status" },
+      { "label": "Cek Formulir", "href": "/daftar/status" },
       { "label": "Panduan Penulisan Proposal", "href": "#" },
       { "label": "Layanan HKI & Paten", "href": "#" },
       { "label": "Portal Utama ITSI", "href": "https://itsi.ac.id" }
