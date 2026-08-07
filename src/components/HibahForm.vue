@@ -4,6 +4,33 @@
       <h3>Formulir Pendaftaran Hibah</h3>
       <p class="cap">Lengkapi seluruh data dengan benar. Kolom bertanda <span style="color:var(--rust)">*</span> wajib diisi.</p>
       <form @submit.prevent="submitForm" novalidate>
+        <!-- Download contoh penulisan (di atas agar bisa langsung diunduh) -->
+        <div v-if="filePanduan.length || fileTemplate.length" class="download-box" style="margin-bottom:22px">
+          <div class="dl-label">Contoh Penulisan &amp; Template</div>
+          <div class="dl-links">
+            <a
+              v-for="(url, i) in filePanduan"
+              :key="'panduan-' + i"
+              :href="url"
+              target="_blank"
+              class="dl-link"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Panduan Penulisan {{ filePanduan.length > 1 ? i + 1 : '' }}
+            </a>
+            <a
+              v-for="(url, i) in fileTemplate"
+              :key="'template-' + i"
+              :href="url"
+              target="_blank"
+              class="dl-link"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Template Proposal {{ fileTemplate.length > 1 ? i + 1 : '' }}
+            </a>
+          </div>
+        </div>
+
         <div class="form-grid">
           <div class="field" :class="{ invalid: fieldErrors.nama }">
             <label for="nama">Nama Lengkap &amp; Gelar *</label>
@@ -170,33 +197,6 @@
               </div>
             </div>
             <div class="error-msg">{{ fieldErrors['anggota_list_' + i] }}</div>
-          </div>
-        </div>
-
-        <!-- Download contoh penulisan -->
-        <div v-if="filePanduan.length || fileTemplate.length" class="download-box mt-22">
-          <div class="dl-label">Contoh Penulisan & Template</div>
-          <div class="dl-links">
-            <a
-              v-for="(url, i) in filePanduan"
-              :key="'panduan-' + i"
-              :href="url"
-              target="_blank"
-              class="dl-link"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Panduan Penulisan {{ filePanduan.length > 1 ? i + 1 : '' }}
-            </a>
-            <a
-              v-for="(url, i) in fileTemplate"
-              :key="'template-' + i"
-              :href="url"
-              target="_blank"
-              class="dl-link"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Template Proposal {{ fileTemplate.length > 1 ? i + 1 : '' }}
-            </a>
           </div>
         </div>
 

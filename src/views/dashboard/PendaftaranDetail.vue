@@ -75,9 +75,9 @@
             <th>SDGs</th>
             <td><input class="components-text-control__input" style="width:100%" v-model="form.sdgs" /></td>
           </tr>
-          <tr v-if="form.kelompok_keahlian">
+          <tr>
             <th>Kelompok Keahlian</th>
-            <td><input class="components-text-control__input" style="width:100%" v-model="form.kelompok_keahlian" /></td>
+            <td><input class="components-text-control__input" style="width:100%" v-model="form.kelompok_keahlian" placeholder="—" /></td>
           </tr>
           <tr>
             <th>Judul Usulan</th>
