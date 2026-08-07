@@ -88,6 +88,24 @@ export interface StatItem {
   suffix?: string
 }
 
+/** Satu baris distribusi/trend pada statistik infografis. */
+export interface InfografisDatum {
+  label: string
+  count: number
+}
+
+/** Respons endpoint GET /lp2m/v1/statistik */
+export interface InfografisStats {
+  total_usulan: number
+  dosen_unik: number
+  mahasiswa_unik: number
+  jumlah_skema: number
+  skema_distribusi: InfografisDatum[]
+  sdgs_trend: InfografisDatum[]
+  tahun_tersedia: string[]
+  tahun: string | null
+}
+
 export interface TimelineItem {
   date: string
   label: string
