@@ -6,12 +6,12 @@
       <template v-for="(item, i) in items" :key="item.label">
         <rect :x="barX(i)" :y="barY(item.count)"
           :width="bw" :height="barH(item.count)"
-          :fill="item.color || '#2A5F42'" rx="1.5">
+          :fill="barColor(item, i)" rx="1.5">
           <animate attributeName="height" from="0" :to="barH(item.count)" dur="0.9s" fill="freeze"/>
           <animate attributeName="y" :from="h - padB" :to="barY(item.count)" dur="0.9s" fill="freeze"/>
         </rect>
-        <text :x="barX(i) + bw / 2" :y="h - 8" font-size="10" fill="#3E4C40"
-          text-anchor="middle" font-family="IBM Plex Mono, monospace">{{ item.label }}</text>
+        <text :x="barX(i) + bw / 2" :y="h - 8" font-size="9" fill="#3E4C40"
+          text-anchor="middle" font-family="IBM Plex Mono, monospace">{{ shortLabel(item.label) }}<title>{{ item.label }}</title></text>
       </template>
     </template>
     <template v-else>
@@ -74,6 +74,19 @@ const maxVal = computed(() => {
 // Jika data-driven → bar per item; legacy → grouped 2 bars per year.
 const groupW = chartW / (items.value.length || legacyYears.length)
 const bw = Math.max(10, groupW * (items.value.length ? 0.55 : 0.28))
+
+// Palet warna yang kontras, diputar per index agar tiap bar beda warna.
+const PALETTE = ['#2A5F42', '#C99A3B', '#4C6B8A', '#9B4224', '#7A4C9B', '#3B7A57', '#B0542F', '#1F4D36', '#8A6D3B', '#5B7C9E', '#A23B3B', '#2F6B4F', '#6B4F2A', '#43676B', '#8C4A6E', '#556B2F', '#B8860B']
+
+function barColor(item: BarItem, i: number): string {
+  return item.color || PALETTE[i % PALETTE.length]
+}
+
+// Label SDGs seperti "1 No Poverty" → "SDG 1"; lainnya dipakai apa adanya.
+function shortLabel(label: string): string {
+  const m = label.match(/^(\d{1,2})\s/)
+  return m ? `SDG ${m[1]}` : label
+}
 
 function barX(i: number, offset = 0) {
   if (items.value.length) {
