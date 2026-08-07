@@ -42,6 +42,10 @@ h1, h2, h3, h4 {
 
 p { margin: 0 0 1em 0; }
 a { color: inherit; text-decoration: none; }
+/* Tombol yang dirender sebagai <a> (router-link) harus tetap putih, jangan tertimpa warna link */
+.entry-content a.btn { color: var(--white); text-decoration: none; }
+.entry-content a.btn-outline { color: var(--green-700); }
+.entry-content a.btn-outline-light { color: var(--white); }
 img, svg { max-width: 100%; display: block; }
 
 .mono { font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.02em; }

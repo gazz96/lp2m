@@ -12,7 +12,7 @@
           <input
             v-model="no"
             class="track-input"
-            placeholder="202608040003"
+            placeholder="cth. 2026-00001"
             style="flex:1;padding:14px 18px;border:1px solid var(--wp-border);border-radius:4px;font-size:16px"
           />
           <button type="submit" class="btn btn-primary" style="padding:14px 28px;font-size:15px;white-space:nowrap">Cek Status</button>
@@ -48,6 +48,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { SITE } from '@/data'
 import TopBar from '@/components/TopBar.vue'
 import SiteNav from '@/components/SiteNav.vue'
@@ -92,8 +93,11 @@ function statusStyle(s = '') {
 }
 
 onMounted(() => {
-  const q = new URL(location.href).searchParams.get('no')
-  if (q) { no.value = q; cek() }
+  const route = useRoute()
+  const fromPath = (route.params.no as string) || ''
+  const q = new URL(location.href).searchParams.get('no') || ''
+  const start = fromPath || q
+  if (start) { no.value = start; cek() }
 })
 
 async function cek() {
