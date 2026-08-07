@@ -7,11 +7,12 @@
         <rect :x="barX(i)" :y="barY(item.count)"
           :width="bw" :height="barH(item.count)"
           :fill="barColor(item, i)" rx="1.5">
+          <title>{{ item.label }}</title>
           <animate attributeName="height" from="0" :to="barH(item.count)" dur="0.9s" fill="freeze"/>
           <animate attributeName="y" :from="h - padB" :to="barY(item.count)" dur="0.9s" fill="freeze"/>
         </rect>
         <text :x="barX(i) + bw / 2" :y="h - 8" font-size="9" fill="#3E4C40"
-          text-anchor="middle" font-family="IBM Plex Mono, monospace">{{ shortLabel(item.label) }}<title>{{ item.label }}</title></text>
+          text-anchor="middle" font-family="IBM Plex Mono, monospace">{{ shortLabel(item.label) }}</text>
       </template>
     </template>
     <template v-else>
