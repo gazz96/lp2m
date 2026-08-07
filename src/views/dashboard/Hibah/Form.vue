@@ -74,19 +74,40 @@
 
             <!-- Panduan & Dokumen -->
             <div class="editor-tabs__panel" v-if="activeTab === 'panduan'">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-                <div class="components-base-control">
-                  <label class="components-base-control__label">Panduan Penulisan (PDF)</label>
-                  <input class="components-text-control__input" type="file" accept=".pdf" @change="handleFileUpload($event, 'panduan_penulisan')" />
-                  <div class="components-base-control__help" v-if="f.panduan_penulisan_id">ID: {{ f.panduan_penulisan_id }}</div>
+              <!-- File Panduan Penulisan -->
+              <div class="components-base-control">
+                <label class="components-base-control__label">📘 Panduan Penulisan</label>
+                <div v-for="(url,i) in f.file_panduan" :key="i" class="file-row">
+                  <a :href="url" target="_blank" rel="noopener" class="file-row__link">{{ fileLabel(url) }}</a>
+                  <WpButton variant="link" class="is-small" @click="f.file_panduan.splice(i,1)">Hapus</WpButton>
                 </div>
-                <div class="components-base-control">
-                  <label class="components-base-control__label">Template Dokumen (PDF)</label>
-                  <input class="components-text-control__input" type="file" accept=".pdf" @change="handleFileUpload($event, 'template_dokumen')" />
-                  <div class="components-base-control__help" v-if="f.template_dokumen_id">ID: {{ f.template_dokumen_id }}</div>
-                </div>
+                <input class="components-text-control__input" type="file" accept=".pdf,.doc,.docx" @change="handleFileUpload($event, 'file_panduan')" />
+                <div class="components-base-control__help">Upload atau ganti file panduan penulisan (PDF/DOC).</div>
               </div>
-              <div class="components-base-control" style="margin-top:4px">
+
+              <!-- File Template Dokumen -->
+              <div class="components-base-control" style="margin-top:12px">
+                <label class="components-base-control__label">📝 Template Dokumen</label>
+                <div v-for="(url,i) in f.file_template" :key="i" class="file-row">
+                  <a :href="url" target="_blank" rel="noopener" class="file-row__link">{{ fileLabel(url) }}</a>
+                  <WpButton variant="link" class="is-small" @click="f.file_template.splice(i,1)">Hapus</WpButton>
+                </div>
+                <input class="components-text-control__input" type="file" accept=".pdf,.doc,.docx" @change="handleFileUpload($event, 'file_template')" />
+                <div class="components-base-control__help">Upload atau ganti file template dokumen (PDF/DOC).</div>
+              </div>
+
+              <!-- File Kelompok Keahlian -->
+              <div class="components-base-control" style="margin-top:12px">
+                <label class="components-base-control__label">👥 Template Kelompok Keahlian</label>
+                <div v-for="(url,i) in f.file_kelompok_keahlian" :key="i" class="file-row">
+                  <a :href="url" target="_blank" rel="noopener" class="file-row__link">{{ fileLabel(url) }}</a>
+                  <WpButton variant="link" class="is-small" @click="f.file_kelompok_keahlian.splice(i,1)">Hapus</WpButton>
+                </div>
+                <input class="components-text-control__input" type="file" accept=".pdf,.doc,.docx" @change="handleFileUpload($event, 'file_kelompok_keahlian')" />
+                <div class="components-base-control__help">Upload atau ganti file template kelompok keahlian (PDF/DOC).</div>
+              </div>
+
+              <div class="components-base-control" style="margin-top:12px">
                 <label class="components-base-control__label">Eyebrow</label>
                 <input class="components-text-control__input" type="text" v-model="f.event_eyebrow" placeholder="Event Aktif..." />
               </div>
@@ -185,26 +206,29 @@ const selJenis=ref<number[]>([]),selSdgs=ref<number[]>([]),selKk=ref<number[]>([
 const activeTab=ref('info')
 const tabs=[{id:'info',label:'Info Dasar'},{id:'timeline',label:'Timeline'},{id:'panduan',label:'Panduan & Dokumen'}]
 interface TL{date:string;label:string}
-const f=reactive({title:'',content:'',status:'draft',deadline:'',deadline_time:'',dana_maks_num:0,event_eyebrow:'',info_tambahan:'',link_panduan:'',timeline_items:[] as TL[],featured_media:null as number|null,panduan_penulisan_id:null as number|null,template_dokumen_id:null as number|null})
+const f=reactive({title:'',content:'',status:'draft',deadline:'',deadline_time:'',dana_maks_num:0,event_eyebrow:'',info_tambahan:'',link_panduan:'',timeline_items:[] as TL[],featured_media:null as number|null,panduan_penulisan_id:null as number|null,template_dokumen_id:null as number|null,file_panduan:[] as string[],file_template:[] as string[],file_kelompok_keahlian:[] as string[]})
 function clean(s:string){return new DOMParser().parseFromString(s,'text/html').body.textContent||''}
 function autoResize(e:Event){const el=e.target as HTMLTextAreaElement;el.style.height='auto';el.style.height=el.scrollHeight+'px'}
+function fileLabel(url:string){const n=decodeURIComponent(url.split('/').pop()||'')||url;return n.length>60?n.slice(0,57)+'…':n}
 
-async function handleFileUpload(e:Event,key:'panduan_penulisan'|'template_dokumen'){
+async function handleFileUpload(e:Event,key:'file_panduan'|'file_template'|'file_kelompok_keahlian'){
   const file=(e.target as HTMLInputElement).files?.[0];if(!file)return
   const formData=new FormData();formData.append('file',file)
   try{const r=await window.fetch(`${SITE.apiBase.replace('/wp/v2','')}/media`,{method:'POST',headers:{...auth.authHeaders()},body:formData})
     if(!r.ok)throw new Error('Upload gagal');const media=await r.json()
-    if(key==='panduan_penulisan')f.panduan_penulisan_id=media.id;else f.template_dokumen_id=media.id
+    if(media.source_url)f[key].push(media.source_url)
+    else if(media.id)f[key].push(`${SITE.apiBase.replace('/wp/v2','')}/media/${media.id}`)
+    toast.success('File berhasil diupload')
   }catch(e:any){err.value=e.message}
 }
 
 async function loadTerms(){try{const[k,s,j,sg,kk]=await Promise.all([window.fetch(`${SITE.apiBase}/kategori_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/model_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/jenis_hibah?per_page=100`),window.fetch(`${SITE.apiBase}/sdgs?per_page=100`),window.fetch(`${SITE.apiBase}/kelompok_keahlian?per_page=100`)]);if(k.ok)kTerms.value=await k.json();if(s.ok)sTerms.value=await s.json();if(j.ok)jTerms.value=flatTerms(await j.json());if(sg.ok)sgsTerms.value=await sg.json();if(kk.ok)kkTerms.value=flatTerms(await kk.json())}catch{}}
 function flatTerms(list:Array<{id:number;name:string;parent?:number}>){const byId=new Map(list.map(t=>[t.id,t]));return list.map(t=>{const p=t.parent&&byId.get(t.parent);return{id:t.id,name:t.name,label:p?`${p.name} — ${t.name}`:t.name}})}
-async function loadItem(id:number){try{const r=await window.fetch(`${SITE.apiBase}/hibah/${id}?_embed`);if(!r.ok)return;const p=await r.json();editId.value=p.id;f.title=clean(p.title?.rendered||'');f.content=p.content?.rendered||'';f.status=p.status||'draft';f.deadline=p.deadline?p.deadline.slice(0,10):'';f.deadline_time=p.deadline_time||'';f.dana_maks_num=parseInt(p.dana_maks)||0;f.event_eyebrow=p.event_eyebrow||'';f.info_tambahan=p.info_tambahan||'';f.link_panduan=p.link_panduan||'';f.timeline_items=p.timeline_items||[];f.featured_media=p.featured_media||null;f.panduan_penulisan_id=p.panduan_penulisan_id||null;f.template_dokumen_id=p.template_dokumen_id||null;selKats.value=p.kategori_hibah||[];selSkms.value=p.model_hibah||[];selJenis.value=p.jenis_hibah||[];selSdgs.value=p.sdgs||[];selKk.value=p.kelompok_keahlian||[];thumb.value=p._embedded?.['wp:featuredmedia']?.[0]?.source_url||''}catch{}}
+async function loadItem(id:number){try{const r=await window.fetch(`${SITE.apiBase}/hibah/${id}?_embed`);if(!r.ok)return;const p=await r.json();editId.value=p.id;f.title=clean(p.title?.rendered||'');f.content=p.content?.rendered||'';f.status=p.status||'draft';f.deadline=p.deadline?p.deadline.slice(0,10):'';f.deadline_time=p.deadline_time||'';f.dana_maks_num=parseInt(p.dana_maks)||0;f.event_eyebrow=p.event_eyebrow||'';f.info_tambahan=p.info_tambahan||'';f.link_panduan=p.link_panduan||'';f.timeline_items=p.timeline_items||[];f.featured_media=p.featured_media||null;f.panduan_penulisan_id=p.panduan_penulisan_id||null;f.template_dokumen_id=p.template_dokumen_id||null;f.file_panduan=p.file_panduan||[];f.file_template=p.file_template||[];f.file_kelompok_keahlian=p.file_kelompok_keahlian||[];selKats.value=p.kategori_hibah||[];selSkms.value=p.model_hibah||[];selJenis.value=p.jenis_hibah||[];selSdgs.value=p.sdgs||[];selKk.value=p.kelompok_keahlian||[];thumb.value=p._embedded?.['wp:featuredmedia']?.[0]?.source_url||''}catch{}}
 async function addTerm(tax:string,name:string,arr:{id:number;name:string;label?:string}[],sel:number[]){err.value='';const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'-');try{const r=await window.fetch(`${SITE.apiBase}/${tax}`,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify({name,slug})});if(!r.ok)throw new Error((await r.json().catch(()=>({}))).message||'Gagal');const c=await r.json();arr.push({id:c.id,name:c.name});sel.push(c.id)}catch(e:any){err.value='Gagal: '+e.message}}
 function previewDraft(){if(editId.value)window.open(`https://itsi.ac.id/?p=${editId.value}&preview=true`,'_blank')}
-async function save(){if(!f.title.trim()){err.value='Judul wajib diisi.';return};saving.value=true;err.value='';const p:any={title:f.title,content:f.content,status:f.status,deadline:f.deadline||'',deadline_time:f.deadline_time||'',dana_maks:f.dana_maks_num?String(f.dana_maks_num):'',event_eyebrow:f.event_eyebrow,info_tambahan:f.info_tambahan,link_panduan:f.link_panduan,kategori_hibah:selKats.value,model_hibah:selSkms.value,jenis_hibah:selJenis.value,sdgs:selSdgs.value,kelompok_keahlian:selKk.value,timeline_items:f.timeline_items,panduan_penulisan_id:f.panduan_penulisan_id,template_dokumen_id:f.template_dokumen_id};if(f.featured_media)p.featured_media=f.featured_media;try{const url=editId.value?`${SITE.apiBase}/hibah/${editId.value}`:`${SITE.apiBase}/hibah`;const r=await window.fetch(url,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify(p)});if(!r.ok){const e=await r.json().catch(()=>({}));err.value=e.message||'HTTP '+r.status;toast.error(e.message||'Gagal menyimpan');saving.value=false;return};const c=await r.json();if(!editId.value){editId.value=c.id;router.replace('/dashboard/hibah/'+c.id)};saving.value=false;err.value='';toast.success(editId.value?'Hibah berhasil diperbarui!':'Hibah berhasil dibuat!')}catch(e:any){err.value=e.message;saving.value=false}}
-function resetForm(){Object.assign(f,{title:'',content:'',status:'draft',deadline:'',deadline_time:'',dana_maks_num:0,event_eyebrow:'',info_tambahan:'',link_panduan:'',timeline_items:[],featured_media:null,panduan_penulisan_id:null,template_dokumen_id:null});selKats.value=[];selSkms.value=[];selJenis.value=[];selSdgs.value=[];selKk.value=[];thumb.value='';editId.value=null;err.value='';activeTab.value='info'}
+async function save(){if(!f.title.trim()){err.value='Judul wajib diisi.';return};saving.value=true;err.value='';const p:any={title:f.title,content:f.content,status:f.status,deadline:f.deadline||'',deadline_time:f.deadline_time||'',dana_maks:f.dana_maks_num?String(f.dana_maks_num):'',event_eyebrow:f.event_eyebrow,info_tambahan:f.info_tambahan,link_panduan:f.link_panduan,kategori_hibah:selKats.value,model_hibah:selSkms.value,jenis_hibah:selJenis.value,sdgs:selSdgs.value,kelompok_keahlian:selKk.value,timeline_items:f.timeline_items,panduan_penulisan_id:f.panduan_penulisan_id,template_dokumen_id:f.template_dokumen_id,file_panduan:f.file_panduan,file_template:f.file_template,file_kelompok_keahlian:f.file_kelompok_keahlian};if(f.featured_media)p.featured_media=f.featured_media;try{const url=editId.value?`${SITE.apiBase}/hibah/${editId.value}`:`${SITE.apiBase}/hibah`;const r=await window.fetch(url,{method:'POST',headers:{'Content-Type':'application/json',...auth.authHeaders()},body:JSON.stringify(p)});if(!r.ok){const e=await r.json().catch(()=>({}));err.value=e.message||'HTTP '+r.status;toast.error(e.message||'Gagal menyimpan');saving.value=false;return};const c=await r.json();if(!editId.value){editId.value=c.id;router.replace('/dashboard/hibah/'+c.id)};saving.value=false;err.value='';toast.success(editId.value?'Hibah berhasil diperbarui!':'Hibah berhasil dibuat!')}catch(e:any){err.value=e.message;saving.value=false}}
+function resetForm(){Object.assign(f,{title:'',content:'',status:'draft',deadline:'',deadline_time:'',dana_maks_num:0,event_eyebrow:'',info_tambahan:'',link_panduan:'',timeline_items:[],featured_media:null,panduan_penulisan_id:null,template_dokumen_id:null,file_panduan:[],file_template:[],file_kelompok_keahlian:[]});selKats.value=[];selSkms.value=[];selJenis.value=[];selSdgs.value=[];selKk.value=[];thumb.value='';editId.value=null;err.value='';activeTab.value='info'}
 watch(()=>route.params.id,(id)=>{if(id)loadItem(parseInt(id as string));else resetForm()})
 onMounted(()=>{loadTerms();const id=route.params.id as string;if(id)loadItem(parseInt(id));else resetForm()})
 </script>
@@ -240,6 +264,10 @@ onMounted(()=>{loadTerms();const id=route.params.id as string;if(id)loadItem(par
 .wp-detail-group__title::before { content:"";display:inline-block;width:8px;height:8px;border-right:2px solid var(--wp-text-secondary);border-bottom:2px solid var(--wp-text-secondary);margin-right:8px;transform:rotate(-45deg);transition:transform 0.15s; }
 .wp-detail-group[open] .wp-detail-group__title::before { transform:rotate(45deg); }
 .wp-detail-group__body { padding:0 16px 16px; }
+
+.file-row { display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;margin-bottom:6px;background:#f6f7f7;border:1px solid var(--wp-border-light);border-radius:2px; }
+.file-row__link { font-size:13px;color:var(--wp-primary);text-decoration:none;word-break:break-all; }
+.file-row__link:hover { text-decoration:underline; }
 
 @media(max-width:900px){ .editor-sidebar{display:none;} .editor-styles{padding:0 20px;} }
 </style>
