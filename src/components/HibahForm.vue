@@ -44,7 +44,7 @@
         <div class="form-grid">
           <div class="field" :class="{ invalid: fieldErrors.nama }">
             <label for="nama">Nama Lengkap &amp; Gelar *</label>
-            <input type="text" id="nama" v-model="form.nama" placeholder="cth. Dr. Andi Pratama, S.Kom., M.T." />
+            <input type="text" id="nama" v-model="form.nama" placeholder="Ir. Andi Prayogi, S.Kom., M.Kom" />
             <div class="error-msg">{{ fieldErrors.nama }}</div>
           </div>
           <div class="field" :class="{ invalid: fieldErrors.nip }">
