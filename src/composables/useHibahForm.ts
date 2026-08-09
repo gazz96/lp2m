@@ -49,7 +49,6 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     skema: '',
     judul: '',
     ringkasan: '',
-    jml_tim: '',
     anggota: '',
     jenis_hibah: '',
     sdgs: '',
@@ -309,7 +308,7 @@ export function useHibahForm(hibahId: Ref<number | null>) {
       const fd = new FormData()
       const keys: (keyof HibahFormData)[] = [
         'hibah_id', 'nama', 'nip', 'jenis', 'prodi', 'skema', 'judul', 'ringkasan',
-        'jml_tim', 'anggota', 'jenis_hibah', 'sdgs', 'kelompok_keahlian', 'email', 'hp'
+        'anggota', 'jenis_hibah', 'sdgs', 'kelompok_keahlian', 'email', 'hp'
       ]
       for (const k of keys) {
         const v = form[k]
@@ -381,7 +380,7 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     Object.assign(form, {
       hibah_id: hibahId.value,
       nama: '', nip: '', jenis: 'Dosen' as const, prodi: '', skema: '',
-      judul: '', ringkasan: '', jml_tim: '', anggota: '',
+      judul: '', ringkasan: '', anggota: '',
       jenis_hibah: '', sdgs: '', kelompok_keahlian: '', anggota_list: [],
       email: '', hp: '', pernyataan: false,
       proposal: null, proposalName: ''

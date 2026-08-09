@@ -88,10 +88,6 @@
             <td><textarea class="components-textarea-control__input" rows="5" style="width:100%" v-model="form.ringkasan"></textarea></td>
           </tr>
           <tr>
-            <th>Jumlah Tim</th>
-            <td><input class="components-text-control__input" style="width:120px" type="number" min="1" v-model="form.jml_tim" /></td>
-          </tr>
-          <tr>
             <th>Anggota Tim</th>
             <td>
               <template v-if="detail.anggota_list && detail.anggota_list.length">
@@ -193,7 +189,7 @@ async function save() {
       nama: form.value.nama, nip: form.value.nip, jenis: form.value.jenis,
       prodi: form.value.prodi, skema: form.value.skema,
       judul: form.value.judul, ringkasan: form.value.ringkasan,
-      jml_tim: form.value.jml_tim, email: form.value.email, hp: form.value.hp,
+      email: form.value.email, hp: form.value.hp,
     }
     // Hanya kirim field opsional yang ada di form
     for (const k of ['jenis_hibah', 'sdgs', 'kelompok_keahlian'] as const) {

@@ -44,7 +44,6 @@ export interface HibahFormData {
   skema: string
   judul: string
   ringkasan: string
-  jml_tim: string
   anggota: string
   jenis_hibah: string
   sdgs: string
