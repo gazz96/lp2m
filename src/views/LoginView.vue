@@ -14,7 +14,7 @@
         <div class="field">
           <label for="password">Password</label>
           <div class="pass-wrap">
-            <input :type="showPass ? 'text' : 'password'" id="password" v-model="appPassword" placeholder="input password" autocomplete="current-password" />
+            <input :type="showPass ? 'text' : 'password'" id="password" v-model="password" placeholder="input password" autocomplete="current-password" />
             <button type="button" class="btn-toggle" @click="showPass = !showPass" tabindex="-1">
               <span :class="'dashicons ' + (showPass ? 'dashicons-hidden' : 'dashicons-visibility')"></span>
             </button>
@@ -42,13 +42,13 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const username = ref('')
-const appPassword = ref('')
+const password = ref('')
 const showPass = ref(false)
 const loading = ref(false)
 const error = ref('')
 
 async function doLogin() {
-  if (!username.value.trim() || !appPassword.value.trim()) {
+  if (!username.value.trim() || !password.value.trim()) {
     error.value = 'Username dan Password wajib diisi.'
     return
   }
@@ -56,7 +56,7 @@ async function doLogin() {
   loading.value = true
   error.value = ''
 
-  const result = await auth.login(username.value.trim(), appPassword.value.trim())
+  const result = await auth.login(username.value.trim(), password.value.trim())
   loading.value = false
 
   if (result.ok) {

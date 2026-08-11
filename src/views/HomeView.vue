@@ -2,7 +2,7 @@
   <TopBar />
   <SiteNav>
     <template #extra>
-      <router-link to="/dashboard" class="btn btn-primary nav-btn-dash">Dashboard</router-link>
+      <a href="#form-hibah" class="btn btn-primary nav-btn-dash">Daftar Hibah</a>
     </template>
   </SiteNav>
   <main>
