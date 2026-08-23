@@ -14,6 +14,11 @@
 
     <div v-else-if="!successForm" class="form-panel">
       <h3>Formulir Pendaftaran Hibah</h3>
+      <!-- Deadline lewat tapi pendaftaran masih dibuka (perpanjangan/darurat) -->
+      <div v-if="deadlinePassedRaw" class="deadline-extension-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Batas akhir pendaftaran ({{ fmtDeadline }}) sudah lewat. Pendaftaran masih dibuka atas kebijakan LP2M.</span>
+      </div>
       <p class="cap">Lengkapi seluruh data dengan benar. Kolom bertanda <span style="color:var(--rust)">*</span> wajib diisi.</p>
       <form @submit.prevent="submitForm" novalidate>
         <!-- Download contoh penulisan (di atas agar bisa langsung diunduh) -->
@@ -276,12 +281,23 @@ const {
   prodiTerms, skemaOptionsAll,
   jenisTerms, sdgsTerms, kkTerms,
   addAnggota, removeAnggota,
-  isDeadlinePassed
+  isDeadlinePassed, allowAfterDeadline
 } = useHibahForm(activeHibahId, computed(() => props.deadline))
 
 // Form diganti panel "pendaftaran ditutup" bila sudah melewati deadline,
 // atau bila parent memaksa close (mis. tidak ada event hibah aktif).
 const closed = computed(() => props.closed || isDeadlinePassed())
+
+// Deadline lewat secara aktual (tanpa memandang allow) — untuk info perpanjangan.
+const deadlinePassedRaw = computed(() => {
+  if (!props.deadline) return false
+  const ts = new Date(props.deadline).getTime()
+  return !Number.isNaN(ts) && Date.now() > ts && !!allowAfterDeadline.value
+})
+const fmtDeadline = computed(() => {
+  if (!props.deadline) return ''
+  return new Date(props.deadline).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+})
 
 // Jumlah anggota per tipe untuk cap 2 dosen + 2 mahasiswa
 const dosenCount = computed(() => form.anggota_list.filter(m => m.tipe === 'dosen').length)
@@ -389,6 +405,21 @@ function resetForm() { reset() }
 }
 .closed-panel h3 { color: var(--rust, #b3541e); }
 .closed-panel .cap { max-width: 52ch; margin: 8px auto 0; }
+
+/* Info perpanjangan — deadline lewat tapi pendaftaran masih dibuka */
+.deadline-extension-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: #fdf6e3;
+  border: 1px solid #ecd9a6;
+  border-radius: 6px;
+  color: #8a6d1a;
+  font-size: 0.82rem;
+}
+.deadline-extension-note svg { flex-shrink: 0; margin-top: 2px; }
 
 /* Combobox prodi searchable */
 .combobox { position: relative; }

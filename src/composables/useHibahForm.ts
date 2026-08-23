@@ -51,11 +51,28 @@ export function useHibahForm(
     watch(deadlineInput, v => { deadlineRef.value = v })
   }
 
+  // Pengaturan global LP2M: "izinkan pendaftaran setelah deadline" (perpanjangan/darurat).
+  // Diambil sekali dari REST settings site (publik). Gagal → default false (tetap tertutup).
+  const allowAfterDeadline = ref(false)
+  ;(async () => {
+    try {
+      const res = await fetch(`${SITE.apiBase.replace('/wp/v2', '')}/lp2m/v1/settings/site`)
+      if (res.ok) {
+        const data = await res.json()
+        allowAfterDeadline.value = !!data.allow_after_deadline
+      }
+    } catch {
+      // Biarkan false — pendaftaran tetap tertutup sesuai deadline.
+    }
+  })()
+
   /**
    * True bila deadline sudah lewat (dalam zona waktu browser).
    * Kalau deadline kosong/tidak valid → false (form tetap berjalan seperti biasa).
+   * Saat pengaturan "izinkan setelah deadline" aktif → selalu false (form tetap terbuka).
    */
   function isDeadlinePassed(): boolean {
+    if (allowAfterDeadline.value) return false
     const dl = deadlineRef.value
     if (!dl) return false
     const ts = new Date(dl).getTime()
@@ -451,6 +468,6 @@ export function useHibahForm(
     jenisTerms, sdgsTerms, kkTerms,
     prodiIdName, skemaIdByLabel, jenisIdByName, sdgsIdByName, kkIdByName,
     anggotaList: form.anggota_list, addAnggota, removeAnggota,
-    isDeadlinePassed, validate, submit, reset, loadFormConfig
+    isDeadlinePassed, allowAfterDeadline, validate, submit, reset, loadFormConfig
   }
 }
