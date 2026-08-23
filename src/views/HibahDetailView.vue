@@ -48,6 +48,7 @@
           </div>
           <HibahForm
             :hibah-id="item.id"
+            :deadline="item.deadline"
             :file-panduan="item.file_panduan || []"
             :file-template="item.file_template || []"
             :file-kelompok-keahlian="item.file_kelompok_keahlian || []"

@@ -33,7 +33,7 @@
     <!-- Form pendaftaran hibah -->
     <div class="dash-card" style="margin-top:32px">
       <h3>📝 Form Pendaftaran Hibah</h3>
-      <HibahFormEmbed :hibah-id="selectedHibahId" />
+      <HibahFormEmbed :hibah-id="selectedHibahId" :deadline="selectedDeadline" />
     </div>
   </div>
 </template>
@@ -60,6 +60,7 @@ const loading = ref(true)
 const error = ref('')
 const activeTab = ref('all')
 const selectedHibahId = ref<number | null>(null)
+const selectedDeadline = ref<string | undefined>(undefined)
 
 const tabs = ref([{ key: 'all', label: 'Semua' }])
 
@@ -74,12 +75,13 @@ const filteredPosts = computed(() => {
 
 onMounted(async () => {
   try {
-    const url = `${SITE.apiBase}/hibah?per_page=30&orderby=date&order=desc&_fields=id,title,link,date,kategori_hibah,jenis_hibah_names,model_hibah_names`
+    const url = `${SITE.apiBase}/hibah?per_page=30&orderby=date&order=desc&_fields=id,title,link,date,deadline,kategori_hibah,jenis_hibah_names,model_hibah_names`
     const res = await fetch(url)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data: HibahEvent[] = await res.json()
     if (data.length > 0) {
       selectedHibahId.value = data[0].id
+      selectedDeadline.value = (data[0] as any).deadline || undefined
     }
     posts.value = data.map((p: HibahEvent) => ({
       id: p.id,

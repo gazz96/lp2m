@@ -1,7 +1,17 @@
 <template>
   <div class="form-panel">
+    <!-- Pendaftaran ditutup (deadline lewat) -->
+    <div v-if="closed" class="closed-panel">
+      <h3 style="color:var(--rust)">Pendaftaran Ditutup</h3>
+      <p style="color:var(--ink-soft);margin:8px 0 0">
+        Pendaftaran hibah ini sudah melewati batas akhir
+        ({{ props.deadline ? new Date(props.deadline).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'deadline' }}).
+        Formulir pendaftaran tidak dapat diisi lagi.
+      </p>
+    </div>
+
     <!-- Loading config -->
-    <div v-if="loadingConfig" class="loading-text">Memuat konfigurasi form...</div>
+    <div v-else-if="loadingConfig" class="loading-text">Memuat konfigurasi form...</div>
 
     <form v-else @submit.prevent="submitForm" novalidate>
       <div class="form-grid">
@@ -173,7 +183,10 @@
 import { ref, watch, computed } from 'vue'
 import { useHibahForm } from '@/composables/useHibahForm'
 
-const props = defineProps<{ hibahId?: number | null }>()
+const props = withDefaults(defineProps<{ hibahId?: number | null; deadline?: string }>(), {
+  hibahId: null,
+  deadline: undefined
+})
 const hibahIdRef = ref<number | null>(props.hibahId ?? null)
 
 const {
@@ -181,8 +194,12 @@ const {
   fieldErrors, checkError, customFields, customValues, loadingConfig,
   prodiTerms, skemaTerms, jenisTerms, sdgsTerms, kkTerms,
   addAnggota, removeAnggota,
+  isDeadlinePassed,
   submit, reset, loadFormConfig
-} = useHibahForm(hibahIdRef)
+} = useHibahForm(hibahIdRef, computed(() => props.deadline))
+
+// Form diganti panel "pendaftaran ditutup" bila sudah melewati deadline.
+const closed = computed(() => isDeadlinePassed())
 
 // Jumlah anggota per tipe untuk cap 2 dosen + 2 mahasiswa
 const dosenCount = computed(() => form.anggota_list.filter(m => m.tipe === 'dosen').length)
@@ -199,6 +216,8 @@ watch(() => props.hibahId, (newId) => {
 
 <style scoped>
 .form-panel { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 28px; }
+.closed-panel { text-align: center; padding: 40px 24px; }
+.closed-panel h3 { margin: 0; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field.full { grid-column: 1 / -1; }

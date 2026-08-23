@@ -1,6 +1,18 @@
 <template>
   <div class="hibah-form-component">
-    <div v-if="!successForm" class="form-panel">
+    <!-- Pendaftaran telah ditutup (deadline lewat / tidak ada event aktif) -->
+    <div v-if="closed" class="form-panel closed-panel">
+      <div class="closed-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h3>Pendaftaran Ditutup</h3>
+      <p class="cap">
+        <template v-if="props.deadline">Pendaftaran hibah ini sudah melewati batas akhir (<strong>{{ new Date(props.deadline).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</strong>). Formulir pendaftaran tidak dapat diisi lagi.</template>
+        <template v-else>Saat ini tidak ada hibah yang sedang menerima pendaftaran. Formulir akan kembali dibuka saat periode pendaftaran hibah berikutnya.</template>
+      </p>
+    </div>
+
+    <div v-else-if="!successForm" class="form-panel">
       <h3>Formulir Pendaftaran Hibah</h3>
       <p class="cap">Lengkapi seluruh data dengan benar. Kolom bertanda <span style="color:var(--rust)">*</span> wajib diisi.</p>
       <form @submit.prevent="submitForm" novalidate>
@@ -245,11 +257,15 @@ const props = withDefaults(defineProps<{
   filePanduan?: string[]
   fileTemplate?: string[]
   fileKelompokKeahlian?: string[]
+  deadline?: string
+  closed?: boolean
 }>(), {
   hibahId: null,
   filePanduan: () => [],
   fileTemplate: () => [],
-  fileKelompokKeahlian: () => []
+  fileKelompokKeahlian: () => [],
+  deadline: undefined,
+  closed: false
 })
 
 const activeHibahId = computed(() => props.hibahId ?? null)
@@ -259,8 +275,13 @@ const {
   fieldErrors, checkError, submit, reset,
   prodiTerms, skemaOptionsAll,
   jenisTerms, sdgsTerms, kkTerms,
-  addAnggota, removeAnggota
-} = useHibahForm(activeHibahId)
+  addAnggota, removeAnggota,
+  isDeadlinePassed
+} = useHibahForm(activeHibahId, computed(() => props.deadline))
+
+// Form diganti panel "pendaftaran ditutup" bila sudah melewati deadline,
+// atau bila parent memaksa close (mis. tidak ada event hibah aktif).
+const closed = computed(() => props.closed || isDeadlinePassed())
 
 // Jumlah anggota per tipe untuk cap 2 dosen + 2 mahasiswa
 const dosenCount = computed(() => form.anggota_list.filter(m => m.tipe === 'dosen').length)
@@ -349,6 +370,25 @@ function resetForm() { reset() }
 
 <style scoped>
 .mt-22 { margin-top: 22px; }
+
+/* Panel pendaftaran ditutup (deadline lewat) */
+.closed-panel {
+  text-align: center;
+  padding: 48px 32px;
+}
+.closed-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--rust-50, #f8ece4);
+  color: var(--rust, #b3541e);
+  margin-bottom: 16px;
+}
+.closed-panel h3 { color: var(--rust, #b3541e); }
+.closed-panel .cap { max-width: 52ch; margin: 8px auto 0; }
 
 /* Combobox prodi searchable */
 .combobox { position: relative; }

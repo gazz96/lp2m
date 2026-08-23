@@ -39,7 +39,30 @@ export interface FormField {
   options?: string[]
 }
 
-export function useHibahForm(hibahId: Ref<number | null>) {
+export function useHibahForm(
+  hibahId: Ref<number | null>,
+  deadlineInput?: Ref<string | undefined> | string | undefined
+) {
+  // Deadline event (ISO datetime). Diterima sebagai Ref (dari parent) atau string statis.
+  const deadlineRef = ref<string | undefined>(
+    typeof deadlineInput === 'string' ? deadlineInput : undefined
+  )
+  if (deadlineInput && typeof deadlineInput !== 'string') {
+    watch(deadlineInput, v => { deadlineRef.value = v })
+  }
+
+  /**
+   * True bila deadline sudah lewat (dalam zona waktu browser).
+   * Kalau deadline kosong/tidak valid → false (form tetap berjalan seperti biasa).
+   */
+  function isDeadlinePassed(): boolean {
+    const dl = deadlineRef.value
+    if (!dl) return false
+    const ts = new Date(dl).getTime()
+    if (Number.isNaN(ts)) return false
+    return Date.now() > ts
+  }
+
   const form = reactive<HibahFormData>({
     hibah_id: hibahId.value,
     nama: '',
@@ -238,6 +261,16 @@ export function useHibahForm(hibahId: Ref<number | null>) {
 
   function validate(): boolean {
     let valid = true
+
+    // Deadline gate — form tidak boleh diisi jika melewati deadline.
+    if (isDeadlinePassed()) {
+      fieldErrors.deadline = 'Pendaftaran telah ditutup.'
+      checkError.value = 'Pendaftaran telah ditutup.'
+      return false
+    } else {
+      fieldErrors.deadline = ''
+    }
+
     const required: [keyof HibahFormData, string][] = [
       ['nama', 'Nama lengkap wajib diisi.'],
       ['nip', 'NIDN/NIDK wajib diisi.'],
@@ -300,6 +333,13 @@ export function useHibahForm(hibahId: Ref<number | null>) {
 
   async function submit() {
     if (!validate() || submitting.value) return
+
+    // Deadline gate — jaga-jaga bila validate() dipanggil ulang / form di-bypass.
+    if (isDeadlinePassed()) {
+      fieldErrors.deadline = 'Pendaftaran telah ditutup.'
+      checkError.value = 'Pendaftaran telah ditutup.'
+      return
+    }
 
     form.hibah_id = hibahId.value
     submitting.value = true
@@ -411,6 +451,6 @@ export function useHibahForm(hibahId: Ref<number | null>) {
     jenisTerms, sdgsTerms, kkTerms,
     prodiIdName, skemaIdByLabel, jenisIdByName, sdgsIdByName, kkIdByName,
     anggotaList: form.anggota_list, addAnggota, removeAnggota,
-    validate, submit, reset, loadFormConfig
+    isDeadlinePassed, validate, submit, reset, loadFormConfig
   }
 }

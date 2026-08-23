@@ -38,7 +38,7 @@
 
       <!-- Form -->
       <div id="form-hibah">
-        <HibahForm :hibah-id="eventData.id" :file-panduan="eventData.filePanduan" :file-template="eventData.fileTemplate" :file-kelompok-keahlian="eventData.fileKelompokKeahlian" />
+        <HibahForm :hibah-id="eventData.id" :deadline="eventData.deadline" :closed="!eventData.id" :file-panduan="eventData.filePanduan" :file-template="eventData.fileTemplate" :file-kelompok-keahlian="eventData.fileKelompokKeahlian" />
       </div>
     </div>
   </section>
