@@ -91,9 +91,17 @@ const ledgerItems = computed(() => {
   ]
 })
 
-const sdgsItems = computed(() =>
-  (stats.value?.sdgs_trend || []).map(d => ({ label: d.label, count: d.count }))
-)
+// Normalisasi label SDG: buang prefix nomor ("9 Industry..." → "Industry...")
+// dan gabungkan duplikat, supaya bar chart tidak double meski data mentah beda.
+const sdgsItems = computed(() => {
+  const map = new Map<string, number>()
+  for (const d of stats.value?.sdgs_trend || []) {
+    const clean = String(d.label).replace(/^\d{1,2}\s*(?:[-–—]\s*)?/, '').trim()
+    if (!clean) continue
+    map.set(clean, (map.get(clean) || 0) + (d.count || 0))
+  }
+  return [...map.entries()].map(([label, count]) => ({ label, count }))
+})
 const totalUsulan = computed(() => stats.value?.total_usulan || 0)
 
 const jenisParents = computed(() => stats.value?.jenis_distribusi || [])

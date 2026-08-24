@@ -6,7 +6,7 @@ export type InfografisStatus = 'loading' | 'ready' | 'error'
 
 const CACHE_TTL = 10 * 60 * 1000 // 10 menit
 const CACHE_PREFIX = 'lp2m_cache_'
-const CACHE_VERSION = '_v2' // bump saat struktur respons berubah (jenis_distribusi)
+const CACHE_VERSION = '_v3' // bump saat normalisasi label SDG (buang prefix nomor)
 
 interface CacheEntry { v: unknown; t: number }
 
@@ -61,7 +61,7 @@ export function useInfografis() {
   async function load(targetTahun?: string) {
     const t = targetTahun ?? tahun.value
     if (!t) return
-    const cacheKey = `infografis_${t}${CACHE_VERSION}`
+    const cacheKey = `infografis_${t}${CACHE_VERSION}` // dynamic, uses CACHE_VERSION
     const cached = readCache<InfografisStats>(cacheKey)
     if (cached && cached.tahun === t) {
       data.value = cached
