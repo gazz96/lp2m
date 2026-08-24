@@ -14,6 +14,33 @@ const HIBAH_FORM_SDGS_FALLBACK: TaxonomyOption[] = (HIBAH.form.sdgsOptions || []
   .map((s, i) => ({ id: i + 1, name: s }))
 
 const MAX_ANGGOTA_PER_TIPE = 2
+const FORM_CONFIG_CACHE_TTL = 10 * 60 * 1000
+const formConfigCache = new Map<number, { expiresAt: number; data: any }>()
+const formConfigRequests = new Map<number, Promise<any | null>>()
+
+function fetchCachedFormConfig(id: number): Promise<any | null> {
+  const cached = formConfigCache.get(id)
+  if (cached && cached.expiresAt > Date.now()) return Promise.resolve(cached.data)
+  formConfigCache.delete(id)
+
+  const pending = formConfigRequests.get(id)
+  if (pending) return pending
+
+  const base = SITE.apiBase.replace('/wp/v2', '')
+  const request = fetch(`${base}/lp2m/v1/hibah/${id}/form-config`)
+    .then(response => response.ok ? response.json() : null)
+    .then(data => {
+      if (data) formConfigCache.set(id, { expiresAt: Date.now() + FORM_CONFIG_CACHE_TTL, data })
+      formConfigRequests.delete(id)
+      return data
+    }, () => {
+      formConfigRequests.delete(id)
+      return null
+    })
+
+  formConfigRequests.set(id, request)
+  return request
+}
 
 export interface SkemaOption {
   id: number
@@ -56,18 +83,14 @@ export function useHibahForm(
   // Default false → pendaftaran tetap tertutup sesuai deadline.
   const allowAfterDeadline = ref(false)
   async function refreshAllowAfterDeadline() {
-    const base = SITE.apiBase.replace('/wp/v2', '')
     const id = hibahId.value
     if (!id || id <= 0) {
       allowAfterDeadline.value = false
       return
     }
     try {
-      const res = await fetch(`${base}/lp2m/v1/hibah/${id}/form-config`)
-      if (res.ok) {
-        const data = await res.json()
-        allowAfterDeadline.value = !!data.allow_after_deadline
-      }
+      const data = await fetchCachedFormConfig(id)
+      if (data) allowAfterDeadline.value = !!data.allow_after_deadline
     } catch {
       // Biarkan false — pendaftaran tetap tertutup sesuai deadline.
     }
@@ -148,8 +171,7 @@ export function useHibahForm(
       // (hibahId 0 = belum pilih → langsung fallback /wp/v2/*, tanpa fetch form-config)
       const hasHibah = (hibahId.value ?? 0) > 0
       const cfg = hasHibah
-        ? await fetch(`${base}/lp2m/v1/hibah/${hibahId.value}/form-config`)
-            .then(r => r.ok ? r.json() : null).catch(() => null)
+        ? await fetchCachedFormConfig(hibahId.value as number)
         : null
 
       if (cfg?.success) {
