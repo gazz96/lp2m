@@ -6,6 +6,7 @@ export type InfografisStatus = 'loading' | 'ready' | 'error'
 
 const CACHE_TTL = 10 * 60 * 1000 // 10 menit
 const CACHE_PREFIX = 'lp2m_cache_'
+const CACHE_VERSION = '_v2' // bump saat struktur respons berubah (jenis_distribusi)
 
 interface CacheEntry { v: unknown; t: number }
 
@@ -60,7 +61,7 @@ export function useInfografis() {
   async function load(targetTahun?: string) {
     const t = targetTahun ?? tahun.value
     if (!t) return
-    const cacheKey = `infografis_${t}`
+    const cacheKey = `infografis_${t}${CACHE_VERSION}`
     const cached = readCache<InfografisStats>(cacheKey)
     if (cached && cached.tahun === t) {
       data.value = cached
@@ -105,7 +106,7 @@ export function useInfografis() {
       tahun.value = t
       json.tahun = t
       data.value = json
-      writeCache(`infografis_${t}`, json)
+      writeCache(`infografis_${t}${CACHE_VERSION}`, json)
       status.value = 'ready'
     } catch (e: any) {
       error.value = e?.message || 'Gagal memuat'
