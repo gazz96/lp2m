@@ -14,6 +14,10 @@ const days = ref<number>(0)
 
 function update() {
   const dl = new Date(props.deadline)
+  if (Number.isNaN(dl.getTime())) {
+    days.value = 0
+    return
+  }
   days.value = Math.max(0, Math.ceil((dl.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
 }
 

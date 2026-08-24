@@ -1,5 +1,5 @@
 import { ref, onMounted } from 'vue'
-import { SITE, HIBAH } from '@/data'
+import { SITE } from '@/data'
 import type { HibahEventData } from './useHero'
 
 export interface HibahEventView {
@@ -18,12 +18,12 @@ export interface HibahEventView {
 
 const defaultEvent: HibahEventView = {
   id: null,
-  bannerTitle: HIBAH.banner.title,
-  bannerDesc: HIBAH.banner.desc,
-  deadline: HIBAH.banner.deadline,
-  deadlineLabel: HIBAH.banner.deadlineLabel,
-  timeline: HIBAH.banner.timeline,
-  info: HIBAH.banner.info,
+  bannerTitle: '',
+  bannerDesc: '',
+  deadline: '',
+  deadlineLabel: '',
+  timeline: [],
+  info: [],
   thumbnailUrl: '',
   filePanduan: [],
   fileTemplate: [],
@@ -56,14 +56,14 @@ export function useHibahEvent() {
 
     event.value = {
       id: data.id,
-      bannerTitle: data.title || HIBAH.banner.title,
-      bannerDesc: data.excerpt || (Array.isArray(data.info_tambahan) ? data.info_tambahan.join(' ') : data.info_tambahan || '') || HIBAH.banner.desc,
-      deadline: data.deadline || HIBAH.banner.deadline,
-      deadlineLabel: data.deadline_label || HIBAH.banner.deadlineLabel,
-      timeline: data.timeline_items?.length ? data.timeline_items : HIBAH.banner.timeline,
+      bannerTitle: data.title || '',
+      bannerDesc: data.excerpt || (Array.isArray(data.info_tambahan) ? data.info_tambahan.join(' ') : data.info_tambahan || '') || '',
+      deadline: data.deadline || '',
+      deadlineLabel: data.deadline_label || '',
+      timeline: data.timeline_items?.length ? data.timeline_items : [],
       info: Array.isArray(data.info_tambahan)
         ? data.info_tambahan
-        : (data.info_tambahan ? String(data.info_tambahan).split('\n').filter((l: string) => l.trim()) : HIBAH.banner.info),
+        : (data.info_tambahan ? String(data.info_tambahan).split('\n').filter((l: string) => l.trim()) : []),
       thumbnailUrl: data.thumbnail_url || '',
       filePanduan: data.file_panduan || [],
       fileTemplate: data.file_template || [],

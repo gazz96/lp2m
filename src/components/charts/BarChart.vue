@@ -83,10 +83,11 @@ function barColor(item: BarItem, i: number): string {
   return item.color || PALETTE[i % PALETTE.length]
 }
 
-// Label SDGs seperti "1 No Poverty" → "SDG 1"; lainnya dipakai apa adanya.
+// Label SDGs seperti "1 No Poverty" / "SDG 1 No Poverty" → "SDG 1";
+// lainnya dipakai apa adanya.
 function shortLabel(label: string): string {
-  const m = label.match(/^(\d{1,2})\s/)
-  return m ? `SDG ${m[1]}` : label
+  const m = label.match(/(?:^|\s)(?:SDG\s*)?(\d{1,2})\b/i)
+  return m && /sdg|^\d{1,2}\s/i.test(label) ? `SDG ${m[1]}` : label
 }
 
 function barX(i: number, offset = 0) {
