@@ -12,7 +12,7 @@
           <animate attributeName="y" :from="h - padB" :to="barY(item.count)" dur="0.9s" fill="freeze"/>
         </rect>
         <text :x="barX(i) + bw / 2" :y="h - 8" font-size="10" fill="#3E4C40"
-          text-anchor="middle" font-family="IBM Plex Mono, monospace">{{ axisLabel(item.label) }}</text>
+          text-anchor="middle" font-family="IBM Plex Mono, monospace">{{ i + 1 }}</text>
       </template>
     </template>
     <template v-else>
@@ -36,9 +36,10 @@
     </template>
   </svg>
 
-  <!-- Legenda: nama lengkap + warna sesuai bar (hanya mode data-driven) -->
+  <!-- Legenda: nomor (sama dgn sumbu) + nama lengkap + warna sesuai bar -->
   <div class="bar-legend" v-if="items.length">
     <span v-for="(item, i) in items" :key="'lg-' + item.label" class="lg-item">
+      <span class="lg-num">{{ i + 1 }}</span>
       <span class="dot" :style="{ background: barColor(item, i) }"></span>
       <span class="lg-name">{{ legendLabel(item.label) }}</span>
       <span class="lg-count">{{ item.count }}</span>
@@ -92,11 +93,10 @@ function barColor(item: BarItem, i: number): string {
   return item.color || PALETTE[i % PALETTE.length]
 }
 
-// Label sumbu X: untuk SDG cukup nomornya ("1 No Poverty" / "SDG 1 No Poverty" → "1");
-// lainnya dipakai apa adanya.
+// Label sumbu X: selalu inisial nomor urut (1,2,3…) terkait warna bar.
+// Nama lengkap disediakan di legenda di bawah chart.
 function axisLabel(label: string): string {
-  const m = label.match(/(?:^|\s)(?:SDG\s*)?(\d{1,2})\b/i)
-  return m && /sdg|^\d{1,2}\s/i.test(label) ? m[1] : label
+  return label.trim()
 }
 
 // Nama lengkap di legenda (label asli, bersih dari spasi ekstra).
@@ -127,6 +127,13 @@ function barH(val: number) { return (val / maxVal.value) * chartH }
   gap: 6px;
   font-size: 0.78rem;
   color: var(--ink-soft, #5a6b5e);
+}
+.lg-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  color: #3E4C40;
+  min-width: 14px;
+  text-align: right;
 }
 .lg-item .dot {
   width: 10px;
