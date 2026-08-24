@@ -12,7 +12,7 @@
           <animate attributeName="y" :from="h - padB" :to="barY(item.count)" dur="0.9s" fill="freeze"/>
         </rect>
         <text :x="barX(i) + bw / 2" :y="h - 8" font-size="10" fill="#3E4C40"
-          text-anchor="middle" font-family="IBM Plex Mono, monospace">{{ i + 1 }}</text>
+          text-anchor="middle" font-family="IBM Plex Mono, monospace">{{ axisLabel(item.label) }}</text>
       </template>
     </template>
     <template v-else>
@@ -36,10 +36,9 @@
     </template>
   </svg>
 
-  <!-- Legenda: nomor (sama dgn sumbu) + nama lengkap + warna sesuai bar -->
+  <!-- Legenda: nama lengkap + warna sesuai bar -->
   <div class="bar-legend" v-if="items.length">
     <span v-for="(item, i) in items" :key="'lg-' + item.label" class="lg-item">
-      <span class="lg-num">{{ i + 1 }}</span>
       <span class="dot" :style="{ background: barColor(item, i) }"></span>
       <span class="lg-name">{{ legendLabel(item.label) }}</span>
       <span class="lg-count">{{ item.count }}</span>
@@ -93,10 +92,20 @@ function barColor(item: BarItem, i: number): string {
   return item.color || PALETTE[i % PALETTE.length]
 }
 
-// Label sumbu X: selalu inisial nomor urut (1,2,3…) terkait warna bar.
-// Nama lengkap disediakan di legenda di bawah chart.
+// Label sumbu X: inisial kata dari nama (No Poverty → NP, Industry, Innovation
+// and Infrastructure → III). Nama lengkap ada di legenda bawah chart.
 function axisLabel(label: string): string {
-  return label.trim()
+  // Buang nomor SDG di depan bila ada ("9 Industry..." → "Industry...").
+  const cleaned = String(label).replace(/^\d{1,2}\s*(?:SDG\s*)?/i, '').trim()
+  const words = cleaned.split(/[\s,]+/).filter((w) => w.length > 0)
+  const skip = new Set(['and', 'for', 'of', 'the', 'to', 'a', 'an', 'in', 'on', 'with', 'at'])
+  const initials = words
+    .filter((w) => !skip.has(w.toLowerCase()))
+    .map((w) => w.charAt(0).toUpperCase())
+    .join('')
+  // Maks 4 huruf agar tidak bertabrakan; fallback 2 huruf pertama bila tanpa kata.
+  if (initials) return initials.slice(0, 4)
+  return cleaned.slice(0, 2).toUpperCase()
 }
 
 // Nama lengkap di legenda (label asli, bersih dari spasi ekstra).
@@ -127,13 +136,6 @@ function barH(val: number) { return (val / maxVal.value) * chartH }
   gap: 6px;
   font-size: 0.78rem;
   color: var(--ink-soft, #5a6b5e);
-}
-.lg-num {
-  font-family: 'IBM Plex Mono', monospace;
-  font-weight: 700;
-  color: #3E4C40;
-  min-width: 14px;
-  text-align: right;
 }
 .lg-item .dot {
   width: 10px;
