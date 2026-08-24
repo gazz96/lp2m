@@ -93,6 +93,13 @@ export interface InfografisDatum {
   count: number
 }
 
+/** Jenis hibah hierarkis: parent (PENELITIAN/PENGABDIAN) + children (Skema). */
+export interface InfografisJenis {
+  label: string
+  count: number
+  children: InfografisDatum[]
+}
+
 /** Respons endpoint GET /lp2m/v1/statistik */
 export interface InfografisStats {
   total_usulan: number
@@ -100,6 +107,7 @@ export interface InfografisStats {
   mahasiswa_unik: number
   jumlah_skema: number
   skema_distribusi: InfografisDatum[]
+  jenis_distribusi: InfografisJenis[]
   sdgs_trend: InfografisDatum[]
   tahun_tersedia: string[]
   tahun: string | null

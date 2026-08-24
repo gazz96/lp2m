@@ -7,6 +7,8 @@
         :stroke="seg.color" :stroke-width="sw"
         :stroke-dasharray="`${seg.dashLen} ${circ - seg.dashLen}`"
         :stroke-dashoffset="-offsetAt(i)"
+        :class="{ clickable: drillable && seg.clickable }"
+        @click="drillable && seg.clickable && $emit('select', seg)"
         transform="rotate(-90 100 100)"
         style="transition: stroke-dasharray 1s ease"
       />
@@ -20,13 +22,17 @@
 import { computed } from 'vue'
 
 const props = withDefaults(defineProps<{
-  data: Array<{ val: number; color: string; label: string }>
+  data: Array<{ val: number; color: string; label: string; clickable?: boolean }>
   centerValue?: number | string
   centerLabel?: string
+  drillable?: boolean
 }>(), {
   centerValue: 0,
   centerLabel: '',
+  drillable: false,
 })
+
+const emit = defineEmits<{ (e: 'select', seg: { label: string }): void }>()
 
 const r = 72, sw = 26, circ = 2 * Math.PI * r
 
@@ -47,3 +53,8 @@ const offsets = computed(() => {
 
 function offsetAt(i: number) { return offsets.value[i] }
 </script>
+
+<style scoped>
+circle.clickable { cursor: pointer; }
+circle.clickable:hover { opacity: 0.85; }
+</style>

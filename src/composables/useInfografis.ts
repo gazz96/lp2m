@@ -37,6 +37,7 @@ function fallbackStats(tahun: string): InfografisStats {
       label: d.label.replace(/\s*\(\d+%\)\s*$/, ''),
       count: Math.round((d.val / 100) * (ledger[0]?.count || 100)),
     })),
+    jenis_distribusi: [],
     sdgs_trend: [],
     tahun_tersedia: [tahun],
     tahun,
