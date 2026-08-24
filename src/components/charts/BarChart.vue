@@ -11,8 +11,8 @@
           <animate attributeName="height" from="0" :to="barH(item.count)" dur="0.9s" fill="freeze"/>
           <animate attributeName="y" :from="h - padB" :to="barY(item.count)" dur="0.9s" fill="freeze"/>
         </rect>
-        <text :x="barX(i) + bw / 2" :y="h - 8" font-size="9" fill="#3E4C40"
-          text-anchor="middle" font-family="IBM Plex Mono, monospace">{{ shortLabel(item.label) }}</text>
+        <text :x="barX(i) + bw / 2" :y="h - 8" font-size="10" fill="#3E4C40"
+          text-anchor="middle" font-family="IBM Plex Mono, monospace">{{ axisLabel(item.label) }}</text>
       </template>
     </template>
     <template v-else>
@@ -35,6 +35,15 @@
       </template>
     </template>
   </svg>
+
+  <!-- Legenda: nama lengkap + warna sesuai bar (hanya mode data-driven) -->
+  <div class="bar-legend" v-if="items.length">
+    <span v-for="(item, i) in items" :key="'lg-' + item.label" class="lg-item">
+      <span class="dot" :style="{ background: barColor(item, i) }"></span>
+      <span class="lg-name">{{ legendLabel(item.label) }}</span>
+      <span class="lg-count">{{ item.count }}</span>
+    </span>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -83,11 +92,16 @@ function barColor(item: BarItem, i: number): string {
   return item.color || PALETTE[i % PALETTE.length]
 }
 
-// Label SDGs seperti "1 No Poverty" / "SDG 1 No Poverty" → "SDG 1";
+// Label sumbu X: untuk SDG cukup nomornya ("1 No Poverty" / "SDG 1 No Poverty" → "1");
 // lainnya dipakai apa adanya.
-function shortLabel(label: string): string {
+function axisLabel(label: string): string {
   const m = label.match(/(?:^|\s)(?:SDG\s*)?(\d{1,2})\b/i)
-  return m && /sdg|^\d{1,2}\s/i.test(label) ? `SDG ${m[1]}` : label
+  return m && /sdg|^\d{1,2}\s/i.test(label) ? m[1] : label
+}
+
+// Nama lengkap di legenda (label asli, bersih dari spasi ekstra).
+function legendLabel(label: string): string {
+  return label.trim()
 }
 
 function barX(i: number, offset = 0) {
@@ -99,3 +113,32 @@ function barX(i: number, offset = 0) {
 function barY(val: number) { return h - padB - barH(val) }
 function barH(val: number) { return (val / maxVal.value) * chartH }
 </script>
+
+<style scoped>
+.bar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 14px;
+}
+.lg-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--ink-soft, #5a6b5e);
+}
+.lg-item .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+.lg-count {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--ink-soft, #5a6b5e);
+  opacity: 0.75;
+  font-size: 0.72rem;
+}
+</style>

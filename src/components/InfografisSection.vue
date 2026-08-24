@@ -40,9 +40,6 @@
           <div class="cap">Jumlah usulan penelitian dan pengabdian berdasarkan SDGs pada tahun {{ tahun }}</div>
           <BarChart v-if="sdgsItems.length" :data="sdgsItems" />
           <p v-else class="empty-state">Belum ada data SDGs untuk tahun {{ tahun }}.</p>
-          <div class="legend" v-if="sdgsItems.length">
-            <span class="item"><span class="dot" style="background:#2A5F42"></span>Usulan SDGs</span>
-          </div>
         </RevealBlock>
 
         <RevealBlock class="info-card">
