@@ -56,7 +56,36 @@
       emptyTitle="Belum ada pendaftaran."
       emptySub="Data akan muncul setelah ada yang mendaftar via form publik."
       :showFooter="false"
-    />
+    >
+      <template #cell-aksi="{ row }">
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:175px">
+          <label style="font-size:11px;font-weight:600;color:#475569">Update Status</label>
+          <div style="display:flex;gap:4px">
+            <select :value="rowStatus[row.id] ?? row.status"
+              @change="(e:any)=> rowStatus[row.id]=(e.target as HTMLSelectElement).value"
+              style="flex:1;min-height:28px;font-size:12px;border-radius:6px;border:1px solid #cbd5e1;padding:2px 6px">
+              <option v-for="o in STATUS_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+            </select>
+            <button type="button" class="button button-primary"
+              :disabled="!!rowBusy[row.id]"
+              @click="saveStatus(row)"
+              style="white-space:nowrap;padding:0 10px;min-height:28px">
+              {{ rowBusy[row.id]==='status' ? '…' : 'Simpan' }}
+            </button>
+          </div>
+          <span v-if="rowMsg[row.id]" :style="{fontSize:'11px',color: rowMsg[row.id]?.ok ? '#16a34a' : '#dc2626'}">{{ rowMsg[row.id]?.text }}</span>
+          <button type="button" class="button"
+            :disabled="!!rowBusy[row.id] || !row.email"
+            @click="sendEmail(row)"
+            style="width:100%;justify-content:center;display:inline-flex;align-items:center;gap:6px">
+            {{ rowBusy[row.id]==='email' ? 'Mengirim…' : '📧 Kirim Email' }}
+          </button>
+          <span v-if="row.email" style="font-size:11px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="row.email">{{ row.email }}</span>
+          <span v-if="row.hp" style="font-size:11px"><a :href="'tel:'+row.hp.replace(/[^0-9+]/g,'')" style="color:#475569">{{ row.hp }}</a></span>
+          <span v-if="!row.email" style="font-size:11px;color:#9ca3af">Email belum ada</span>
+        </div>
+      </template>
+    </WpTable>
 
     <div v-if="total>perPg" class="tablenav bottom">
       <div class="displaying-num">{{ total }} item</div>
@@ -100,8 +129,17 @@ function statusPill(s:string){
   return `<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;color:#fff;background:${c}">${escHtml(label)}</span>`
 }
 
+const STATUS_OPTS = [
+  { value:'submitted', label:'Submitted' },
+  { value:'under_review', label:'Under Review' },
+  { value:'revised', label:'Revised' },
+  { value:'approved', label:'Approved' },
+  { value:'rejected', label:'Rejected' },
+  { value:'done', label:'Done' },
+] as const
+
 const columns:WpColumn[]=[
-  {key:'pengusul',label:'Pengusul',primary:true,type:'html',width:'24%',accessor:(r:any)=>{
+  {key:'pengusul',label:'Pengusul',primary:true,type:'html',width:'20%',accessor:(r:any)=>{
     const reg = r.reg_no ? `<code style="font-size:11px;background:#f1f5f9;padding:1px 5px;border-radius:4px">${escHtml(r.reg_no)}</code><br>` : ''
     const nama = escHtml(clean(r.nama)||'—')
     const nip = r.nip ? escHtml(r.nip) : ''
@@ -110,13 +148,13 @@ const columns:WpColumn[]=[
     const meta = [nip, prodi, jenis].filter(Boolean).join(' · ')
     return `${reg}<strong>${nama}</strong>${meta?`<br><span style="color:#64748b;font-size:12px">${meta}</span>`:''}`
   },rowActions:(r:any)=>[{label:'Lihat Detail',className:'edit',to:`/dashboard/pendaftaran/${r.id}`}]},
-  {key:'hibah',label:'Hibah',type:'html',width:'18%',accessor:(r:any)=>{
+  {key:'hibah',label:'Hibah',type:'html',width:'14%',accessor:(r:any)=>{
     const parts = [r.skema, r.jenis_hibah].filter(Boolean).map((s:string)=>escHtml(clean(s)))
     const extra = [r.sdgs, r.kelompok_keahlian].filter(Boolean).map((s:string)=>escHtml(clean(s)))
     if(!parts.length && !extra.length) return '<span style="color:#9ca3af">—</span>'
     return `${parts.length?parts.join(' / '):'<span style="color:#9ca3af">—</span>'}${extra.length?`<br><span style="color:#64748b;font-size:12px">${extra.join(' · ')}</span>`:''}`
   }},
-  {key:'usulan',label:'Usulan & Tim',type:'html',width:'30%',accessor:(r:any)=>{
+  {key:'usulan',label:'Usulan & Tim',type:'html',width:'26%',accessor:(r:any)=>{
     const judul = clean(r.judul)||'Tanpa judul'
     const short = judul.length>88? judul.slice(0,88)+'…': judul
     let h = `<span title="${escHtml(judul)}"><strong>${escHtml(short)}</strong></span>`
@@ -128,12 +166,7 @@ const columns:WpColumn[]=[
     return h
   }},
   {key:'_status',label:'Status',type:'html',width:'12%',accessor:(r:any)=>statusPill(r.status||'submitted')},
-  {key:'kontak',label:'Kontak',type:'html',width:'16%',accessor:(r:any)=>{
-    const email = r.email? `<a href="mailto:${escHtml(r.email)}">${escHtml(r.email)}</a>` : ''
-    const hp = r.hp? `<a href="tel:${escHtml(r.hp.replace(/[^0-9+]/g,''))}" style="color:#475569;font-size:12px">${escHtml(r.hp)}</a>` : ''
-    if(!email && !hp) return '<span style="color:#9ca3af">—</span>'
-    return [email, hp].filter(Boolean).join('<br>')
-  }},
+  {key:'aksi',label:'Aksi',type:'html',width:'28%',accessor:()=>''},
 ]
 
 const filtered=computed(()=>{let a=[...items.value];if(statusFilter.value!=='all')a=a.filter(r=>(r.status||'submitted')===statusFilter.value);if(search.value.trim()){const q=search.value.toLowerCase();a=a.filter(r=>clean(r.nama).toLowerCase().includes(q)||clean(r.judul).toLowerCase().includes(q)||(r.reg_no||'').toLowerCase().includes(q))};return a})
@@ -143,6 +176,46 @@ const byStatus=computed(()=>{const m:Record<string,number>={submitted:0,under_re
 async function fetchData(p=1){loading.value=true;error.value=''
   try{const base=SITE.apiBase.replace('/wp/v2','');const r=await fetch(`${base}/lp2m/v1/hibah?per_page=${perPg}&page=${p}`);if(!r.ok)throw new Error('HTTP '+r.status);const json=await r.json()
   if(json.success){items.value=(json.data||[]).map((d:any)=>({...d,status:d.status||'submitted'}));total.value=json.total;pg.value=p}else{error.value=json.message||'Gagal'}}catch(e:any){error.value=e.message}finally{loading.value=false}}
+
+// ── Inline Aksi: update status + kirim email (table) ──
+const rowStatus = ref<Record<number,string>>({})
+const rowBusy = ref<Record<number,''|'status'|'email'>>({})
+const rowMsg = ref<Record<number,{text:string;ok:boolean}>>({})
+
+async function saveStatus(row: Record<string,any>){
+  const id = row.id as number
+  const next = (rowStatus.value[id] ?? row.status ?? 'submitted') as string
+  if(!next){ rowMsg.value[id]={text:'Pilih status dulu.', ok:false}; return }
+  rowBusy.value[id]='status'; if(rowMsg.value[id]) delete rowMsg.value[id]
+  try{
+    const base=SITE.apiBase.replace('/wp/v2','')
+    const fd=new FormData(); fd.set('status', next)
+    const r=await fetch(`${base}/lp2m/v1/hibah/${id}`, { method:'POST', headers:{ ...auth.authHeaders() }, body: fd })
+    const j:any=await r.json().catch(()=>null)
+    if(!r.ok) throw new Error(j?.message || `HTTP ${r.status}`)
+    if(j && j.success===false) throw new Error(j.message||'Gagal')
+    row.status = next; rowStatus.value[id]=next
+    const emailInfo = j?.email_sent===false ? ` (email gagal: ${j?.email_error||'—'})` : j?.email_sent ? ' & email terkirim ✓' : ''
+    rowMsg.value[id]={ text:`✓ ${STATUS_LABEL[next]||next} disimpan${emailInfo}`, ok: j?.email_sent!==false }
+    setTimeout(()=>{ if(rowMsg.value[id]?.ok) delete rowMsg.value[id] }, 3500)
+  }catch(e:any){ rowMsg.value[id]={ text:`✕ ${e.message||'Gagal menyimpan'}`, ok:false } }
+  finally{ rowBusy.value[id]='' }
+}
+async function sendEmail(row: Record<string,any>){
+  const id=row.id
+  if(!row.email){ rowMsg.value[id]={text:'Email pemohon belum ada.', ok:false}; return }
+  rowBusy.value[id]='email'; if(rowMsg.value[id]) delete rowMsg.value[id]
+  try{
+    const base=SITE.apiBase.replace('/wp/v2','')
+    const r=await fetch(`${base}/lp2m/v1/hibah/${id}/email`, { method:'POST', headers:{ 'Content-Type':'application/json', ...auth.authHeaders() }, body: JSON.stringify({ note: `Status: ${STATUS_LABEL[row.status||'submitted']||row.status}` }) })
+    const j:any=await r.json().catch(()=>null)
+    if(!r.ok) throw new Error(j?.message || `HTTP ${r.status}`)
+    if(j && j.success===false) throw new Error(j.message||'Gagal')
+    rowMsg.value[id]={ text:'✓ Email terkirim ke pemohon.', ok:true }
+    setTimeout(()=>{ if(rowMsg.value[id]?.ok) delete rowMsg.value[id] }, 3500)
+  }catch(e:any){ rowMsg.value[id]={ text:`✕ ${e.message||'Gagal kirim email'}`, ok:false } }
+  finally{ rowBusy.value[id]='' }
+}
 
 // ── Export ──────────────────────────────
 const exporting=ref(false), expMsg=ref('')
