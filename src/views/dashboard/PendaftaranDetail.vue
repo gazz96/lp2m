@@ -108,12 +108,24 @@
             <th>WhatsApp</th>
             <td><input class="components-text-control__input" style="width:100%" v-model="form.hp" /></td>
           </tr>
-          <tr v-if="detail.proposal_url">
+          <tr>
             <th>File Proposal</th>
             <td>
-              <a :href="detail.proposal_url" target="_blank" rel="noopener" class="components-button is-primary is-small" style="text-decoration:none">
-                ⬇ Download Proposal (PDF)
-              </a>
+              <div v-if="detail.proposal_url" style="margin-bottom:10px">
+                <a :href="detail.proposal_url" target="_blank" rel="noopener" class="components-button is-primary is-small" style="text-decoration:none">
+                  ⬇ Download Proposal (PDF)
+                </a>
+                <span style="font-size:12px;color:var(--wp-text-muted);margin-left:8px">File saat ini</span>
+              </div>
+              <div v-else style="margin-bottom:10px;font-size:12px;color:var(--wp-text-muted)">Belum ada file proposal.</div>
+              <label class="components-button is-secondary is-small" style="cursor:pointer">
+                {{ proposalFile ? 'Ganti file: ' + proposalFile.name : 'Pilih file PDF baru (opsional)' }}
+                <input type="file" accept="application/pdf,.pdf" style="display:none" @change="onProposalPick" />
+              </label>
+              <button v-if="proposalFile" type="button" class="components-button is-tertiary is-small" style="margin-left:8px" @click="proposalFile = null; proposalPickErr = ''">Batal</button>
+              <p v-if="proposalPickErr" style="margin:6px 0 0;font-size:12px;color:#d63638">{{ proposalPickErr }}</p>
+              <p style="margin:6px 0 0;font-size:12px;color:var(--wp-text-muted)">Hanya PDF, maksimal 10 MB. Kosongkan bila tidak ingin mengganti.</p>
+              <span v-if="proposalUploadOk" style="display:inline-block;margin-top:6px;font-size:12px;color:#1a7f37">✓ Proposal akan diperbarui saat Simpan</span>
             </td>
           </tr>
           <tr>
@@ -154,9 +166,40 @@ const saving = ref(false)
 const saveMsg = ref('')
 const saveErr = ref('')
 const saveErrHint = ref('')
+const proposalFile = ref<File | null>(null)
+const proposalPickErr = ref('')
+const proposalUploadOk = ref(false)
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+function onProposalPick(e: Event) {
+  proposalPickErr.value = ''
+  proposalUploadOk.value = false
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0] || null
+  if (!file) { proposalFile.value = null; return }
+  if (file.type && file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    proposalPickErr.value = 'Hanya file PDF yang diperbolehkan.'
+    proposalFile.value = null
+    input.value = ''
+    return
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    proposalPickErr.value = 'Ukuran file maksimal 10 MB.'
+    proposalFile.value = null
+    input.value = ''
+    return
+  }
+  if (file.size === 0) {
+    proposalPickErr.value = 'File kosong.'
+    proposalFile.value = null
+    input.value = ''
+    return
+  }
+  proposalFile.value = file
+  proposalUploadOk.value = true
 }
 
 async function load() {
@@ -197,21 +240,47 @@ async function save() {
     return
   }
   try {
-    const body: Record<string, unknown> = {
-      status: form.value.status,
-      nama: form.value.nama, nip: form.value.nip, jenis: form.value.jenis,
-      prodi: form.value.prodi, skema: form.value.skema,
-      judul: form.value.judul, ringkasan: form.value.ringkasan,
-      email: form.value.email, hp: form.value.hp,
+    // Bila ada file proposal baru → kirim sebagai multipart/form-data (backend baca get_file_params()['proposal']).
+    // Tanpa file → tetap JSON seperti sebelumnya.
+    let r: Response
+    if (proposalFile.value) {
+      const fd = new FormData()
+      fd.set('status', form.value.status)
+      fd.set('nama', form.value.nama ?? '')
+      fd.set('nip', form.value.nip ?? '')
+      fd.set('jenis', form.value.jenis ?? '')
+      fd.set('prodi', form.value.prodi ?? '')
+      fd.set('skema', form.value.skema ?? '')
+      fd.set('judul', form.value.judul ?? '')
+      fd.set('ringkasan', form.value.ringkasan ?? '')
+      fd.set('email', form.value.email ?? '')
+      fd.set('hp', form.value.hp ?? '')
+      for (const k of ['jenis_hibah', 'sdgs', 'kelompok_keahlian'] as const) {
+        if (form.value[k] !== undefined && form.value[k] !== '') fd.set(k, String(form.value[k]))
+      }
+      fd.set('proposal', proposalFile.value, proposalFile.value.name)
+      r = await fetch(`${base}/lp2m/v1/hibah/${id}`, {
+        method: 'POST',
+        headers: { ...auth.authHeaders() },
+        body: fd,
+      })
+    } else {
+      const body: Record<string, unknown> = {
+        status: form.value.status,
+        nama: form.value.nama, nip: form.value.nip, jenis: form.value.jenis,
+        prodi: form.value.prodi, skema: form.value.skema,
+        judul: form.value.judul, ringkasan: form.value.ringkasan,
+        email: form.value.email, hp: form.value.hp,
+      }
+      for (const k of ['jenis_hibah', 'sdgs', 'kelompok_keahlian'] as const) {
+        if (form.value[k] !== undefined && form.value[k] !== '') body[k] = form.value[k]
+      }
+      r = await fetch(`${base}/lp2m/v1/hibah/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...auth.authHeaders() },
+        body: JSON.stringify(body),
+      })
     }
-    for (const k of ['jenis_hibah', 'sdgs', 'kelompok_keahlian'] as const) {
-      if (form.value[k] !== undefined && form.value[k] !== '') body[k] = form.value[k]
-    }
-    const r = await fetch(`${base}/lp2m/v1/hibah/${id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...auth.authHeaders() },
-      body: JSON.stringify(body),
-    })
     let json: any = null
     try { json = await r.json() } catch { /* non-JSON */ }
     if (!r.ok) {
@@ -232,8 +301,17 @@ async function save() {
       return
     }
     if (json && json.success === false) throw new Error(json.message || 'Gagal menyimpan')
-    saveMsg.value = '✓ Tersimpan'
-    if (detail.value) detail.value.status = form.value.status
+    const proposalErr = (json as any)?.errors?.proposal as string | undefined
+    if (proposalErr) throw new Error(proposalErr)
+    saveMsg.value = proposalFile.value ? '✓ Tersimpan & proposal diperbarui' : '✓ Tersimpan'
+    if (detail.value) {
+      detail.value.status = form.value.status
+      const newUrl = (json as any)?.proposal_url
+      if (newUrl) detail.value.proposal_url = newUrl
+      const newId = (json as any)?.proposal_id
+      if (newId !== undefined) detail.value.proposal_id = newId
+    }
+    if (proposalFile.value) { proposalFile.value = null; proposalUploadOk.value = false }
     setTimeout(() => { saveMsg.value = '' }, 2500)
   } catch (e: any) { saveErr.value = 'Gagal: ' + (e.message || '') } finally { saving.value = false }
 }
