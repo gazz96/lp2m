@@ -91,15 +91,49 @@ const STATUS_LABEL: Record<string,string> = {
 
 function fmtDate(d:string){return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
 function clean(s:string){return new DOMParser().parseFromString(s,'text/html').body.textContent||''}
+function escHtml(s:string){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+const STATUS_COLOR: Record<string,string> = { submitted:'#64748b', under_review:'#d97706', revised:'#0284c7', approved:'#16a34a', rejected:'#dc2626', done:'#7c3aed' }
+function statusPill(s:string){
+  const label = STATUS_LABEL[s] || s
+  const c = STATUS_COLOR[s] || '#64748b'
+  return `<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;color:#fff;background:${c}">${escHtml(label)}</span>`
+}
 
 const columns:WpColumn[]=[
-  {key:'reg_no',label:'Reg No',accessor:(r:any)=>r.reg_no},
-  {key:'nama',label:'Nama',primary:true,rowActions:(r:any)=>[{label:'Lihat Detail',className:'edit',to:`/dashboard/pendaftaran/${r.id}`}]},
-  {key:'jenis',label:'Jenis'},
-  {key:'skema',label:'Model Hibah'},
-  {key:'_status',label:'Status',type:'badge',accessor:(r:any)=>STATUS_LABEL[(r.status||'submitted')]||r.status},
-  {key:'proposal_url',label:'Proposal',type:'link',linkLabel:'Download',accessor:(r:any)=>r.proposal_url||''},
-  {key:'_date',label:'Tanggal',type:'date',accessor:(r:any)=>fmtDate(r.created_at)},
+  {key:'pengusul',label:'Pengusul',primary:true,type:'html',width:'24%',accessor:(r:any)=>{
+    const reg = r.reg_no ? `<code style="font-size:11px;background:#f1f5f9;padding:1px 5px;border-radius:4px">${escHtml(r.reg_no)}</code><br>` : ''
+    const nama = escHtml(clean(r.nama)||'—')
+    const nip = r.nip ? escHtml(r.nip) : ''
+    const prodi = r.prodi ? escHtml(clean(r.prodi)) : ''
+    const jenis = r.jenis ? escHtml(r.jenis) : ''
+    const meta = [nip, prodi, jenis].filter(Boolean).join(' · ')
+    return `${reg}<strong>${nama}</strong>${meta?`<br><span style="color:#64748b;font-size:12px">${meta}</span>`:''}`
+  },rowActions:(r:any)=>[{label:'Lihat Detail',className:'edit',to:`/dashboard/pendaftaran/${r.id}`}]},
+  {key:'hibah',label:'Hibah',type:'html',width:'18%',accessor:(r:any)=>{
+    const parts = [r.skema, r.jenis_hibah].filter(Boolean).map((s:string)=>escHtml(clean(s)))
+    const extra = [r.sdgs, r.kelompok_keahlian].filter(Boolean).map((s:string)=>escHtml(clean(s)))
+    if(!parts.length && !extra.length) return '<span style="color:#9ca3af">—</span>'
+    return `${parts.length?parts.join(' / '):'<span style="color:#9ca3af">—</span>'}${extra.length?`<br><span style="color:#64748b;font-size:12px">${extra.join(' · ')}</span>`:''}`
+  }},
+  {key:'usulan',label:'Usulan & Tim',type:'html',width:'30%',accessor:(r:any)=>{
+    const judul = clean(r.judul)||'Tanpa judul'
+    const short = judul.length>88? judul.slice(0,88)+'…': judul
+    let h = `<span title="${escHtml(judul)}"><strong>${escHtml(short)}</strong></span>`
+    const list: {tipe:string;nomor:string;nama:string}[] = r.anggota_list||[]
+    if(list.length){
+      const lines = list.map(m=> m.tipe==='mahasiswa' ? `Mhs: ${escHtml(m.nama)} (${escHtml(m.nomor)})` : `Dosen: ${escHtml(m.nama)} (${escHtml(m.nomor)})`).join('<br>')
+      h += `<br><span style="color:#475569;font-size:12px">${lines}</span>`
+    }
+    return h
+  }},
+  {key:'_status',label:'Status',type:'html',width:'12%',accessor:(r:any)=>statusPill(r.status||'submitted')},
+  {key:'kontak',label:'Kontak',type:'html',width:'16%',accessor:(r:any)=>{
+    const email = r.email? `<a href="mailto:${escHtml(r.email)}">${escHtml(r.email)}</a>` : ''
+    const hp = r.hp? `<a href="tel:${escHtml(r.hp.replace(/[^0-9+]/g,''))}" style="color:#475569;font-size:12px">${escHtml(r.hp)}</a>` : ''
+    if(!email && !hp) return '<span style="color:#9ca3af">—</span>'
+    return [email, hp].filter(Boolean).join('<br>')
+  }},
 ]
 
 const filtered=computed(()=>{let a=[...items.value];if(statusFilter.value!=='all')a=a.filter(r=>(r.status||'submitted')===statusFilter.value);if(search.value.trim()){const q=search.value.toLowerCase();a=a.filter(r=>clean(r.nama).toLowerCase().includes(q)||clean(r.judul).toLowerCase().includes(q)||(r.reg_no||'').toLowerCase().includes(q))};return a})

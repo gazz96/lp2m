@@ -33,39 +33,45 @@
             col.rowActions ? 'has-row-actions' : '']"
           :data-colname="col.label"
         >
-          <!-- Primary column with row-title -->
-          <template v-if="col.primary">
-            <strong><a :href="row._editLink ?? '#'" class="row-title">{{ getCellValue(row, col) }}</a></strong>
-            <div class="row-actions" v-if="col.rowActions">
-              <span v-for="(act, idx) in col.rowActions(row)" :key="idx" :class="act.className">
-                <router-link v-if="act.to" :to="act.to">{{ act.label }}</router-link>
-                <a v-else-if="act.href" :href="act.href" :target="act.target">{{ act.label }}</a>
-                <a v-else-if="act.onClick" href="#" @click.prevent="act.onClick">{{ act.label }}</a>
-                <template v-if="idx < (col.rowActions(row)?.length ?? 0) - 1"> | </template>
-              </span>
-            </div>
-          </template>
+          <slot :name="'cell-' + col.key" :row="row" :col="col" :value="getCellValue(row, col)">
+            <!-- Primary column with row-title -->
+            <template v-if="col.primary">
+              <strong v-if="col.type === 'html'"><router-link v-if="col.rowActions && col.rowActions(row).length && col.rowActions(row)[0]!.to" :to="(col.rowActions(row)[0]!.to as string)" class="row-title" v-html="getCellValue(row, col)"></router-link><span v-else v-html="getCellValue(row, col)"></span></strong>
+              <strong v-else><a :href="row._editLink ?? '#'" class="row-title">{{ getCellValue(row, col) }}</a></strong>
+              <div class="row-actions" v-if="col.rowActions">
+                <span v-for="(act, idx) in col.rowActions(row)" :key="idx" :class="act.className">
+                  <router-link v-if="act.to" :to="act.to">{{ act.label }}</router-link>
+                  <a v-else-if="act.href" :href="act.href" :target="act.target">{{ act.label }}</a>
+                  <a v-else-if="act.onClick" href="#" @click.prevent="act.onClick">{{ act.label }}</a>
+                  <template v-if="idx < (col.rowActions(row)?.length ?? 0) - 1"> | </template>
+                </span>
+              </div>
+            </template>
 
-          <!-- Status badge -->
-          <span v-else-if="col.type === 'badge'" class="post-state" :class="row._status === 'draft' ? 'draft' : ''">{{ getCellValue(row, col) }}</span>
+            <!-- Status badge -->
+            <span v-else-if="col.type === 'badge'" class="post-state" :class="row._status === 'draft' ? 'draft' : ''">{{ getCellValue(row, col) }}</span>
 
-          <!-- Link / download -->
-          <template v-else-if="col.type === 'link'">
-            <a v-if="getCellValue(row, col)" :href="getCellValue(row, col)" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px">
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              {{ col.linkLabel || 'Download' }}
-            </a>
-            <span v-else style="color:var(--wp-text-muted)">—</span>
-          </template>
+            <!-- Link / download -->
+            <template v-else-if="col.type === 'link'">
+              <a v-if="getCellValue(row, col)" :href="getCellValue(row, col)" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                {{ col.linkLabel || 'Download' }}
+              </a>
+              <span v-else style="color:var(--wp-text-muted)">—</span>
+            </template>
 
-          <!-- Tags/pills -->
-          <template v-else-if="col.type === 'tags'">
-            <span v-for="t in getCellValue(row, col)" :key="t" style="display:inline-block;padding:1px 6px;margin:1px;background:#f0f0f1;border-radius:3px;font-size:12px">{{ t }}</span>
-            <span v-if="!getCellValue(row,col).length" style="color:var(--wp-text-muted)">—</span>
-          </template>
+            <!-- Tags/pills -->
+            <template v-else-if="col.type === 'tags'">
+              <span v-for="t in getCellValue(row, col)" :key="t" style="display:inline-block;padding:1px 6px;margin:1px;background:#f0f0f1;border-radius:3px;font-size:12px">{{ t }}</span>
+              <span v-if="!getCellValue(row,col).length" style="color:var(--wp-text-muted)">—</span>
+            </template>
 
-          <!-- Regular text -->
-          <template v-else>{{ getCellValue(row, col) }}</template>
+            <!-- HTML -->
+            <span v-else-if="col.type === 'html'" v-html="getCellValue(row, col)"></span>
+
+            <!-- Regular text -->
+            <template v-else>{{ getCellValue(row, col) }}</template>
+          </slot>
         </td>
       </tr>
 
@@ -112,7 +118,7 @@ export interface WpColumn {
   label: string
   primary?: boolean
   sortable?: boolean
-  type?: 'text' | 'badge' | 'tags' | 'date' | 'link'
+  type?: 'text' | 'badge' | 'tags' | 'date' | 'link' | 'html'
   width?: string
   linkLabel?: string
   format?: (val: any) => string
