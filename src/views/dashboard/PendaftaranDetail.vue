@@ -88,16 +88,34 @@
             <td><textarea class="components-textarea-control__input" rows="5" style="width:100%" v-model="form.ringkasan"></textarea></td>
           </tr>
           <tr>
-            <th>Anggota Tim</th>
+            <th>Anggota Tim<br><span style="font-weight:400;font-size:11px;color:var(--wp-text-muted)">maks 2 Dosen + 2 Mahasiswa</span></th>
             <td>
-              <template v-if="detail.anggota_list && detail.anggota_list.length">
-                <div v-for="(m, i) in detail.anggota_list" :key="i" style="margin-bottom:4px">
-                  <strong>{{ i + 1 }}.</strong> {{ m.nama }} —
-                  <span v-if="m.tipe === 'mahasiswa'">Mahasiswa (NIM: {{ m.nomor }}{{ m.prodi ? ', Prodi: ' + m.prodi : '' }})</span>
-                  <span v-else>Dosen (NIDN: {{ m.nomor }})</span>
+              <div v-if="form.anggota_list && form.anggota_list.length" style="display:flex;flex-direction:column;gap:10px">
+                <div v-for="(m, idx) in form.anggota_list" :key="idx" style="display:grid;grid-template-columns:110px 1fr 1fr auto;gap:8px;align-items:end;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px">
+                  <label style="font-size:12px">Tipe
+                    <select class="components-select-control__input" v-model="m.tipe" style="width:100%;margin-top:4px">
+                      <option value="dosen">Dosen (NIDN)</option>
+                      <option value="mahasiswa">Mahasiswa (NIM)</option>
+                    </select>
+                  </label>
+                  <label style="font-size:12px">{{ m.tipe === 'mahasiswa' ? 'NIM' : 'NIDN' }}
+                    <input class="components-text-control__input" style="width:100%;margin-top:4px" v-model="m.nomor" :placeholder="m.tipe==='mahasiswa'?'NIM':'NIDN'" />
+                  </label>
+                  <label style="font-size:12px">Nama Lengkap
+                    <input class="components-text-control__input" style="width:100%;margin-top:4px" v-model="m.nama" placeholder="Nama anggota" />
+                  </label>
+                  <button type="button" class="components-button is-tertiary is-small has-icon" style="color:#d63638" @click="removeAnggota(idx)" title="Hapus anggota">✕</button>
+                  <label v-if="m.tipe==='mahasiswa'" style="font-size:12px;grid-column:1 / span 3">Prodi Mahasiswa
+                    <input class="components-text-control__input" style="width:100%;margin-top:4px" v-model="m.prodi" placeholder="Prodi" />
+                  </label>
                 </div>
-              </template>
-              <span v-else>—</span>
+              </div>
+              <div v-else style="padding:10px;color:var(--wp-text-muted);font-size:13px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;margin-bottom:10px">Belum ada anggota tim.</div>
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                <button type="button" class="components-button is-secondary is-small" :disabled="dosenCount >= 2" @click="addAnggota('dosen')">+ Tambah Dosen {{ dosenCount }}/2</button>
+                <button type="button" class="components-button is-secondary is-small" :disabled="mhsCount >= 2" @click="addAnggota('mahasiswa')">+ Tambah Mahasiswa {{ mhsCount }}/2</button>
+                <span style="font-size:11px;color:var(--wp-text-muted);align-self:center">Baris kosong tanpa NIDN/NIM + nama akan diabaikan saat simpan.</span>
+              </div>
             </td>
           </tr>
           <tr>
@@ -147,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
@@ -169,6 +187,18 @@ const saveErrHint = ref('')
 const proposalFile = ref<File | null>(null)
 const proposalPickErr = ref('')
 const proposalUploadOk = ref(false)
+
+const dosenCount = computed(() => (form.value.anggota_list || []).filter((m: any) => m.tipe !== 'mahasiswa').length)
+const mhsCount = computed(() => (form.value.anggota_list || []).filter((m: any) => m.tipe === 'mahasiswa').length)
+function addAnggota(tipe: 'dosen' | 'mahasiswa') {
+  if (!form.value.anggota_list) form.value.anggota_list = []
+  if (tipe === 'dosen' && dosenCount.value >= 2) return
+  if (tipe === 'mahasiswa' && mhsCount.value >= 2) return
+  form.value.anggota_list.push({ tipe, nomor: '', nama: '', prodi: '' })
+}
+function removeAnggota(idx: number) {
+  form.value.anggota_list.splice(idx, 1)
+}
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -218,6 +248,10 @@ async function load() {
       sdgs: json.data.sdgs || '', kelompok_keahlian: json.data.kelompok_keahlian || '',
       judul: json.data.judul || '', ringkasan: json.data.ringkasan || '',
       jml_tim: json.data.jml_tim || '', email: json.data.email || '', hp: json.data.hp || '',
+      anggota_list: Array.isArray(json.data.anggota_list) ? json.data.anggota_list.map((m: any) => ({
+        tipe: m.tipe === 'mahasiswa' ? 'mahasiswa' : 'dosen',
+        nomor: String(m.nomor ?? ''), nama: String(m.nama ?? ''), prodi: String(m.prodi ?? ''),
+      })) : [],
     }
     // Event name → tampilkan dari hibah_id bila API tidak menyediakan 'event'
     if (!json.data.event && json.data.hibah_id) {
@@ -240,47 +274,31 @@ async function save() {
     return
   }
   try {
-    // Bila ada file proposal baru → kirim sebagai multipart/form-data (backend baca get_file_params()['proposal']).
-    // Tanpa file → tetap JSON seperti sebelumnya.
+    // — selalu kirim sebagai FormData agar anggota_list (JSON) + proposal (file opsional) konsisten —
+    // backend sanitize_input sudah menangani FormData JSON string maupun array JSON.
+    const list = Array.isArray(form.value.anggota_list) ? form.value.anggota_list : []
     let r: Response
-    if (proposalFile.value) {
-      const fd = new FormData()
-      fd.set('status', form.value.status)
-      fd.set('nama', form.value.nama ?? '')
-      fd.set('nip', form.value.nip ?? '')
-      fd.set('jenis', form.value.jenis ?? '')
-      fd.set('prodi', form.value.prodi ?? '')
-      fd.set('skema', form.value.skema ?? '')
-      fd.set('judul', form.value.judul ?? '')
-      fd.set('ringkasan', form.value.ringkasan ?? '')
-      fd.set('email', form.value.email ?? '')
-      fd.set('hp', form.value.hp ?? '')
-      for (const k of ['jenis_hibah', 'sdgs', 'kelompok_keahlian'] as const) {
-        if (form.value[k] !== undefined && form.value[k] !== '') fd.set(k, String(form.value[k]))
-      }
-      fd.set('proposal', proposalFile.value, proposalFile.value.name)
-      r = await fetch(`${base}/lp2m/v1/hibah/${id}`, {
-        method: 'POST',
-        headers: { ...auth.authHeaders() },
-        body: fd,
-      })
-    } else {
-      const body: Record<string, unknown> = {
-        status: form.value.status,
-        nama: form.value.nama, nip: form.value.nip, jenis: form.value.jenis,
-        prodi: form.value.prodi, skema: form.value.skema,
-        judul: form.value.judul, ringkasan: form.value.ringkasan,
-        email: form.value.email, hp: form.value.hp,
-      }
-      for (const k of ['jenis_hibah', 'sdgs', 'kelompok_keahlian'] as const) {
-        if (form.value[k] !== undefined && form.value[k] !== '') body[k] = form.value[k]
-      }
-      r = await fetch(`${base}/lp2m/v1/hibah/${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...auth.authHeaders() },
-        body: JSON.stringify(body),
-      })
+    const fd = new FormData()
+    fd.set('status', form.value.status)
+    fd.set('nama', form.value.nama ?? '')
+    fd.set('nip', form.value.nip ?? '')
+    fd.set('jenis', form.value.jenis ?? '')
+    fd.set('prodi', form.value.prodi ?? '')
+    fd.set('skema', form.value.skema ?? '')
+    fd.set('judul', form.value.judul ?? '')
+    fd.set('ringkasan', form.value.ringkasan ?? '')
+    fd.set('email', form.value.email ?? '')
+    fd.set('hp', form.value.hp ?? '')
+    for (const k of ['jenis_hibah', 'sdgs', 'kelompok_keahlian'] as const) {
+      if (form.value[k] !== undefined && form.value[k] !== '') fd.set(k, String(form.value[k]))
     }
+    fd.set('anggota_list', JSON.stringify(list))
+    if (proposalFile.value) fd.set('proposal', proposalFile.value, proposalFile.value.name)
+    r = await fetch(`${base}/lp2m/v1/hibah/${id}`, {
+      method: 'POST',
+      headers: { ...auth.authHeaders() },
+      body: fd,
+    })
     let json: any = null
     try { json = await r.json() } catch { /* non-JSON */ }
     if (!r.ok) {
@@ -310,6 +328,9 @@ async function save() {
       if (newUrl) detail.value.proposal_url = newUrl
       const newId = (json as any)?.proposal_id
       if (newId !== undefined) detail.value.proposal_id = newId
+      const newList = (json as any)?.anggota_list
+      if (Array.isArray(newList)) detail.value.anggota_list = newList
+      else detail.value.anggota_list = [...(form.value.anggota_list || [])]
     }
     if (proposalFile.value) { proposalFile.value = null; proposalUploadOk.value = false }
     setTimeout(() => { saveMsg.value = '' }, 2500)
