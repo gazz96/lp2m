@@ -57,35 +57,55 @@
       emptySub="Data akan muncul setelah ada yang mendaftar via form publik."
       :showFooter="false"
     >
+      <template #cell-_status="{ row }">
+        <button type="button" @click="openStatusModal(row as Submission)"
+          :disabled="!!rowBusy[row.id]"
+          :style="`display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;color:#fff;background:${STATUS_COLOR[row.status||'submitted']||'#64748b'};border:0;cursor:pointer;opacity:${rowBusy[row.id]==='status'?'0.7':1}`"
+          :title="'Klik untuk ubah status — ' + (STATUS_LABEL[row.status||'submitted']||row.status)">
+          <span v-if="rowBusy[row.id]==='status'" style="width:10px;height:10px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;display:inline-block;animation:lp2mSpin .6s linear infinite"></span>
+          {{ STATUS_LABEL[row.status||'submitted']||row.status }}
+        </button>
+        <span v-if="rowMsg[row.id] && rowMsg[row.id]?.ok===false" style="display:block;font-size:10px;color:#dc2626;margin-top:4px">{{ rowMsg[row.id]?.text }}</span>
+        <span v-else-if="rowMsg[row.id]" style="display:block;font-size:10px;color:#16a34a;margin-top:4px">{{ rowMsg[row.id]?.text }}</span>
+      </template>
       <template #cell-aksi="{ row }">
-        <div style="display:flex;flex-direction:column;gap:6px;min-width:175px">
-          <label style="font-size:11px;font-weight:600;color:#475569">Update Status</label>
-          <div style="display:flex;gap:4px">
-            <select :value="rowStatus[row.id] ?? row.status"
-              @change="(e:any)=> rowStatus[row.id]=(e.target as HTMLSelectElement).value"
-              style="flex:1;min-height:28px;font-size:12px;border-radius:6px;border:1px solid #cbd5e1;padding:2px 6px">
-              <option v-for="o in STATUS_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
-            </select>
-            <button type="button" class="button button-primary"
-              :disabled="!!rowBusy[row.id]"
-              @click="saveStatus(row)"
-              style="white-space:nowrap;padding:0 10px;min-height:28px">
-              {{ rowBusy[row.id]==='status' ? '…' : 'Simpan' }}
-            </button>
-          </div>
-          <span v-if="rowMsg[row.id]" :style="{fontSize:'11px',color: rowMsg[row.id]?.ok ? '#16a34a' : '#dc2626'}">{{ rowMsg[row.id]?.text }}</span>
-          <button type="button" class="button"
-            :disabled="!!rowBusy[row.id] || !row.email"
-            @click="sendEmail(row)"
-            style="width:100%;justify-content:center;display:inline-flex;align-items:center;gap:6px">
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:180px">
+          <label style="font-size:11px;font-weight:600;color:#475569">Kirim Email ke Pemohon</label>
+          <input type="email" :value="rowEmail[row.id] ?? row.email" @input="(e:any)=> rowEmail[row.id]=(e.target as HTMLInputElement).value"
+            :placeholder="row.email ? '' : 'Email belum ada — isi dulu'"
+            style="width:100%;font-size:12px;padding:5px 8px;border:1px solid #cbd5e1;border-radius:6px" />
+          <button type="button" class="button button-primary"
+            :disabled="!!rowBusy[row.id]"
+            @click="sendEmail(row as Submission)"
+            style="width:100%;justify-content:center;display:inline-flex;align-items:center;gap:6px;min-height:28px">
+            <span v-if="rowBusy[row.id]==='email'" style="width:12px;height:12px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;display:inline-block;animation:lp2mSpin .6s linear infinite"></span>
             {{ rowBusy[row.id]==='email' ? 'Mengirim…' : '📧 Kirim Email' }}
           </button>
-          <span v-if="row.email" style="font-size:11px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="row.email">{{ row.email }}</span>
-          <span v-if="row.hp" style="font-size:11px"><a :href="'tel:'+row.hp.replace(/[^0-9+]/g,'')" style="color:#475569">{{ row.hp }}</a></span>
-          <span v-if="!row.email" style="font-size:11px;color:#9ca3af">Email belum ada</span>
+          <span v-if="rowMsg[row.id]" :style="{fontSize:'11px',color: rowMsg[row.id]?.ok ? '#16a34a' : '#dc2626'}">{{ rowMsg[row.id]?.text }}</span>
+          <span style="font-size:10px;color:#94a3b8">Email di input tidak disimpan permanen; hanya untuk tujuan kirim.</span>
         </div>
       </template>
     </WpTable>
+
+    <!-- Modal update status (dashboard) -->
+    <div v-if="modalOpen" @click.self="closeStatusModal" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100050">
+      <div style="position:absolute;inset:0;background:rgba(15,23,42,.45)"></div>
+      <div style="position:relative;background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.2);padding:20px;width:min(420px,92vw)">
+        <h3 style="margin:0 0 6px;font-size:15px">Update Status</h3>
+        <p style="margin:0 0 10px;color:#64748b;font-size:12px">Pendaftaran #{{ modalRow?.id }} — {{ modalRow?.reg_no || '' }} · {{ modalRow ? (STATUS_LABEL[modalRow.status||'submitted']||modalRow.status) : '' }}</p>
+        <select v-model="modalSel" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px">
+          <option v-for="o in STATUS_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
+        </select>
+        <div v-if="modalMsg" :style="{minHeight:'16px',marginTop:'8px',fontSize:'12px',color: modalMsg.ok ? '#16a34a' : '#dc2626'}">{{ modalMsg.text }}</div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+          <button type="button" class="button" @click="closeStatusModal" :disabled="modalBusy">Batal</button>
+          <button type="button" class="button button-primary" @click="saveModalStatus" :disabled="modalBusy" style="min-width:96px;display:inline-flex;align-items:center;justify-content:center;gap:6px">
+            <span v-if="modalBusy" style="width:12px;height:12px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;display:inline-block;animation:lp2mSpin .6s linear infinite"></span>
+            {{ modalBusy ? 'Menyimpan…' : 'Simpan' }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <div v-if="total>perPg" class="tablenav bottom">
       <div class="displaying-num">{{ total }} item</div>
@@ -146,7 +166,8 @@ const columns:WpColumn[]=[
     const prodi = r.prodi ? escHtml(clean(r.prodi)) : ''
     const jenis = r.jenis ? escHtml(r.jenis) : ''
     const meta = [nip, prodi, jenis].filter(Boolean).join(' · ')
-    return `${reg}<strong>${nama}</strong>${meta?`<br><span style="color:#64748b;font-size:12px">${meta}</span>`:''}`
+    const hp = r.hp ? `<a href="tel:${escHtml(String(r.hp).replace(/[^0-9+]/g,''))}" style="color:#0ea5e9;text-decoration:none">📱 ${escHtml(String(r.hp))}</a>` : ''
+    return `${reg}<strong>${nama}</strong>${meta?`<br><span style="color:#64748b;font-size:12px">${meta}</span>`:''}${hp?`<br><span style="font-size:12px">${hp}</span>`:''}`
   },rowActions:(r:any)=>[{label:'Lihat Detail',className:'edit',to:`/dashboard/pendaftaran/${r.id}`}]},
   {key:'hibah',label:'Hibah',type:'html',width:'14%',accessor:(r:any)=>{
     const parts = [r.skema, r.jenis_hibah].filter(Boolean).map((s:string)=>escHtml(clean(s)))
@@ -177,16 +198,30 @@ async function fetchData(p=1){loading.value=true;error.value=''
   try{const base=SITE.apiBase.replace('/wp/v2','');const r=await fetch(`${base}/lp2m/v1/hibah?per_page=${perPg}&page=${p}`);if(!r.ok)throw new Error('HTTP '+r.status);const json=await r.json()
   if(json.success){items.value=(json.data||[]).map((d:any)=>({...d,status:d.status||'submitted'}));total.value=json.total;pg.value=p}else{error.value=json.message||'Gagal'}}catch(e:any){error.value=e.message}finally{loading.value=false}}
 
-// ── Inline Aksi: update status + kirim email (table) ──
-const rowStatus = ref<Record<number,string>>({})
+// ── Inline: email override + status modal (klik badge) ──
 const rowBusy = ref<Record<number,''|'status'|'email'>>({})
 const rowMsg = ref<Record<number,{text:string;ok:boolean}>>({})
+const rowEmail = ref<Record<number,string>>({})
+const modalOpen = ref(false)
+const modalRow = ref<Submission|null>(null)
+const modalSel = ref<string>('submitted')
+const modalBusy = ref(false)
+const modalMsg = ref<{text:string;ok:boolean}|null>(null)
 
-async function saveStatus(row: Record<string,any>){
-  const id = row.id as number
-  const next = (rowStatus.value[id] ?? row.status ?? 'submitted') as string
-  if(!next){ rowMsg.value[id]={text:'Pilih status dulu.', ok:false}; return }
-  rowBusy.value[id]='status'; if(rowMsg.value[id]) delete rowMsg.value[id]
+function openStatusModal(row: Submission){
+  modalRow.value = row
+  modalSel.value = row.status || 'submitted'
+  modalMsg.value = null
+  modalOpen.value = true
+}
+function closeStatusModal(){ if(modalBusy.value) return; modalOpen.value = false; modalMsg.value=null }
+
+async function saveModalStatus(){
+  if(!modalRow.value) return
+  const id = modalRow.value.id
+  const next = modalSel.value
+  modalBusy.value = true; modalMsg.value = null
+  rowBusy.value[id]='status'
   try{
     const base=SITE.apiBase.replace('/wp/v2','')
     const fd=new FormData(); fd.set('status', next)
@@ -194,24 +229,31 @@ async function saveStatus(row: Record<string,any>){
     const j:any=await r.json().catch(()=>null)
     if(!r.ok) throw new Error(j?.message || `HTTP ${r.status}`)
     if(j && j.success===false) throw new Error(j.message||'Gagal')
-    row.status = next; rowStatus.value[id]=next
+    modalRow.value.status = next
+    const idx = items.value.findIndex(x=>x.id===id)
+    if(idx>=0) items.value[idx].status = next
     const emailInfo = j?.email_sent===false ? ` (email gagal: ${j?.email_error||'—'})` : j?.email_sent ? ' & email terkirim ✓' : ''
-    rowMsg.value[id]={ text:`✓ ${STATUS_LABEL[next]||next} disimpan${emailInfo}`, ok: j?.email_sent!==false }
+    modalMsg.value = { text:`✓ ${STATUS_LABEL[next]||next} disimpan${emailInfo}`, ok: j?.email_sent!==false }
+    rowMsg.value[id]={ text:`✓ ${STATUS_LABEL[next]||next} & email terkirim.`, ok:true }
+    setTimeout(()=>{ modalOpen.value=false; modalMsg.value=null }, 900)
     setTimeout(()=>{ if(rowMsg.value[id]?.ok) delete rowMsg.value[id] }, 3500)
-  }catch(e:any){ rowMsg.value[id]={ text:`✕ ${e.message||'Gagal menyimpan'}`, ok:false } }
-  finally{ rowBusy.value[id]='' }
+  }catch(e:any){ modalMsg.value={ text:`✕ ${e.message||'Gagal menyimpan'}`, ok:false } }
+  finally{ modalBusy.value=false; rowBusy.value[id]='' }
 }
-async function sendEmail(row: Record<string,any>){
-  const id=row.id
-  if(!row.email){ rowMsg.value[id]={text:'Email pemohon belum ada.', ok:false}; return }
+
+async function sendEmail(row: Submission){
+  const id=row.id as number
+  const override = String(rowEmail.value[id] ?? row.email ?? '').trim()
+  if(!override){ rowMsg.value[id]={text:'Isi email tujuan dulu.', ok:false}; return }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(override)){ rowMsg.value[id]={text:'Format email tidak valid.', ok:false}; return }
   rowBusy.value[id]='email'; if(rowMsg.value[id]) delete rowMsg.value[id]
   try{
     const base=SITE.apiBase.replace('/wp/v2','')
-    const r=await fetch(`${base}/lp2m/v1/hibah/${id}/email`, { method:'POST', headers:{ 'Content-Type':'application/json', ...auth.authHeaders() }, body: JSON.stringify({ note: `Status: ${STATUS_LABEL[row.status||'submitted']||row.status}` }) })
+    const r=await fetch(`${base}/lp2m/v1/hibah/${id}/email`, { method:'POST', headers:{ 'Content-Type':'application/json', ...auth.authHeaders() }, body: JSON.stringify({ note: `Status: ${STATUS_LABEL[row.status||'submitted']||row.status}`, email: override }) })
     const j:any=await r.json().catch(()=>null)
     if(!r.ok) throw new Error(j?.message || `HTTP ${r.status}`)
     if(j && j.success===false) throw new Error(j.message||'Gagal')
-    rowMsg.value[id]={ text:'✓ Email terkirim ke pemohon.', ok:true }
+    rowMsg.value[id]={ text:`✓ Email terkirim ke ${override}.`, ok:true }
     setTimeout(()=>{ if(rowMsg.value[id]?.ok) delete rowMsg.value[id] }, 3500)
   }catch(e:any){ rowMsg.value[id]={ text:`✕ ${e.message||'Gagal kirim email'}`, ok:false } }
   finally{ rowBusy.value[id]='' }
