@@ -122,10 +122,13 @@
           </tr>
         </table>
 
-        <div style="margin-top:20px;display:flex;gap:10px;align-items:center">
+        <div style="margin-top:20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <WpButton variant="primary" :disabled="saving" @click="save">{{ saving ? 'Menyimpan...' : 'Simpan Perubahan' }}</WpButton>
+          <span v-if="saveMsg" style="font-size:12px;color:#1a7f37">{{ saveMsg }}</span>
+          <span v-if="saveErr" style="font-size:12px;color:#d63638;max-width:520px">{{ saveErr }}</span>
           <WpButton variant="link" to="/dashboard/pendaftaran">Kembali ke Daftar</WpButton>
         </div>
+        <p v-if="saveErrHint" style="font-size:12px;color:var(--wp-text-muted);margin:8px 0 0">{{ saveErrHint }}</p>
       </div>
     </div>
   </div>
@@ -149,6 +152,8 @@ const loading = ref(true)
 const error = ref('')
 const saving = ref(false)
 const saveMsg = ref('')
+const saveErr = ref('')
+const saveErrHint = ref('')
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -182,7 +187,15 @@ async function load() {
 }
 
 async function save() {
-  saving.value = true; saveMsg.value = ''
+  saving.value = true; saveMsg.value = ''; saveErr.value = ''; saveErrHint.value = ''
+  // Login mengilap (mis. ganti password / localStorage terhapus) → handler akan kirim tanpa Authorization → 401.
+  // Lebih baik arahkan re-login daripada menampilkan error generik.
+  if (!auth.isLoggedIn) {
+    saveErr.value = 'Sesi login habis. Silakan login ulang.'
+    saveErrHint.value = 'Buka Login LP2M dan masuk dengan username & password akun WP.'
+    saving.value = false
+    return
+  }
   try {
     const body: Record<string, unknown> = {
       status: form.value.status,
@@ -191,7 +204,6 @@ async function save() {
       judul: form.value.judul, ringkasan: form.value.ringkasan,
       email: form.value.email, hp: form.value.hp,
     }
-    // Hanya kirim field opsional yang ada di form
     for (const k of ['jenis_hibah', 'sdgs', 'kelompok_keahlian'] as const) {
       if (form.value[k] !== undefined && form.value[k] !== '') body[k] = form.value[k]
     }
@@ -200,12 +212,30 @@ async function save() {
       headers: { 'Content-Type': 'application/json', ...auth.authHeaders() },
       body: JSON.stringify(body),
     })
-    const json = await r.json()
-    if (!json.success) throw new Error(json.message || 'Gagal menyimpan')
+    let json: any = null
+    try { json = await r.json() } catch { /* non-JSON */ }
+    if (!r.ok) {
+      const msg = json?.message || json?.code || `HTTP ${r.status}`
+      const extra = json?.data?.status ? ` (status ${json.data.status})` : ''
+      if (r.status === 401) {
+        saveErr.value = `Gagal menyimpan: ${msg}${extra} — sesi login tidak terbaca server.`
+        saveErrHint.value = 'Penyebab umum: header Authorization dibuang web server — hubungi admin hosting untuk aktifkan SetEnvIf Authorization / REDIRECT_HTTP_AUTHORIZATION.'
+      } else if (r.status === 403) {
+        saveErr.value = `Gagal menyimpan: ${msg}${extra} — akun Anda tidak punya izin edit.`
+        saveErrHint.value = 'Pastikan akun ber-role Editor/Administrator.'
+      } else if (r.status === 429) {
+        saveErr.value = `Gagal menyimpan: ${msg}${extra}`
+        saveErrHint.value = 'Tunggu beberapa menit lalu coba lagi.'
+      } else {
+        saveErr.value = `Gagal menyimpan: ${msg}${extra}`
+      }
+      return
+    }
+    if (json && json.success === false) throw new Error(json.message || 'Gagal menyimpan')
     saveMsg.value = '✓ Tersimpan'
-    detail.value.status = form.value.status
+    if (detail.value) detail.value.status = form.value.status
     setTimeout(() => { saveMsg.value = '' }, 2500)
-  } catch (e: any) { saveMsg.value = 'Gagal: ' + (e.message || '') } finally { saving.value = false }
+  } catch (e: any) { saveErr.value = 'Gagal: ' + (e.message || '') } finally { saving.value = false }
 }
 
 onMounted(load)
