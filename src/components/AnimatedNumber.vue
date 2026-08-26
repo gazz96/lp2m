@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 const props = withDefaults(defineProps<{
   target: number
@@ -18,6 +18,8 @@ const props = withDefaults(defineProps<{
 
 const el = ref<HTMLElement>()
 const display = ref('0')
+
+watch(() => props.target, () => animate(), { immediate: true })
 
 onMounted(() => {
   const observer = new IntersectionObserver((entries) => {
