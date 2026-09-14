@@ -21,6 +21,7 @@ import Settings from '@/views/dashboard/Settings.vue'
 import SuksesView from '@/views/SuksesView.vue'
 import TrackStatusView from '@/views/TrackStatusView.vue'
 import BlogView from '@/views/BlogView.vue'
+import PengumumanView from '@/views/PengumumanView.vue'
 import HibahArchiveView from '@/views/HibahArchiveView.vue'
 import HibahDetailView from '@/views/HibahDetailView.vue'
 import ArtikelDetailView from '@/views/ArtikelDetailView.vue'
@@ -42,6 +43,7 @@ const router = createRouter({
     { path: '/login', name: 'login', component: LoginView },
     { path: '/v/sukses/:no', name: 'sukses', component: SuksesView },
     { path: '/blog', name: 'blog', component: BlogView },
+    { path: '/pengumuman', name: 'pengumuman', component: PengumumanView },
     { path: '/hibah', name: 'hibah-archive', component: HibahArchiveView },
     { path: '/hibah/:slug', name: 'hibah-detail', component: HibahDetailView },
     { path: '/artikel/:slug', name: 'artikel-detail', component: ArtikelDetailView },

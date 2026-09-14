@@ -1,28 +1,36 @@
 <template>
-  <div class="wrap">
-    <h1>Pendaftaran Hibah</h1>
-    <p style="color:var(--wp-text-secondary);margin-top:-8px;margin-bottom:10px">Data pendaftaran yang masuk dari form publik LP2M.</p>
+  <div class="wrap pendaftaran-page">
+    <div class="page-heading">
+      <div>
+        <span class="eyebrow">LP2M · Administrasi</span>
+        <h1>Pendaftaran Hibah</h1>
+        <p>Data pendaftaran yang masuk dari form publik LP2M.</p>
+      </div>
+      <div class="heading-count"><strong>{{ total }}</strong><span>Total pendaftar</span></div>
+    </div>
 
-    <ul class="subsubsub">
+    <nav class="status-filters" aria-label="Filter status pendaftaran">
       <li><a :class="{current:statusFilter==='all'}" @click.prevent="statusFilter='all'" href="#">Semua <span class="count">({{ total }})</span></a></li>
       <li><a :class="{current:statusFilter==='submitted'}" @click.prevent="statusFilter='submitted'" href="#">Submitted <span class="count">({{ byStatus.submitted||0 }})</span></a></li>
       <li><a :class="{current:statusFilter==='under_review'}" @click.prevent="statusFilter='under_review'" href="#">Under Review <span class="count">({{ byStatus.under_review||0 }})</span></a></li>
+      <li><a :class="{current:statusFilter==='reviewed'}" @click.prevent="statusFilter='reviewed'" href="#">Reviewed <span class="count">({{ byStatus.reviewed||0 }})</span></a></li>
+      <li><a :class="{current:statusFilter==='revision_submitted'}" @click.prevent="statusFilter='revision_submitted'" href="#">Revisi Dikirim <span class="count">({{ byStatus.revision_submitted||0 }})</span></a></li>
       <li><a :class="{current:statusFilter==='approved'}" @click.prevent="statusFilter='approved'" href="#">Approved <span class="count">({{ byStatus.approved||0 }})</span></a></li>
       <li><a :class="{current:statusFilter==='rejected'}" @click.prevent="statusFilter='rejected'" href="#">Rejected <span class="count">({{ byStatus.rejected||0 }})</span></a></li>
-    </ul>
+    </nav>
 
     <!-- Export section — di atas tabel -->
-    <div style="border:1px solid var(--wp-border);border-radius:8px;padding:14px 16px;margin-bottom:16px;background:#fff">
-      <div style="display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px">
-        <div>
+    <section class="toolbar-card" aria-label="Filter dan export">
+      <div class="toolbar-grid">
+        <div class="field-group">
           <label style="font-size:11px;color:var(--wp-text-secondary);display:block;margin-bottom:4px">Dari Tanggal</label>
           <input type="date" class="components-text-control__input" v-model="exp.dari" />
         </div>
-        <div>
+        <div class="field-group">
           <label style="font-size:11px;color:var(--wp-text-secondary);display:block;margin-bottom:4px">Sampai Tanggal</label>
           <input type="date" class="components-text-control__input" v-model="exp.sampai" />
         </div>
-        <div>
+        <div class="field-group">
           <label style="font-size:11px;color:var(--wp-text-secondary);display:block;margin-bottom:4px">Filter Status</label>
           <select class="components-select-control__input" v-model="exp.status">
             <option value="">Semua Status</option>
@@ -34,23 +42,26 @@
             <option value="done">Done</option>
           </select>
         </div>
-        <div style="margin-left:auto">
+        <div class="export-action">
           <WpButton variant="primary" :disabled="exporting" @click="doExport">
             {{ exporting ? 'Mempersiapkan...' : '⬇ Export ke Excel' }}
           </WpButton>
           <div v-if="expMsg" style="font-size:12px;color:var(--green-700);margin-top:6px;text-align:right">{{ expMsg }}</div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <p class="search-box">
-      <input type="search" class="components-text-control__input" v-model="search" placeholder="Cari nama, judul, atau nomor registrasi..." style="width:320px" />
-    </p>
+    <div class="search-row">
+      <label for="registration-search">Cari pendaftaran</label>
+      <div class="search-control"><span>⌕</span><input id="registration-search" type="search" v-model="search" placeholder="Nama, judul, atau nomor registrasi..." /></div>
+      <span v-if="search || statusFilter !== 'all'" class="result-count">{{ filtered.length }} hasil ditemukan</span>
+    </div>
 
     <div v-if="loading" style="text-align:center;padding:40px"><span class="spinner" style="display:inline-block"></span></div>
     <div v-else-if="error" class="notice notice-error inline"><p>{{ error }}</p></div>
 
-    <WpTable v-else
+    <div v-else class="table-scroll">
+    <WpTable
       :columns="columns"
       :rows="filtered"
       emptyTitle="Belum ada pendaftaran."
@@ -86,6 +97,7 @@
         </div>
       </template>
     </WpTable>
+    </div>
 
     <!-- Modal update status (dashboard) -->
     <div v-if="modalOpen" @click.self="closeStatusModal" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100050">
@@ -118,6 +130,19 @@
     </div>
   </div>
 </template>
+
+<style>
+.pendaftaran-page{max-width:1440px;margin:0 auto;padding-bottom:40px;color:#172033}
+.page-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin:8px 0 24px;padding-bottom:20px;border-bottom:1px solid #e5e7eb}
+.eyebrow{display:block;color:#0f766e;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+.page-heading h1{margin:0;font-size:clamp(24px,3vw,34px);letter-spacing:-.035em;color:#172033}.page-heading p{margin:7px 0 0;color:#64748b;font-size:13px}
+.heading-count{display:grid;gap:2px;text-align:right;color:#64748b;font-size:11px}.heading-count strong{font-size:26px;line-height:1;color:#0f766e}
+.status-filters{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 18px;padding:0;list-style:none}.status-filters li{margin:0}.status-filters a{display:block;padding:7px 12px;border:1px solid #e2e8f0;border-radius:999px;background:#fff;color:#64748b;font-size:12px;text-decoration:none;transition:.18s ease}.status-filters a:hover{border-color:#99f6e4;color:#0f766e}.status-filters a.current{background:#0f766e;border-color:#0f766e;color:#fff;box-shadow:0 3px 10px #0f766e24}.status-filters .count{opacity:.75;font-size:11px}
+.toolbar-card{padding:16px;border:1px solid #dbe3ea;border-radius:12px;background:linear-gradient(135deg,#fff 0%,#f8fbfb 100%);box-shadow:0 4px 16px #17203308;margin-bottom:16px}.toolbar-grid{display:grid;grid-template-columns:minmax(150px,1fr) minmax(150px,1fr) minmax(170px,1fr) auto;gap:12px;align-items:end}.field-group label,.search-row>label{display:block;margin-bottom:5px;color:#64748b;font-size:11px;font-weight:700}.field-group input,.field-group select{width:100%;min-height:36px}.export-action{display:flex;align-items:flex-end}.export-action button{white-space:nowrap;min-height:36px}.export-action div{position:absolute;margin-top:52px;white-space:nowrap}
+.search-row{display:flex;align-items:center;gap:12px;margin:20px 0 12px}.search-row>label{margin:0;white-space:nowrap}.search-control{position:relative;max-width:460px;flex:1}.search-control span{position:absolute;left:11px;top:7px;color:#0f766e;font-size:19px}.search-control input{width:100%;height:38px;padding:0 12px 0 34px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}.result-count{color:#64748b;font-size:11px}.table-scroll{overflow-x:auto;border-radius:10px}.table-scroll table{min-width:920px}
+@media(max-width:760px){.page-heading{align-items:flex-start;margin-bottom:16px}.heading-count{display:none}.toolbar-grid{grid-template-columns:1fr 1fr}.export-action{grid-column:1/-1}.export-action button{width:100%}.export-action div{position:static;margin:6px 0 0;text-align:left}.search-row{display:block}.search-row>label{margin-bottom:6px}.search-control{max-width:none}.table-scroll{margin:0 -12px;padding:0 12px}.status-filters{gap:6px}.status-filters a{padding:6px 9px}}
+@media(max-width:430px){.toolbar-grid{grid-template-columns:1fr}.field-group{grid-column:1}.page-heading h1{font-size:25px}}
+</style>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
@@ -152,6 +177,8 @@ function statusPill(s:string){
 const STATUS_OPTS = [
   { value:'submitted', label:'Submitted' },
   { value:'under_review', label:'Under Review' },
+  { value:'reviewed', label:'Reviewed — Revisi Diminta' },
+  { value:'revision_submitted', label:'Revision Submitted' },
   { value:'revised', label:'Revised' },
   { value:'approved', label:'Approved' },
   { value:'rejected', label:'Rejected' },

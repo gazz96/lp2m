@@ -37,6 +37,21 @@
               </td>
             </tr>
           </table>
+          <section v-if="result.history?.length" style="padding:20px 24px;border-top:1px solid var(--paper-2)">
+            <h2 style="font-size:17px;margin:0 0 14px">Riwayat Tahap</h2>
+            <ol style="margin:0;padding-left:20px"><li v-for="item in result.history" :key="item.date + item.status" style="margin:0 0 10px"><strong>{{ item.label }}</strong><br><small>{{ item.date }}</small></li></ol>
+          </section>
+          <section v-if="hasRevisionInfo" style="padding:20px 24px;border-top:1px solid var(--paper-2);background:#f8fafc">
+            <h2 style="font-size:17px;margin:0 0 14px">Tahap Revisi</h2>
+            <div v-for="note in revisionNotes" :key="note.label" v-show="note.value" style="margin:0 0 10px"><strong>{{ note.label }}</strong><p style="white-space:pre-wrap;margin:4px 0 0">{{ note.value }}</p></div>
+            <p v-if="result.template_url"><a :href="result.template_url" target="_blank" rel="noopener" class="btn btn-primary">Download Template Surat Kesanggupan</a></p>
+            <p v-if="result.surat_url" style="color:#16803c">✓ Surat Kesanggupan sudah dikirim.</p>
+            <form v-if="revisionToken && !result.surat_url" @submit.prevent="submitRevision" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <input type="file" accept="application/pdf,.pdf" required @change="pickRevision" />
+              <button type="submit" class="btn btn-primary" :disabled="revisionLoading">{{ revisionLoading ? 'Mengirim…' : 'Kirim Revisi' }}</button>
+            </form>
+            <p v-if="revisionMessage" style="margin:10px 0 0;color:#16803c">{{ revisionMessage }}</p>
+          </section>
         </div>
 
         <div v-else-if="error" style="padding:16px 20px;background:#fdecea;border:1px solid #f1948e;border-radius:4px;color:#c0392b;font-size:14px">{{ error }}</div>
@@ -55,9 +70,23 @@ import SiteNav from '@/components/SiteNav.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
 
 const no = ref('')
-const result = ref<Record<string, string> | null>(null)
+const result = ref<Record<string, any> | null>(null)
 const loading = ref(false)
 const error = ref('')
+const revisionToken = ref('')
+const revisionFile = ref<File | null>(null)
+const revisionLoading = ref(false)
+const revisionMessage = ref('')
+
+const revisionNotes = computed(() => {
+  const r = result.value || {}
+  return [
+    { label: 'Catatan Admin', value: r.catatan_admin },
+    { label: 'Catatan Substansi Internal', value: r.catatan_substansi_internal },
+    { label: 'Catatan Substansi Eksternal', value: r.catatan_substansi_eksternal },
+  ]
+})
+const hasRevisionInfo = computed(() => Boolean(revisionToken.value || revisionNotes.value.some(n => n.value) || result.value?.template_url || result.value?.surat_url))
 
 const rows = computed(() => {
   if (!result.value) return []
@@ -95,12 +124,45 @@ function statusStyle(s = '') {
   return { background: '#fef9e7', color: '#7d6608', padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' as const }
 }
 
+function pickRevision(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0] || null
+  revisionFile.value = file && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) && file.size <= 10 * 1024 * 1024 ? file : null
+  if (!revisionFile.value) revisionMessage.value = 'File harus PDF dan maksimal 10 MB.'
+}
+
+async function loadRevision(token: string) {
+  if (!token || !no.value) return
+  revisionToken.value = token
+  const base = SITE.apiBase.replace('/wp/v2', '')
+  const r = await fetch(`${base}/lp2m/v1/pendaftaran/revisi?no=${encodeURIComponent(no.value)}&token=${encodeURIComponent(token)}`)
+  const d = await r.json().catch(() => ({}))
+  if (!r.ok) { revisionMessage.value = d.message || 'Link revisi tidak valid.'; return }
+  result.value = { ...(result.value || {}), ...d.data }
+}
+
+async function submitRevision() {
+  if (!revisionFile.value || !revisionToken.value) return
+  revisionLoading.value = true; revisionMessage.value = ''
+  const fd = new FormData(); fd.set('no', no.value); fd.set('token', revisionToken.value); fd.set('surat_kesanggupan', revisionFile.value)
+  try {
+    const base = SITE.apiBase.replace('/wp/v2', '')
+    const r = await fetch(`${base}/lp2m/v1/pendaftaran/revisi`, { method: 'POST', body: fd })
+    const d = await r.json().catch(() => ({}))
+    if (!r.ok) throw new Error(d.message || `HTTP ${r.status}`)
+    revisionMessage.value = d.message || 'Revisi berhasil dikirim.'
+    if (result.value) result.value.status = 'revision_submitted'
+    revisionFile.value = null
+  } catch (e: any) { revisionMessage.value = e.message || 'Gagal mengirim revisi.' }
+  finally { revisionLoading.value = false }
+}
+
 onMounted(() => {
   const route = useRoute()
   const fromPath = (route.params.no as string) || ''
   const q = new URL(location.href).searchParams.get('no') || ''
   const start = fromPath || q
-  if (start) { no.value = start; cek() }
+  const token = new URL(location.href).searchParams.get('token') || ''
+  if (start) { no.value = start; cek().then(() => { if (token) void loadRevision(token) }) }
 })
 
 async function cek() {

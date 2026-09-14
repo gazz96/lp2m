@@ -32,10 +32,21 @@
 
         <!-- Data (read-only + field inti bisa edit) -->
         <h2 style="font-size:14px;margin:0 0 12px">Data Pendaftar</h2>
+        <div class="review-panel">
+          <h2 style="font-size:14px;margin:0 0 12px">Review &amp; RAB</h2>
+          <label>Catatan Admin<textarea v-model="form.catatan_admin" rows="3"></textarea></label>
+          <label>Catatan Substansi Internal<textarea v-model="form.catatan_substansi_internal" rows="3"></textarea></label>
+          <label>Catatan Substansi Eksternal<textarea v-model="form.catatan_substansi_eksternal" rows="3"></textarea></label>
+          <div class="review-money"><label>Nilai Dana Usulan<input v-model="form.nilai_dana_usulan" inputmode="decimal" /></label><label>Nilai Dana Disetujui<input v-model="form.nilai_dana_disetujui" inputmode="decimal" /></label></div>
+          <label>URL Template Surat Kesanggupan<input v-model="form.surat_kesanggupan_template_url" type="url" placeholder="https://.../template.pdf" /></label>
+        </div>
         <table class="form-table" style="width:100%">
           <tr>
             <th style="width:180px">Reg No</th>
-            <td><code>{{ detail.reg_no }}</code></td>
+            <td>
+              <input class="components-text-control__input" style="width:240px" v-model="form.reg_no" placeholder="LP2M-2026-00001" />
+              <p style="font-size:11px;color:var(--wp-text-muted);margin:5px 0 0">Format: LP2M-YYYY-NNNNN. Nomor wajib unik.</p>
+            </td>
           </tr>
           <tr>
             <th>Event Hibah</th>
@@ -104,7 +115,7 @@
                   <label style="font-size:12px">Nama Lengkap
                     <input class="components-text-control__input" style="width:100%;margin-top:4px" v-model="m.nama" placeholder="Nama anggota" />
                   </label>
-                  <button type="button" class="components-button is-tertiary is-small has-icon" style="color:#d63638" @click="removeAnggota(idx)" title="Hapus anggota">✕</button>
+                  <button type="button" class="components-button is-tertiary is-small has-icon" style="color:#d63638" @click="removeAnggota(Number(idx))" title="Hapus anggota">✕</button>
                   <label v-if="m.tipe==='mahasiswa'" style="font-size:12px;grid-column:1 / span 3">Prodi Mahasiswa
                     <input class="components-text-control__input" style="width:100%;margin-top:4px" v-model="m.prodi" placeholder="Prodi" />
                   </label>
@@ -241,6 +252,7 @@ async function load() {
     if (!json.success) throw new Error(json.message || 'Data tidak ditemukan')
     detail.value = json.data
     form.value = {
+	  reg_no: json.data.reg_no || '',
       status: json.data.status || 'submitted',
       nama: json.data.nama || '', nip: json.data.nip || '',
       jenis: json.data.jenis || '', prodi: json.data.prodi || '',
@@ -252,6 +264,9 @@ async function load() {
         tipe: m.tipe === 'mahasiswa' ? 'mahasiswa' : 'dosen',
         nomor: String(m.nomor ?? ''), nama: String(m.nama ?? ''), prodi: String(m.prodi ?? ''),
       })) : [],
+      catatan_admin: json.data.catatan_admin || '', catatan_substansi_internal: json.data.catatan_substansi_internal || '',
+      catatan_substansi_eksternal: json.data.catatan_substansi_eksternal || '', nilai_dana_usulan: json.data.nilai_dana_usulan || '',
+      nilai_dana_disetujui: json.data.nilai_dana_disetujui || '', surat_kesanggupan_template_url: json.data.surat_kesanggupan_template_url || '',
     }
     // Event name → tampilkan dari hibah_id bila API tidak menyediakan 'event'
     if (!json.data.event && json.data.hibah_id) {
@@ -280,6 +295,7 @@ async function save() {
     let r: Response
     const fd = new FormData()
     fd.set('status', form.value.status)
+	  fd.set('reg_no', form.value.reg_no ?? '')
     fd.set('nama', form.value.nama ?? '')
     fd.set('nip', form.value.nip ?? '')
     fd.set('jenis', form.value.jenis ?? '')
@@ -292,6 +308,7 @@ async function save() {
     for (const k of ['jenis_hibah', 'sdgs', 'kelompok_keahlian'] as const) {
       if (form.value[k] !== undefined && form.value[k] !== '') fd.set(k, String(form.value[k]))
     }
+    for (const k of ['catatan_admin', 'catatan_substansi_internal', 'catatan_substansi_eksternal', 'nilai_dana_usulan', 'nilai_dana_disetujui', 'surat_kesanggupan_template_url'] as const) fd.set(k, String(form.value[k] ?? ''))
     fd.set('anggota_list', JSON.stringify(list))
     if (proposalFile.value) fd.set('proposal', proposalFile.value, proposalFile.value.name)
     r = await fetch(`${base}/lp2m/v1/hibah/${id}`, {
@@ -323,6 +340,7 @@ async function save() {
     if (proposalErr) throw new Error(proposalErr)
     saveMsg.value = proposalFile.value ? '✓ Tersimpan & proposal diperbarui' : '✓ Tersimpan'
     if (detail.value) {
+	      detail.value.reg_no = form.value.reg_no
       detail.value.status = form.value.status
       const newUrl = (json as any)?.proposal_url
       if (newUrl) detail.value.proposal_url = newUrl
@@ -339,3 +357,7 @@ async function save() {
 
 onMounted(load)
 </script>
+
+<style scoped>
+.review-panel{margin:0 0 20px;padding:16px;border:1px solid #dbeafe;border-radius:10px;background:#f8fbff;display:grid;gap:12px}.review-panel label{display:grid;gap:5px;font-size:12px;font-weight:600}.review-panel textarea,.review-panel input{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;font-weight:400}.review-money{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.review-money{grid-template-columns:1fr}}
+</style>
