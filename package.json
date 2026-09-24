@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "vue-tsc -b && vite build && CLOUDFLARE_ACCOUNT_ID=4a73adab7dca9cbd95610624e331c11b wrangler pages deploy dist --project-name=lp2m --branch=main --commit-dirty=true"
   },
   "dependencies": {
     "@tiptap/extension-placeholder": "^3.29.2",

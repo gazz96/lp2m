@@ -1,3 +1,8 @@
 name = "lp2m"
 compatibility_date = "2026-08-01"
 pages_build_output_dir = "dist"
+
+# CATATAN: `account_id` TIDAK didukung di wrangler.toml untuk Pages
+# ("Configuration file for Pages projects does not support account_id").
+# Akun deploy (bagas.topati@gmail.com) dipatok di script `bun run deploy` /
+# `npm run deploy` lewat env CLOUDFLARE_ACCOUNT_ID — lihat package.json.
