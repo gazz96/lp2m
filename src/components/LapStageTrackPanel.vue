@@ -22,14 +22,14 @@
       tautan pengisian akan dikirim ke email Anda.
     </p>
 
-    <!-- Template dari admin — hanya tautan unduh. -->
+    <!-- Template milik EVENT — selalu read-only, hanya tautan unduh. -->
     <template v-if="templates.length">
       <h3 class="lap-sub">Template (unduh, isi, lalu unggah hasilnya)</h3>
       <RevisionStatus
         v-for="t in templates"
         :key="t.urlKey"
         :variant="t.url ? 'ok' : 'empty'"
-        :text="t.url ? `⬇ ${t.label}` : `${t.label}: — (belum disediakan admin)`"
+        :text="t.url ? `⬇ ${t.label}` : `${t.label}: — (belum diunggah admin di event hibah ini)`"
         :href="t.url || undefined"
         :link-label="t.url ? `Download ${LAP_FORMAT_LABEL[t.ext]}` : 'Lihat berkas'"
       />

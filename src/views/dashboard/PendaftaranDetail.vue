@@ -235,6 +235,7 @@
                   :model="form"
                   :files="lapFiles"
                   :errors="lapErrors"
+                  :hibah-edit-url="hibahEditUrl"
                   @pick="pickLapFile"
                   @clear="clearLapFile"
                 />
@@ -337,6 +338,18 @@ const workflowTabs = [
 const lapFiles = ref<Record<string, File | null>>({})
 /** Pesan error validasi berkas tahap lap per `param`. */
 const lapErrors = ref<Record<string, string>>({})
+
+/**
+ * Tautan ke editor post hibah — dipakai panel tahap lap untuk mengarahkan admin
+ * ke tempat mengunggah template level EVENT (template tidak diunggah di sini).
+ * Diturunkan dari `base` REST (…/wp-json) → root WordPress.
+ */
+const hibahEditUrl = computed(() => {
+  const hibahId = Number(detail.value?.hibah_id || 0)
+  if (!hibahId) return ''
+  const wpRoot = base.replace(/\/wp-json$/, '')
+  return `${wpRoot}/wp-admin/post.php?post=${hibahId}&action=edit`
+})
 
 /** Picker berkas tahap lap — dipakai kedua tab (Lap. Kemajuan & Lap. Akhir). */
 function pickLapFile(param: string, e: Event) {

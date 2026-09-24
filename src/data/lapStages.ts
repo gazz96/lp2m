@@ -29,16 +29,21 @@ export interface LapTextField {
 }
 
 export interface LapFileField {
-  /** Nama field multipart saat upload. */
+  /** Nama field multipart saat upload (hanya dipakai untuk berkas peserta). */
   param: string
-  /** Meta URL kanonik backend (untuk dibaca/ditampilkan). */
+  /** Kunci URL di payload REST (dipakai untuk membaca/menampilkan). */
   urlKey: string
   label: string
   ext: LapExt
-  /** `admin` = template (peserta hanya mengunduh); `peserta` = wajib diunggah peserta. */
-  owner: 'admin' | 'peserta'
+  /**
+   * `event` = template milik EVENT hibah: diunggah SEKALI di menu Hibah,
+   * peserta hanya mengunduh (tidak ada upload per pendaftaran).
+   * `peserta` = berkas yang wajib/opsional diunggah peserta.
+   */
+  owner: 'event' | 'peserta'
   /** Berkas wajib saat peserta mengirim form. */
   required?: boolean
+  /** ID post hibah — diambil dari detail pendaftaran (dipakai tautan ke event). */
   hint?: string
 }
 
@@ -134,8 +139,8 @@ export const LAP_STAGES: LapStage[] = [
         urlKey: 'lapkem_template_url',
         label: 'Template Laporan Kemajuan',
         ext: 'doc',
-        owner: 'admin',
-        hint: 'Template dari admin — unduh, isi, lalu unggah hasilnya di bawah.',
+        owner: 'event',
+        hint: 'Diunggah sekali di menu Hibah. Unduh, isi, lalu unggah hasilnya di bawah.',
       },
       {
         param: 'lapkem_laporan',
@@ -157,7 +162,7 @@ export const LAP_STAGES: LapStage[] = [
         urlKey: 'lapkem_sptb_template_url',
         label: 'Template SPTB',
         ext: 'doc',
-        owner: 'admin',
+        owner: 'event',
       },
       {
         param: 'lapkem_sptb',
@@ -204,7 +209,7 @@ export const LAP_STAGES: LapStage[] = [
         urlKey: 'lapakhir_template_url',
         label: 'Template Laporan Akhir',
         ext: 'doc',
-        owner: 'admin',
+        owner: 'event',
       },
       {
         param: 'lapakhir_laporan',
@@ -240,7 +245,7 @@ export const LAP_STAGES: LapStage[] = [
         urlKey: 'lapakhir_ba_template_url',
         label: 'Template Berita Acara',
         ext: 'doc',
-        owner: 'admin',
+        owner: 'event',
       },
       {
         param: 'lapakhir_ba',
@@ -254,7 +259,7 @@ export const LAP_STAGES: LapStage[] = [
         urlKey: 'lapakhir_bpp_template_url',
         label: 'Template Berita Penyelesaian Pekerjaan',
         ext: 'doc',
-        owner: 'admin',
+        owner: 'event',
       },
       {
         param: 'lapakhir_bpp',
@@ -268,7 +273,7 @@ export const LAP_STAGES: LapStage[] = [
         urlKey: 'lapakhir_anggaran_template_url',
         label: 'Template Penggunaan Anggaran',
         ext: 'doc',
-        owner: 'admin',
+        owner: 'event',
       },
       {
         param: 'lapakhir_anggaran',
@@ -307,12 +312,15 @@ export function lapRequiredFiles(stage: LapStage): LapFileField[] {
   return stage.files.filter((f) => f.owner === 'peserta' && f.required)
 }
 
-/** Berkas peserta (non-template) pada sebuah tahap. */
+/** Berkas yang diunggah peserta pada sebuah tahap (non-template). */
 export function lapParticipantFiles(stage: LapStage): LapFileField[] {
   return stage.files.filter((f) => f.owner === 'peserta')
 }
 
-/** Template milik admin pada sebuah tahap. */
+/**
+ * Template milik EVENT pada sebuah tahap — hanya tautan unduh, TIDAK pernah
+ * diunggah dari sini. Diunggah sekali di menu Hibah → Panduan & Template.
+ */
 export function lapTemplateFiles(stage: LapStage): LapFileField[] {
-  return stage.files.filter((f) => f.owner === 'admin')
+  return stage.files.filter((f) => f.owner === 'event')
 }

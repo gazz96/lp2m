@@ -48,10 +48,10 @@
       </template>
     </div>
 
-    <!-- Berkas: template (admin) + berkas hasil (peserta). -->
-    <div v-for="group in fileGroups" :key="group.title" class="lap-files">
-      <h4 class="lap-files__title">{{ group.title }}</h4>
-      <div class="lap-file" v-for="f in group.files" :key="f.param">
+    <!-- Berkas hasil peserta (template TIDAK diunggah dari sini — lihat catatan di atas). -->
+    <div class="lap-files">
+      <h4 class="lap-files__title">Berkas hasil (diunggah peserta, admin boleh mengganti)</h4>
+      <div class="lap-file" v-for="f in participantFiles" :key="f.param">
         <div class="lap-file__head">
           <span class="lap-file__label">
             {{ f.label }}
@@ -73,7 +73,6 @@
           :accept="LAP_ACCEPT[f.ext]"
           :error="errors[f.param]"
           :empty-label="files[f.param] ? '' : '○ Belum ada file dipilih'"
-          :hidden="false"
           @change="(e: Event) => emit('pick', f.param, e)"
         />
         <button
@@ -83,6 +82,36 @@
           @click="emit('clear', f.param)"
         >Batal</button>
       </div>
+    </div>
+
+    <!-- Template: read-only. Diunggah SEKALI di event hibah → tidak berulang per peserta. -->
+    <div class="lap-templates">
+      <h4 class="lap-files__title">Template (milik event hibah — peserta hanya mengunduh)</h4>
+      <p class="lap-note">
+        Template diunggah <strong>sekali</strong> di menu <strong>Hibah → Panduan &amp; Template</strong>,
+        lalu semua peserta mengunduhnya di halaman Track Status. Tidak ada unggahan template per pendaftaran.
+      </p>
+      <ul class="lap-templates__list">
+        <li v-for="f in templateFiles" :key="f.urlKey">
+          <span class="lap-file__label">{{ f.label }}</span>
+          <a
+            v-if="templates[f.urlKey]"
+            :href="templates[f.urlKey]"
+            target="_blank"
+            rel="noopener"
+            class="lap-file__link"
+          >⬇ Download</a>
+          <em v-else class="lap-file__empty">belum diunggah di event</em>
+        </li>
+      </ul>
+      <a
+        v-if="hibahEditUrl"
+        :href="hibahEditUrl"
+        target="_blank"
+        rel="noopener"
+        class="lap-file__link"
+      >Buka event hibah untuk mengunggah / mengganti template ↗</a>
+      <p v-else class="lap-file__empty">Pendaftaran ini belum terhubung ke event hibah.</p>
     </div>
   </section>
 </template>
@@ -109,10 +138,12 @@ const props = defineProps<{
   detail: Record<string, any>
   /** Nilai form (field teks + status tahap) — dimutasi langsung lewat v-model. */
   model: Record<string, any>
-  /** Berkas baru yang akan diunggah, keyed by `param`. */
+  /** Berkas peserta yang akan diunggah, keyed by `param`. */
   files: Record<string, File | null>
   /** Pesan error per `param`. */
   errors: Record<string, string>
+  /** URL edit post hibah — tautan untuk mengganti template level event. */
+  hibahEditUrl?: string
 }>()
 
 const emit = defineEmits<{
@@ -122,16 +153,19 @@ const emit = defineEmits<{
 
 const submittedAt = computed(() => String(props.detail?.[props.stage.submittedKey] || '').trim())
 
-const fileGroups = computed(() => [
-  {
-    title: 'Template (disediakan admin — peserta hanya mengunduh)',
-    files: lapTemplateFiles(props.stage),
-  },
-  {
-    title: 'Berkas hasil (diunggah peserta, admin boleh mengganti)',
-    files: lapParticipantFiles(props.stage),
-  },
-])
+/** Berkas hasil peserta — satu-satunya yang bisa diunggah dari sini. */
+const participantFiles = computed(() => lapParticipantFiles(props.stage))
+
+/**
+ * Template milik EVENT: hanya dibaca dari payload (`detail`).
+ * Nilainya diambil dari CPT hibah, bukan postmeta pendaftaran.
+ */
+const templateFiles = computed(() => lapTemplateFiles(props.stage))
+const templates = computed(() => {
+  const out: Record<string, string> = {}
+  for (const f of templateFiles.value) out[f.urlKey] = String(props.detail?.[f.urlKey] || '')
+  return out
+})
 </script>
 
 <style scoped>
@@ -212,6 +246,27 @@ const fileGroups = computed(() => [
 }
 .lap-file__cancel {
   margin-top: 6px;
+}
+.lap-templates {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+}
+.lap-templates__list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+.lap-templates__list li {
+  font-size: 13px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 782px) {
