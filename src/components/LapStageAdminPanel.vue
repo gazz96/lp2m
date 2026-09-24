@@ -1,30 +1,28 @@
 <template>
   <section class="lap-admin">
-    <!-- Status tahap: membuka form peserta, keputusan reviewer, dan pemicu email. -->
+    <!-- Status tahap: keputusan reviewer + pemicu email tahap ini. -->
     <div class="lap-status">
       <SelectField
         v-model="model[stage.statusKey]"
         :label="`Status Tahap — ${stage.label}`"
-        :options="LAP_STATUS_OPTIONS"
-        :hint="'Buka Form Peserta = email undangan + tautan baru. Direvisi = email permintaan perbaikan + tautan baru. Diterima = tautan ditutup permanen.'"
+        :options="statusOptions"
+        :hint="'Direvisi = tautan peserta disiapkan + email tahap ini dikirim (undangan pertama maupun permintaan perbaikan). Diterima = laporan disetujui, tautan ditutup.'"
         style="width:100%"
       />
       <p v-if="accepted" class="lap-note is-ok">
         ✓ Laporan <strong>Diterima</strong> — tautan form peserta ditutup permanen, tidak ada email yang dikirim.
       </p>
       <p v-else-if="needsRevision" class="lap-note is-revise">
-        ⚠ Status <strong>Direvisi</strong> — tautan baru dibuat &amp; email permintaan perbaikan dikirim
-        ke peserta (sekali per status ini). Tautan sebelumnya sudah tidak berlaku.
+        ⚠ Status <strong>Direvisi</strong> — tautan peserta disiapkan &amp; email tahap ini dikirim
+        (sekali per keputusan). Tautan sebelumnya sudah tidak berlaku.
       </p>
-      <p v-else-if="status === LAP_STATUS_DIBUKA" class="lap-note is-ok">
-        ✎ Form dibuka — email undangan + tautan bertoken terkirim otomatis (sekali per pembukaan).
-      </p>
-      <p v-else-if="submittedAt" class="lap-note is-ok">
-        ✓ Peserta sudah mengirim form ini pada <strong>{{ submittedAt }}</strong> —
+      <p v-else-if="isAutoStatus" class="lap-note is-ok">
+        ✓ Peserta sudah mengirim form ini{{ submittedAt ? ' pada ' + submittedAt : '' }} —
         pilih <strong>Diterima</strong> atau <strong>Direvisi</strong> sebagai keputusan reviewer.
       </p>
       <p v-else class="lap-note">
-        Form peserta belum dibuka. Pilih <strong>Buka Form Peserta</strong> untuk mengirim email undangan.
+        Belum ada keputusan. Pilih <strong>Direvisi</strong> untuk membuka form peserta
+        (tautan + email terkirim otomatis untuk tahap ini).
       </p>
     </div>
 
@@ -135,11 +133,11 @@ import FileField from '@/components/FileField.vue'
 import {
   LAP_ACCEPT,
   LAP_FORMAT_LABEL,
-  LAP_STATUS_DIBUKA,
+  LAP_STATUS_AUTO,
   LAP_STATUS_DIREVISI,
   LAP_STATUS_DITERIMA,
-  LAP_STATUS_OPTIONS,
   lapParticipantFiles,
+  lapStatusOptions,
   lapTemplateFiles,
   type LapStage,
 } from '@/data/lapStages'
@@ -170,8 +168,12 @@ const submittedAt = computed(() => String(props.detail?.[props.stage.submittedKe
 const status = computed(() => String(props.model?.[props.stage.statusKey] || ''))
 /** Keputusan akhir: laporan diterima. */
 const accepted = computed(() => status.value === LAP_STATUS_DITERIMA)
-/** Keputusan: peserta diminta memperbaiki. */
+/** Keputusan: peserta boleh mengisi/memperbaiki. */
 const needsRevision = computed(() => status.value === LAP_STATUS_DIREVISI)
+/** Status otomatis (peserta sudah kirim / sisa data lama) — bukan pilihan admin. */
+const isAutoStatus = computed(() => LAP_STATUS_AUTO.includes(status.value))
+/** Opsi dropdown; menyisipkan status otomatis agar nilai lama tidak hilang. */
+const statusOptions = computed(() => lapStatusOptions(status.value))
 
 /** Berkas hasil peserta — satu-satunya yang bisa diunggah dari sini. */
 const participantFiles = computed(() => lapParticipantFiles(props.stage))

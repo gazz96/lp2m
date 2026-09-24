@@ -21,14 +21,10 @@
     </p>
     <p v-else-if="submitted" class="lap-stage is-done">
       ✓ Form {{ stage.label }} sudah dikirim{{ submittedAt ? ' pada ' + submittedAt : '' }} —
-      menunggu penilaian reviewer. Halaman ini hanya menampilkan data (mode baca).
-    </p>
-    <p v-else-if="isOpen" class="lap-stage is-locked">
-      🔒 Form sudah dibuka admin. Buka tautan formulir dari email Anda untuk mengisi & mengunggah berkas.
+      menunggu keputusan reviewer. Halaman ini hanya menampilkan data (mode baca).
     </p>
     <p v-else class="lap-hint">
-      Tahap ini belum dibuka. Setelah reviewer menetapkan status <strong>Buka Form Peserta</strong>,
-      tautan pengisian akan dikirim ke email Anda.
+      Tahap ini belum dibuka. Setelah reviewer membuka form, tautan pengisian dikirim ke email Anda.
     </p>
 
     <!-- Template milik EVENT — selalu read-only, hanya tautan unduh. -->
@@ -134,7 +130,6 @@ import FileField from '@/components/FileField.vue'
 import {
   LAP_ACCEPT,
   LAP_FORMAT_LABEL,
-  LAP_STATUS_DIBUKA,
   LAP_STATUS_DIKIRIM,
   LAP_STATUS_DIREVISI,
   LAP_STATUS_DITERIMA,
@@ -180,13 +175,11 @@ const emit = defineEmits<{
   submit: []
 }>()
 
-/** Status tahap dari backend: '' | 'dibuka' | 'dikirim' | 'diterima' | 'direvisi'. */
+/** Status tahap dari backend: '' | 'direvisi' | 'diterima' (+ legacy 'dibuka'/'dikirim'). */
 const status = computed(() => String(props.data?.status || ''))
 const submitted = computed(
   () => status.value === LAP_STATUS_DIKIRIM || Boolean(String(props.data?.[props.stage.submittedKey] || '').trim()),
 )
-const isOpen = computed(() => status.value === LAP_STATUS_DIBUKA)
-
 /** Keputusan akhir reviewer: laporan diterima → murni mode baca. */
 const accepted = computed(() => status.value === LAP_STATUS_DITERIMA)
 /** Reviewer minta perbaikan → form dibuka ulang bila token masih valid. */
@@ -248,13 +241,6 @@ const requiredLabels = computed(() =>
   background: #ecfdf5;
   border-color: #a7f3d0;
   color: #065f46;
-  font-size: 13px;
-}
-.lap-stage.is-locked {
-  display: block;
-  background: #fffbeb;
-  border-color: #fde68a;
-  color: #92400e;
   font-size: 13px;
 }
 .lap-stage.is-revise {

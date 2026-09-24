@@ -81,25 +81,29 @@ export const LAP_FORMAT_LABEL: Record<LapExt, string> = {
   any: 'PDF/DOC/DOCX/XLS/XLSX',
 }
 
-/** Status pembuka form (undangan pertama). */
+/**
+ * Status yang diisi OTOMATIS (tidak bisa dipilih admin):
+ *  - `dibuka`   sisa alur lama (legacy) — masih dibaca agar data lama tidak rusak.
+ *  - `dikirim`  diisi backend saat peserta mengirim form.
+ */
 export const LAP_STATUS_DIBUKA = 'dibuka'
-
-/** Diisi otomatis saat peserta mengirim form — menunggu keputusan reviewer. */
 export const LAP_STATUS_DIKIRIM = 'dikirim'
 
-/** Keputusan akhir admin — laporan diterima, tautan form ditutup permanen. */
+/** Keputusan reviewer: laporan diterima → tautan form ditutup permanen. */
 export const LAP_STATUS_DITERIMA = 'diterima'
 
-/** Admin minta perbaikan — tautan baru + email, peserta boleh kirim ulang. */
+/**
+ * Keputusan reviewer: peserta boleh mengisi/memperbaiki.
+ * SATU-SATUNYA status yang menyiapkan tautan peserta + mengirim email tahap ini
+ * (undangan pertama maupun permintaan perbaikan — dibedakan otomatis dari riwayat).
+ */
 export const LAP_STATUS_DIREVISI = 'direvisi'
 
-/** Opsi status tahap lap di dashboard admin — urutannya mengikuti alur kerja. */
+/** Pilihan yang bisa dipilih admin — hanya tiga, sesuai alur keputusan. */
 export const LAP_STATUS_OPTIONS = [
   { label: '— Belum dibuka —', value: '' },
-  { label: 'Buka Form Peserta (kirim email)', value: LAP_STATUS_DIBUKA },
-  { label: 'Sudah Dikirim Peserta', value: LAP_STATUS_DIKIRIM },
+  { label: 'Direvisi (buka form + kirim email)', value: LAP_STATUS_DIREVISI },
   { label: 'Diterima (tutup tautan)', value: LAP_STATUS_DITERIMA },
-  { label: 'Direvisi (buka ulang + email)', value: LAP_STATUS_DIREVISI },
 ]
 
 /** Sinkron dengan `LAP_STATUSES` / `LAP_STATUS_LABELS` di backend. */
@@ -111,8 +115,29 @@ export const LAP_STATUS_LABELS: Record<string, string> = {
   direvisi: 'Direvisi',
 }
 
-/** Status yang menghidupkan form peserta (token aktif). */
-export const LAP_STATUS_OPEN = [LAP_STATUS_DIBUKA, LAP_STATUS_DIREVISI]
+/** Nilai status yang diisi otomatis — hanya untuk ditampilkan, bukan dipilih. */
+export const LAP_STATUS_AUTO = [LAP_STATUS_DIKIRIM, LAP_STATUS_DIBUKA]
+
+/**
+ * Status yang membuat halaman peserta MODE EDIT (token masih sah).
+ * `dibuka` ikut di sini demi siklus lama yang belum selesai.
+ */
+export const LAP_STATUS_OPEN = [LAP_STATUS_DIREVISI, LAP_STATUS_DIBUKA]
+
+/**
+ * Opsi dropdown admin, dengan penyisipan kondisional untuk status otomatis.
+ *
+ * Bila status tersimpan adalah `dikirim` (atau legacy `dibuka`), nilai itu
+ * ditambahkan sebagai opsi supaya dropdown tidak tampil kosong dan nilai lama
+ * tidak hilang saat disimpan. Pada kondisi normal hanya tiga pilihan yang tampil.
+ */
+export function lapStatusOptions(current = ''): { label: string; value: string }[] {
+  if (!LAP_STATUS_AUTO.includes(current)) return LAP_STATUS_OPTIONS
+  return [
+    ...LAP_STATUS_OPTIONS,
+    { label: `${LAP_STATUS_LABELS[current] ?? current} (otomatis)`, value: current },
+  ]
+}
 
 export const LAP_STATUS_ARTIKEL_OPTIONS = [
   { label: '— Belum dipilih —', value: '' },
