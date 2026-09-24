@@ -81,17 +81,38 @@ export const LAP_FORMAT_LABEL: Record<LapExt, string> = {
   any: 'PDF/DOC/DOCX/XLS/XLSX',
 }
 
+/** Status pembuka form (undangan pertama). */
+export const LAP_STATUS_DIBUKA = 'dibuka'
+
+/** Diisi otomatis saat peserta mengirim form — menunggu keputusan reviewer. */
+export const LAP_STATUS_DIKIRIM = 'dikirim'
+
+/** Keputusan akhir admin — laporan diterima, tautan form ditutup permanen. */
+export const LAP_STATUS_DITERIMA = 'diterima'
+
+/** Admin minta perbaikan — tautan baru + email, peserta boleh kirim ulang. */
+export const LAP_STATUS_DIREVISI = 'direvisi'
+
+/** Opsi status tahap lap di dashboard admin — urutannya mengikuti alur kerja. */
 export const LAP_STATUS_OPTIONS = [
   { label: '— Belum dibuka —', value: '' },
-  { label: 'Buka Form Peserta (kirim email)', value: 'dibuka' },
-  { label: 'Sudah Dikirim Peserta', value: 'dikirim' },
+  { label: 'Buka Form Peserta (kirim email)', value: LAP_STATUS_DIBUKA },
+  { label: 'Sudah Dikirim Peserta', value: LAP_STATUS_DIKIRIM },
+  { label: 'Diterima (tutup tautan)', value: LAP_STATUS_DITERIMA },
+  { label: 'Direvisi (buka ulang + email)', value: LAP_STATUS_DIREVISI },
 ]
 
+/** Sinkron dengan `LAP_STATUSES` / `LAP_STATUS_LABELS` di backend. */
 export const LAP_STATUS_LABELS: Record<string, string> = {
   '': 'Belum Dibuka',
   dibuka: 'Form Dibuka',
   dikirim: 'Sudah Dikirim',
+  diterima: 'Diterima',
+  direvisi: 'Direvisi',
 }
+
+/** Status yang menghidupkan form peserta (token aktif). */
+export const LAP_STATUS_OPEN = [LAP_STATUS_DIBUKA, LAP_STATUS_DIREVISI]
 
 export const LAP_STATUS_ARTIKEL_OPTIONS = [
   { label: '— Belum dipilih —', value: '' },

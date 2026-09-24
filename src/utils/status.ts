@@ -26,6 +26,10 @@ export function statusBadgeStyle(status = ''): BadgeStyle {
   if (s === 'rejected') {
     return { ...BASE, background: '#fdecea', color: '#c0392b' }
   }
+  // Tahap lap (Lap. Kemajuan / Lap. Akhir) — peserta diminta memperbaiki.
+  if (s === 'direvisi') {
+    return { ...BASE, background: '#ffedd5', color: '#b45309' }
+  }
   return { ...BASE, background: '#fef9e7', color: '#7d6608' }
 }
 

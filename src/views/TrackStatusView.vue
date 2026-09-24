@@ -202,7 +202,14 @@ import RevisionUploadForm, { type RevisionFieldKey } from '@/components/Revision
 import TrackAccessBanner from '@/components/TrackAccessBanner.vue'
 import TrackSearchForm from '@/components/TrackSearchForm.vue'
 import LapStageTrackPanel from '@/components/LapStageTrackPanel.vue'
-import { LAP_STAGES, findLapFile, type LapStage } from '@/data/lapStages'
+import {
+  LAP_STATUS_DIKIRIM,
+  LAP_STATUS_DIREVISI,
+  LAP_STATUS_OPEN,
+  LAP_STAGES,
+  findLapFile,
+  type LapStage,
+} from '@/data/lapStages'
 import { lapFileError, lapRequiredPicked } from '@/utils/lap'
 
 const route = useRoute()
@@ -254,15 +261,27 @@ function lapData(stage: LapStage): Record<string, any> {
   return lapPatch.value.stage === stage.id ? { ...d, ...lapPatch.value.data } : d
 }
 
-/** Form tahap ini sudah pernah dikirim peserta → mode baca. */
-function lapSubmitted(stage: LapStage): boolean {
-  const d = lapData(stage)
-  return String(d.status) === 'dikirim' || Boolean(String(d[stage.submittedKey] || '').trim())
+/** Status tahap lap efektif (dari payload status atau patch aksi terakhir). */
+function lapStatus(stage: LapStage): string {
+  return String(lapData(stage).status || '')
 }
 
-/** Mode edit hanya saat token tahap ini valid dan form belum dikirim. */
+/** Form tahap ini sudah dikirim peserta (menunggu penilaian) → mode baca. */
+function lapSubmitted(stage: LapStage): boolean {
+  const d = lapData(stage)
+  return String(d.status) === LAP_STATUS_DIKIRIM || Boolean(String(d[stage.submittedKey] || '').trim())
+}
+
+/**
+ * Mode edit hanya saat token tahap ini valid DAN statusnya membuka form.
+ *
+ * `direvisi` juga membuka form (reviewer minta perbaikan) sehingga peserta bisa
+ * memperbaiki & mengirim ulang — walaupun `submitted_at` dari siklus sebelumnya
+ * masih tersimpan.
+ */
 function lapCanEdit(stage: LapStage): boolean {
-  return lapAccessOk.value && lapAccessStage.value === stage.id && !lapSubmitted(stage)
+  if (!lapAccessOk.value || lapAccessStage.value !== stage.id) return false
+  return LAP_STATUS_OPEN.includes(lapStatus(stage))
 }
 
 /** Verifikasi token form sebuah tahap lalu siapkan isian form. */
@@ -367,7 +386,7 @@ async function submitLap(stageId: string) {
       stage: stageId,
       data: {
         ...prev,
-        [stage.statusKey]: 'dikirim',
+        [stage.statusKey]: LAP_STATUS_DIKIRIM,
         [stage.submittedKey]: d.submitted_at || '',
         ...((d.urls || {}) as Record<string, string>),
       },
@@ -633,14 +652,15 @@ async function cek() {
       const t2 = String(d?.status_tahap2 || '')
       if (t2 === 'perbaiki_usulan' || t2 === 'diterima') { activeTab.value = 'revisi'; return }
 
-      // Tahap lap yang sudah dibuka admin → buka tab pertama yang masih perlu diisi
-      // supaya peserta melihat template & berkasnya tanpa klik manual.
-      const openStage = LAP_STAGES.find(
-        (s) => String(d?.[s.statusKey] || '') === 'dibuka' && !String(d?.[s.submittedKey] || '').trim(),
-      )
-      if (openStage) { activeTab.value = openStage.tabId; return }
+      // Tahap lap yang menunggu tindakan peserta → buka tabnya otomatis supaya
+      // peserta langsung melihat template & berkasnya tanpa klik manual.
+      // `direvisi` (harus diperbaiki) lebih mendesak daripada `dibuka`.
+      const openStages = LAP_STAGES.filter((s) => LAP_STATUS_OPEN.includes(String(d?.[s.statusKey] || '')))
+      const actionStage =
+        openStages.find((s) => String(d?.[s.statusKey] || '') === LAP_STATUS_DIREVISI) ?? openStages[0]
+      if (actionStage) { activeTab.value = actionStage.tabId; return }
 
-      // Tidak ada yang perlu diisi, tapi ada tahap lap yang sudah dikirim → tampilkan.
+      // Tidak ada yang perlu diisi, tapi ada tahap lap dengan status → tampilkan.
       const sentStage = LAP_STAGES.find((s) => String(d?.[s.statusKey] || '') || String(d?.[s.submittedKey] || ''))
       if (sentStage) activeTab.value = sentStage.tabId
     }

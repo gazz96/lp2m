@@ -6,13 +6,22 @@
       <StatusBadge :status="badgeStatus" :text="statusLabel" />
     </div>
 
-    <p v-if="submitted" class="lap-stage is-done">
-      ✓ Form {{ stage.label }} sudah dikirim{{ submittedAt ? ' pada ' + submittedAt : '' }} —
-      halaman ini hanya menampilkan data (mode baca) dan tautan formulir tidak dapat dipakai lagi.
+    <p v-if="accepted" class="lap-stage is-done">
+      ✓ Form {{ stage.label }} <strong>Diterima</strong> oleh reviewer{{ submittedAt ? ' (dikirim ' + submittedAt + ')' : '' }} —
+      halaman ini hanya menampilkan data (mode baca).
+    </p>
+    <p v-else-if="needsRevision" class="lap-stage is-revise">
+      ⚠ Reviewer meminta <strong>perbaikan</strong> pada form {{ stage.label }} —
+      <template v-if="canEdit">perbaiki isian & unggah ulang berkas di bawah, lalu kirim ulang.</template>
+      <template v-else>buka tautan formulir dari email Anda untuk memperbaiki & mengirim ulang.</template>
     </p>
     <p v-else-if="canEdit" class="lap-stage is-open">
       ✎ Form dibuka — lengkapi isian & unggah berkas di bawah, lalu tekan
       <strong>Kirim {{ stage.label }}</strong>. Tautan ini berlaku satu kali kirim.
+    </p>
+    <p v-else-if="submitted" class="lap-stage is-done">
+      ✓ Form {{ stage.label }} sudah dikirim{{ submittedAt ? ' pada ' + submittedAt : '' }} —
+      menunggu penilaian reviewer. Halaman ini hanya menampilkan data (mode baca).
     </p>
     <p v-else-if="isOpen" class="lap-stage is-locked">
       🔒 Form sudah dibuka admin. Buka tautan formulir dari email Anda untuk mengisi & mengunggah berkas.
@@ -125,6 +134,10 @@ import FileField from '@/components/FileField.vue'
 import {
   LAP_ACCEPT,
   LAP_FORMAT_LABEL,
+  LAP_STATUS_DIBUKA,
+  LAP_STATUS_DIKIRIM,
+  LAP_STATUS_DIREVISI,
+  LAP_STATUS_DITERIMA,
   LAP_STATUS_LABELS,
   lapParticipantFiles,
   lapTemplateFiles,
@@ -167,16 +180,26 @@ const emit = defineEmits<{
   submit: []
 }>()
 
-/** Status tahap dari backend: '' | 'dibuka' | 'dikirim'. */
+/** Status tahap dari backend: '' | 'dibuka' | 'dikirim' | 'diterima' | 'direvisi'. */
 const status = computed(() => String(props.data?.status || ''))
 const submitted = computed(
-  () => status.value === 'dikirim' || Boolean(String(props.data?.[props.stage.submittedKey] || '').trim()),
+  () => status.value === LAP_STATUS_DIKIRIM || Boolean(String(props.data?.[props.stage.submittedKey] || '').trim()),
 )
-const isOpen = computed(() => status.value === 'dibuka')
+const isOpen = computed(() => status.value === LAP_STATUS_DIBUKA)
+
+/** Keputusan akhir reviewer: laporan diterima → murni mode baca. */
+const accepted = computed(() => status.value === LAP_STATUS_DITERIMA)
+/** Reviewer minta perbaikan → form dibuka ulang bila token masih valid. */
+const needsRevision = computed(() => status.value === LAP_STATUS_DIREVISI)
+
 const submittedAt = computed(() => String(props.data?.[props.stage.submittedKey] || ''))
 const statusLabel = computed(() => LAP_STATUS_LABELS[status.value] ?? 'Belum Dibuka')
-/** Badge warna: hijau saat selesai, kuning saat proses/belum. */
-const badgeStatus = computed(() => (submitted.value ? 'approved' : 'under_review'))
+/** Badge: hijau saat diterima, oranye saat minta revisi, kuning saat menunggu. */
+const badgeStatus = computed(() => {
+  if (accepted.value) return 'approved'
+  if (needsRevision.value) return 'direvisi'
+  return 'under_review'
+})
 
 const participantFiles = computed(() => lapParticipantFiles(props.stage))
 
@@ -232,6 +255,13 @@ const requiredLabels = computed(() =>
   background: #fffbeb;
   border-color: #fde68a;
   color: #92400e;
+  font-size: 13px;
+}
+.lap-stage.is-revise {
+  display: block;
+  background: #ffedd5;
+  border-color: #fdba74;
+  color: #b45309;
   font-size: 13px;
 }
 .lap-hint {
