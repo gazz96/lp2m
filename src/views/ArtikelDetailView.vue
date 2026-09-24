@@ -79,7 +79,8 @@ const catMap: Record<number, string> = {
   17: 'Pengabdian',
   18: 'Pengabdian Masyarakat',
   10: 'Kerja Sama',
-  4: 'Berita'
+  4: 'Berita',
+  19: 'Pengumuman'
 }
 
 function fmtDate(d: string) {

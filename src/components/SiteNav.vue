@@ -53,7 +53,8 @@ const route = useRoute()
 const links = [
   { label: 'Beranda', to: '/' },
   { label: 'Tentang', to: '/#tentang' },
-  { label: 'Bidang Unggulan', to: '/#bidang' }
+  { label: 'Bidang Unggulan', to: '/#bidang' },
+  { label: 'Pengumuman', to: '/pengumuman' }
 ]
 
 const hibahSubs = [

@@ -12,7 +12,9 @@
     "apiBase": "https://itsi.ac.id/index.php/wp-json/wp/v2",
     "formEndpoint": "https://itsi.ac.id/index.php/wp-json/lp2m/v1/hibah",
     "newsCategoryIds": [16, 17, 18, 10],
-    "newsPerPage": 6
+    "newsPerPage": 6,
+    "pengumumanCategoryId": 19,
+    "pengumumanPerPage": 3
   },
   "hero": {
     "eyebrow": "Tri Dharma Perguruan Tinggi · Penelitian & Pengabdian",

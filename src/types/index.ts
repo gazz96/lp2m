@@ -150,6 +150,8 @@ export interface HibahEvent {
   file_panduan: string[]
   file_template: string[]
   file_kelompok_keahlian: string[]
+  file_surat_kesanggupan?: string[]
+  surat_kesanggupan_template_url?: string
   link_panduan: string
   category_names: string[]
   model_hibah_names: string[]

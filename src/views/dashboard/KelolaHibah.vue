@@ -66,19 +66,20 @@
         <form @submit.prevent="save" novalidate>
           <div class="form-grid">
             <!-- Judul -->
-            <div class="field full">
-              <label>Judul Event *</label>
-              <input type="text" v-model="form.title" placeholder="Judul event hibah..." />
-            </div>
+            <TextField
+              v-model="form.title"
+              label="Judul Event"
+              placeholder="Judul event hibah..."
+              full
+              required
+            />
 
             <!-- Status + Jenis -->
-            <div class="field">
-              <label>Status</label>
-              <select v-model="form.status">
-                <option value="publish">Publish</option>
-                <option value="draft">Draft</option>
-              </select>
-            </div>
+            <SelectField
+              v-model="form.status"
+              label="Status"
+              :options="[{ label: 'Publish', value: 'publish' }, { label: 'Draft', value: 'draft' }]"
+            />
             <div class="field">
               <label>Jenis Hibah</label>
               <TagSelect
@@ -145,30 +146,21 @@
             </div>
 
             <!-- Deadline (date) + Dana (number) -->
-            <div class="field">
-              <label>Deadline</label>
-              <input type="date" v-model="form.deadline" />
-            </div>
-            <div class="field">
-              <label>Dana Maksimal (Rp)</label>
-              <input type="number" v-model.number="form.dana_maks_num" placeholder="35000000" min="0" />
-            </div>
+            <TextField type="date" v-model="form.deadline" label="Deadline" />
+            <TextField type="number" v-model="form.dana_maks_num" label="Dana Maksimal (Rp)" placeholder="35000000" :min="0" />
 
             <!-- Eyebrow + Link Panduan -->
-            <div class="field">
-              <label>Eyebrow Banner</label>
-              <input type="text" v-model="form.event_eyebrow" placeholder="Event Aktif · TA 2026/2027" />
-            </div>
-            <div class="field">
-              <label>Link Panduan</label>
-              <input type="url" v-model="form.link_panduan" placeholder="https://drive.google.com/..." />
-            </div>
+            <TextField v-model="form.event_eyebrow" label="Eyebrow Banner" placeholder="Event Aktif · TA 2026/2027" />
+            <TextField type="url" v-model="form.link_panduan" label="Link Panduan" placeholder="https://drive.google.com/..." />
 
             <!-- Info Tambahan -->
-            <div class="field full">
-              <label>Info Tambahan (satu per baris)</label>
-              <textarea v-model="form.info_tambahan" rows="3" placeholder="Maks. 3 anggota tim..."></textarea>
-            </div>
+            <TextareaField
+              v-model="form.info_tambahan"
+              label="Info Tambahan (satu per baris)"
+              placeholder="Maks. 3 anggota tim..."
+              :rows="3"
+              full
+            />
 
             <!-- Timeline repeater -->
             <div class="field full">
@@ -216,6 +208,9 @@ import { useAuthStore } from '@/stores/auth'
 import HtmlEditor from '@/components/HtmlEditor.vue'
 import ThumbnailPicker from '@/components/ThumbnailPicker.vue'
 import TagSelect from '@/components/TagSelect.vue'
+import TextField from '@/components/TextField.vue'
+import SelectField from '@/components/SelectField.vue'
+import TextareaField from '@/components/TextareaField.vue'
 
 const auth = useAuthStore()
 

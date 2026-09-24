@@ -7,12 +7,21 @@
       <div class="components-panel__body">
         <div style="display:flex;gap:12px;align-items:flex-end">
           <div style="flex:1">
-            <label class="components-base-control__label">Nama Kategori</label>
-            <input class="components-text-control__input" type="text" v-model="newName" placeholder="cth. Berita" @keyup.enter="addCat" />
+            <TextField
+              v-model="newName"
+              label="Nama Kategori"
+              placeholder="cth. Berita"
+              input-class="components-text-control__input"
+              @keyup.enter="addCat"
+            />
           </div>
           <div style="flex:1">
-            <label class="components-base-control__label">Slug <span style="font-weight:400;text-transform:none">(opsional)</span></label>
-            <input class="components-text-control__input" type="text" v-model="newSlug" placeholder="berita" />
+            <TextField
+              v-model="newSlug"
+              label="Slug (opsional)"
+              placeholder="berita"
+              input-class="components-text-control__input"
+            />
           </div>
           <WpButton variant="primary" @click="addCat" :disabled="!newName.trim()||adding">{{ adding?'Menyimpan...':'Tambah' }}</WpButton>
         </div>
@@ -30,6 +39,7 @@ import { SITE } from '@/data'
 import { useAuthStore } from '@/stores/auth'
 import WpTable from '@/components/WpTable.vue'
 import WpButton from '@/components/WpButton.vue'
+import TextField from '@/components/TextField.vue'
 import type { WpColumn } from '@/components/WpTable.vue'
 const auth=useAuthStore()
 const terms=ref<{id:number;name:string;slug:string;count:number}[]>([])

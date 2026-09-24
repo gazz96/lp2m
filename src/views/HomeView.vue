@@ -14,6 +14,7 @@
     <FrondRule leafColor="#C99A3B" />
     <HibahSection />
     <PublikasiSection />
+    <PengumumanSection />
     <MitraSection />
     <CtaSection />
   </main>
@@ -30,6 +31,7 @@ import BidangSection from '@/components/BidangSection.vue'
 import InfografisSection from '@/components/InfografisSection.vue'
 import HibahSection from '@/components/HibahSection.vue'
 import PublikasiSection from '@/components/PublikasiSection.vue'
+import PengumumanSection from '@/components/PengumumanSection.vue'
 import MitraSection from '@/components/MitraSection.vue'
 import CtaSection from '@/components/CtaSection.vue'
 import SiteFooter from '@/components/SiteFooter.vue'

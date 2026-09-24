@@ -30,7 +30,11 @@ const items = computed(() => {
   const raw = d.value?.items
   if (Array.isArray(raw)) {
     // items bisa [{nama}] (repeater) atau [string] (legacy)
-    return raw.map((i: any) => (typeof i === 'string' ? i : i?.nama || '')).filter(Boolean)
+    const normalized = raw.map((i: any) => (typeof i === 'string' ? i : i?.nama || '')).filter(Boolean)
+    // Endpoint settings can return an empty saved group before the admin has
+    // populated it. Keep the bundled defaults visible instead of rendering an
+    // empty Mitra section.
+    return normalized.length ? normalized : MITRA.items
   }
   return MITRA.items
 })

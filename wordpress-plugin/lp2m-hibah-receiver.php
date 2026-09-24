@@ -64,6 +64,7 @@ class LP2M_Hibah_Receiver {
 			'jenis_hibah'       => "ALTER TABLE {$this->table} ADD COLUMN jenis_hibah VARCHAR(255) DEFAULT '' AFTER skema",
 			'sdgs'              => "ALTER TABLE {$this->table} ADD COLUMN sdgs VARCHAR(255) DEFAULT '' AFTER jenis_hibah",
 			'kelompok_keahlian' => "ALTER TABLE {$this->table} ADD COLUMN kelompok_keahlian VARCHAR(255) DEFAULT '' AFTER sdgs",
+			'status'            => "ALTER TABLE {$this->table} ADD COLUMN status VARCHAR(30) DEFAULT 'submitted' AFTER hp",
 		];
 		foreach ( $new_cols as $col => $sql_add ) {
 			if ( ! in_array( $col, $existing_cols, true ) ) {
@@ -91,9 +92,11 @@ class LP2M_Hibah_Receiver {
 
 		// GET — detail satu pendaftaran.
 		register_rest_route( 'lp2m/v1', '/hibah/(?P<id>\d+)', [
-			'methods'             => 'GET',
+			'methods'             => ['GET', 'POST'],
 			'callback'            => [ $this, 'handle_detail' ],
-			'permission_callback' => '__return_true',
+			'permission_callback' => function ( $request ) {
+				return 'GET' === $request->get_method() || current_user_can( 'edit_posts' );
+			},
 			'args'                => [
 				'id' => [
 					'required'          => true,
@@ -366,6 +369,51 @@ class LP2M_Hibah_Receiver {
 				[ 'success' => false, 'message' => 'Data tidak ditemukan.' ],
 				404
 			);
+		}
+
+		if ( 'POST' === $request->get_method() ) {
+			$reg_no = sanitize_text_field( (string) $request->get_param( 'reg_no' ) );
+			if ( '' === $reg_no || ! preg_match( '/^LP2M-[0-9]{4}-[0-9]{5}$/', $reg_no ) ) {
+				return new \WP_REST_Response( [ 'success' => false, 'message' => 'Format nomor registrasi tidak valid.' ], 400 );
+			}
+			$duplicate = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$this->table} WHERE reg_no = %s AND id <> %d", $reg_no, $id ) );
+			if ( $duplicate > 0 ) {
+				return new \WP_REST_Response( [ 'success' => false, 'message' => 'Nomor registrasi sudah digunakan. Pilih nomor lain.' ], 409 );
+			}
+
+			// Dashboard mengirim seluruh data yang dapat diedit. Gunakan nilai lama
+			// sebagai fallback agar update parsial tidak mengosongkan kolom wajib.
+			$params = $this->sanitize_input( $request->get_params() );
+			$allowed_statuses = [ 'submitted', 'under_review', 'revised', 'approved', 'rejected', 'done' ];
+			$status = sanitize_key( (string) $request->get_param( 'status' ) );
+			$data = [
+				'reg_no'            => $reg_no,
+				'nama'              => $params['nama'] ?: $item['nama'],
+				'nip'               => $params['nip'] ?: $item['nip'],
+				'jenis'             => $params['jenis'] ?: $item['jenis'],
+				'prodi'             => $params['prodi'] ?: $item['prodi'],
+				'skema'             => $params['skema'] ?: $item['skema'],
+				'jenis_hibah'       => $params['jenis_hibah'],
+				'sdgs'              => $params['sdgs'],
+				'kelompok_keahlian' => $params['kelompok_keahlian'],
+				'judul'             => $params['judul'] ?: $item['judul'],
+				'ringkasan'         => $params['ringkasan'] ?: $item['ringkasan'],
+				'email'             => $params['email'] ?: $item['email'],
+				'hp'                => $params['hp'] ?: $item['hp'],
+			];
+			if ( in_array( $status, $allowed_statuses, true ) ) {
+				$data['status'] = $status;
+			}
+			if ( $request->get_param( 'anggota_list' ) !== null ) {
+				$data['anggota'] = sanitize_textarea_field( (string) $request->get_param( 'anggota_list' ) );
+			}
+			$formats = array_fill( 0, count( $data ), '%s' );
+			$updated = $wpdb->update( $this->table, $data, [ 'id' => $id ], $formats, [ '%d' ] );
+			if ( false === $updated ) {
+				return new \WP_REST_Response( [ 'success' => false, 'message' => 'Gagal menyimpan perubahan pendaftaran.' ], 500 );
+			}
+			$item['reg_no'] = $reg_no;
+			$item = array_merge( $item, $data );
 		}
 
 		return new \WP_REST_Response( [ 'success' => true, 'data' => $item ], 200 );

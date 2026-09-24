@@ -16,53 +16,72 @@
     <form v-else @submit.prevent="submitForm" novalidate>
       <div class="form-grid">
         <!-- Standard fields -->
-        <div class="field" :class="{ invalid: fieldErrors.nama }">
-          <label for="nama">Nama Lengkap &amp; Gelar *</label>
-          <input type="text" id="nama" v-model="form.nama" placeholder="cth. Dr. Andi Pratama, S.Kom., M.T." />
-          <div class="error-msg">{{ fieldErrors.nama }}</div>
-        </div>
-        <div class="field" :class="{ invalid: fieldErrors.nip }">
-          <label for="nip">NIDN / NIDK *</label>
-          <input type="text" id="nip" v-model="form.nip" placeholder="cth. 0112345601" />
-          <div class="error-msg">{{ fieldErrors.nip }}</div>
-        </div>
+        <TextField
+          id="nama"
+          v-model="form.nama"
+          label="Nama Lengkap & Gelar"
+          placeholder="cth. Dr. Andi Pratama, S.Kom., M.T."
+          required
+          :error="fieldErrors.nama"
+          :invalid="!!fieldErrors.nama"
+        />
+        <TextField
+          id="nip"
+          v-model="form.nip"
+          label="NIDN / NIDK"
+          placeholder="cth. 0112345601"
+          required
+          :error="fieldErrors.nip"
+          :invalid="!!fieldErrors.nip"
+        />
         <!-- jenis pengusul dihapus dari UI (backend tetap pakai default 'Dosen') -->
-        <div class="field" :class="{ invalid: fieldErrors.prodi }">
-          <label for="prodi2">Program Studi / Unit Kerja *</label>
-          <select id="prodi2" v-model="form.prodi">
-            <option value="">Pilih program studi / unit</option>
-            <option v-for="o in prodiTerms" :key="o" :value="o">{{ o }}</option>
-          </select>
-          <div class="error-msg">{{ fieldErrors.prodi }}</div>
-        </div>
-        <div class="field" :class="{ invalid: fieldErrors.skema }">
-          <label for="skema2">Model Hibah *</label>
-          <select id="skema2" v-model="form.skema">
-            <option value="">Pilih model hibah</option>
-            <option v-for="o in skemaTerms" :key="o.id" :value="o.label || o.name">{{ o.label || o.name }}</option>
-          </select>
-          <div class="error-msg">{{ fieldErrors.skema }}</div>
-        </div>
-        <div class="field full" :class="{ invalid: fieldErrors.judul }">
-          <label for="judul2">Judul Usulan *</label>
-          <input type="text" id="judul2" v-model="form.judul" placeholder="Judul lengkap penelitian atau program pengabdian" />
-          <div class="error-msg">{{ fieldErrors.judul }}</div>
-        </div>
-        <div class="field full" :class="{ invalid: fieldErrors.ringkasan }">
-          <label for="ringkasan2">Ringkasan Usulan *<span class="hint"> — maksimum 500 karakter</span></label>
-          <textarea id="ringkasan2" v-model="form.ringkasan" maxlength="500" placeholder="Latar belakang, tujuan, dan luaran yang ditargetkan"></textarea>
-          <div class="error-msg">{{ fieldErrors.ringkasan }}</div>
-        </div>
+        <SelectField
+          id="prodi2"
+          v-model="form.prodi"
+          label="Program Studi / Unit Kerja"
+          empty-label="Pilih program studi / unit"
+          required
+          :options="prodiTerms"
+          :error="fieldErrors.prodi"
+          :invalid="!!fieldErrors.prodi"
+        />
+        <SelectField
+          id="skema2"
+          v-model="form.skema"
+          label="Model Hibah"
+          empty-label="Pilih model hibah"
+          required
+          :options="skemaTerms.map((o: any) => o.label || o.name)"
+          :error="fieldErrors.skema"
+          :invalid="!!fieldErrors.skema"
+        />
+        <TextField
+          id="judul2"
+          v-model="form.judul"
+          label="Judul Usulan"
+          placeholder="Judul lengkap penelitian atau program pengabdian"
+          full
+          required
+          :error="fieldErrors.judul"
+          :invalid="!!fieldErrors.judul"
+        />
+        <TextareaField
+          id="ringkasan2"
+          v-model="form.ringkasan"
+          label="Ringkasan Usulan"
+          hint="maksimum 500 karakter"
+          placeholder="Latar belakang, tujuan, dan luaran yang ditargetkan"
+          :maxlength="500"
+          :rows="4"
+          full
+          required
+          :error="fieldErrors.ringkasan"
+          :invalid="!!fieldErrors.ringkasan"
+        />
 
         <!-- Custom fields from form builder -->
         <template v-for="f in customFields" :key="f.key">
-          <div v-if="f.type === 'textarea'" class="field full" :class="{ invalid: fieldErrors[f.key] }">
-            <label :for="'cf_' + f.key">{{ f.label }}{{ f.required ? ' *' : '' }}</label>
-            <textarea :id="'cf_' + f.key" v-model="customValues[f.key]" maxlength="1000" :placeholder="'Masukkan ' + f.label.toLowerCase()"></textarea>
-            <div class="error-msg">{{ fieldErrors[f.key] }}</div>
-          </div>
-
-          <div v-else-if="f.type === 'radio'" class="field full" :class="{ invalid: fieldErrors[f.key] }">
+          <div v-if="f.type === 'radio'" class="field full" :class="{ invalid: fieldErrors[f.key] }">
             <label>{{ f.label }}{{ f.required ? ' *' : '' }}</label>
             <div class="radio-group">
               <label v-for="opt in (f.options || [])" :key="opt">
@@ -71,54 +90,84 @@
             </div>
             <div class="error-msg">{{ fieldErrors[f.key] }}</div>
           </div>
-
-          <div v-else :class="['field', { invalid: fieldErrors[f.key] }]">
-            <label :for="'cf_' + f.key">{{ f.label }}{{ f.required ? ' *' : '' }}</label>
-            <input
-              :type="f.type"
-              :id="'cf_' + f.key"
-              v-model="customValues[f.key]"
-              :placeholder="'Masukkan ' + f.label.toLowerCase()"
-            />
-            <div class="error-msg">{{ fieldErrors[f.key] }}</div>
-          </div>
+          <TextareaField
+            v-else-if="f.type === 'textarea'"
+            :id="'cf_' + f.key"
+            v-model="customValues[f.key]"
+            :label="f.label"
+            :required="f.required"
+            :maxlength="1000"
+            full
+            :placeholder="'Masukkan ' + f.label.toLowerCase()"
+            :error="fieldErrors[f.key]"
+            :invalid="!!fieldErrors[f.key]"
+          />
+          <TextField
+            v-else
+            :id="'cf_' + f.key"
+            v-model="customValues[f.key]"
+            :label="f.label"
+            :type="f.type"
+            :required="f.required"
+            :placeholder="'Masukkan ' + f.label.toLowerCase()"
+            :error="fieldErrors[f.key]"
+            :invalid="!!fieldErrors[f.key]"
+          />
         </template>
 
         <!-- Standard optional fields (always after custom) -->
-		<div class="field" :class="{ invalid: fieldErrors.jenis_hibah }">
-		  <label for="jenis_hibah2">Jenis Hibah *</label>
-		  <select id="jenis_hibah2" v-model="form.jenis_hibah">
-			<option value="">Pilih jenis hibah</option>
-			<option v-for="o in jenisTerms" :key="o.id" :value="o.label || o.name">{{ o.label || o.name }}</option>
-		  </select>
-		  <div class="error-msg">{{ fieldErrors.jenis_hibah }}</div>
-		</div>
-		<div class="field" :class="{ invalid: fieldErrors.sdgs }">
-		  <label for="sdgs2">SDGs *</label>
-		  <select id="sdgs2" v-model="form.sdgs">
-			<option value="">Pilih SDGs</option>
-			<option v-for="o in sdgsTerms" :key="o.id" :value="o.name">{{ o.name }}</option>
-		  </select>
-		  <div class="error-msg">{{ fieldErrors.sdgs }}</div>
-		</div>
-		<div class="field" :class="{ invalid: fieldErrors.kelompok_keahlian }">
-		  <label for="kk2">Kelompok Keahlian *</label>
-		  <select id="kk2" v-model="form.kelompok_keahlian">
-			<option value="">Pilih kelompok keahlian</option>
-			<option v-for="o in kkTerms" :key="o.id" :value="o.label || o.name">{{ o.label || o.name }}</option>
-		  </select>
-		  <div class="error-msg">{{ fieldErrors.kelompok_keahlian }}</div>
-		</div>
-		<div class="field full" :class="{ invalid: fieldErrors.email }">
-		  <label for="email2">Email Aktif *</label>
-		  <input type="email" id="email2" v-model="form.email" placeholder="nama@itsi.ac.id" />
-		  <div class="error-msg">{{ fieldErrors.email }}</div>
-		</div>
-		<div class="field full" :class="{ invalid: fieldErrors.hp }">
-		  <label for="hp2">Nomor WhatsApp Aktif *</label>
-		  <input type="tel" id="hp2" v-model="form.hp" placeholder="08xx-xxxx-xxxx" />
-		  <div class="error-msg">{{ fieldErrors.hp }}</div>
-		</div>
+		<SelectField
+		  id="jenis_hibah2"
+		  v-model="form.jenis_hibah"
+		  label="Jenis Hibah"
+		  empty-label="Pilih jenis hibah"
+		  required
+		  :options="jenisTerms.map((o: any) => o.label || o.name)"
+		  :error="fieldErrors.jenis_hibah"
+		  :invalid="!!fieldErrors.jenis_hibah"
+		/>
+		<SelectField
+		  id="sdgs2"
+		  v-model="form.sdgs"
+		  label="SDGs"
+		  empty-label="Pilih SDGs"
+		  required
+		  :options="sdgsTerms.map((o: any) => o.name)"
+		  :error="fieldErrors.sdgs"
+		  :invalid="!!fieldErrors.sdgs"
+		/>
+		<SelectField
+		  id="kk2"
+		  v-model="form.kelompok_keahlian"
+		  label="Kelompok Keahlian"
+		  empty-label="Pilih kelompok keahlian"
+		  required
+		  :options="kkTerms.map((o: any) => o.label || o.name)"
+		  :error="fieldErrors.kelompok_keahlian"
+		  :invalid="!!fieldErrors.kelompok_keahlian"
+		/>
+		<TextField
+		  id="email2"
+		  v-model="form.email"
+		  type="email"
+		  label="Email Aktif"
+		  placeholder="nama@itsi.ac.id"
+		  full
+		  required
+		  :error="fieldErrors.email"
+		  :invalid="!!fieldErrors.email"
+		/>
+		<TextField
+		  id="hp2"
+		  v-model="form.hp"
+		  type="tel"
+		  label="Nomor WhatsApp Aktif"
+		  placeholder="08xx-xxxx-xxxx"
+		  full
+		  required
+		  :error="fieldErrors.hp"
+		  :invalid="!!fieldErrors.hp"
+		/>
 	  </div>
 
 	  <!-- Anggota tim dinamis (maks 2 dosen + 2 mahasiswa) -->
@@ -137,21 +186,26 @@
 			<button type="button" class="anggota-remove" @click="removeAnggota(i)">✕ Hapus</button>
 		  </div>
 		  <div class="anggota-grid">
-			<div class="field">
-			  <label :for="'ang_nomor2_' + i">{{ m.tipe === 'mahasiswa' ? 'NIM' : 'NIDN' }} *</label>
-			  <input :id="'ang_nomor2_' + i" type="text" v-model="m.nomor" :placeholder="m.tipe === 'mahasiswa' ? 'cth. 2024xxxxxx' : 'cth. 0112345601'" />
-			</div>
-			<div class="field">
-			  <label :for="'ang_nama2_' + i">Nama Lengkap *</label>
-			  <input :id="'ang_nama2_' + i" type="text" v-model="m.nama" placeholder="Nama lengkap tanpa gelar" />
-			</div>
-			<div v-if="m.tipe === 'mahasiswa'" class="field">
-			  <label :for="'ang_prodi2_' + i">Program Studi *</label>
-			  <select :id="'ang_prodi2_' + i" v-model="m.prodi">
-				<option value="">Pilih prodi</option>
-				<option v-for="p in prodiTerms" :key="p" :value="p">{{ p }}</option>
-			  </select>
-			</div>
+			<TextField
+			  :id="'ang_nomor2_' + i"
+			  v-model="m.nomor"
+			  :label="(m.tipe === 'mahasiswa' ? 'NIM' : 'NIDN') + ' *'"
+			  :placeholder="m.tipe === 'mahasiswa' ? 'cth. 2024xxxxxx' : 'cth. 0112345601'"
+			/>
+			<TextField
+			  :id="'ang_nama2_' + i"
+			  v-model="m.nama"
+			  label="Nama Lengkap *"
+			  placeholder="Nama lengkap tanpa gelar"
+			/>
+			<SelectField
+			  v-if="m.tipe === 'mahasiswa'"
+			  :id="'ang_prodi2_' + i"
+			  v-model="m.prodi"
+			  label="Program Studi *"
+			  empty-label="Pilih prodi"
+			  :options="prodiTerms"
+			/>
 		  </div>
 		  <div class="error-msg">{{ fieldErrors['anggota_list_' + i] }}</div>
       </div>
@@ -182,6 +236,9 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { useHibahForm } from '@/composables/useHibahForm'
+import TextField from '@/components/TextField.vue'
+import SelectField from '@/components/SelectField.vue'
+import TextareaField from '@/components/TextareaField.vue'
 
 const props = withDefaults(defineProps<{ hibahId?: number | null; deadline?: string }>(), {
   hibahId: null,

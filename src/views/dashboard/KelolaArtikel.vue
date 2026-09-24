@@ -9,7 +9,13 @@
     </ul>
 
     <p class="search-box">
-      <input type="search" class="components-text-control__input" v-model="search" placeholder="Cari artikel..." style="width:280px" />
+      <TextField
+        v-model="search"
+        type="search"
+        placeholder="Cari artikel..."
+        input-class="components-text-control__input"
+        style="width:280px"
+      />
     </p>
 
     <div v-if="loading" style="text-align:center;padding:40px"><span class="spinner" style="display:inline-block"></span></div>
@@ -42,8 +48,13 @@
         </div>
         <div class="wp-modal-body">
           <div class="components-base-control">
-            <label class="components-base-control__label">Judul *</label>
-            <input class="components-text-control__input" type="text" v-model="form.title" placeholder="Judul artikel..." />
+            <TextField
+              v-model="form.title"
+              label="Judul"
+              placeholder="Judul artikel..."
+              input-class="components-text-control__input"
+              required
+            />
           </div>
           <div class="components-base-control">
             <label class="components-base-control__label">Konten</label>
@@ -51,8 +62,12 @@
           </div>
           <div style="display:flex;gap:16px">
             <div class="components-base-control" style="flex:1">
-              <label class="components-base-control__label">Status</label>
-              <select class="components-select-control__input" v-model="form.status"><option value="draft">Draft</option><option value="publish">Publish</option></select>
+              <SelectField
+                v-model="form.status"
+                label="Status"
+                input-class="components-select-control__input"
+                :options="[{ label: 'Draft', value: 'draft' }, { label: 'Publish', value: 'publish' }]"
+              />
             </div>
             <div class="components-base-control" style="flex:1">
               <label class="components-base-control__label">Thumbnail</label>
@@ -78,6 +93,8 @@ import WpTable from '@/components/WpTable.vue'
 import WpButton from '@/components/WpButton.vue'
 import WpEditor from '@/components/WpEditor.vue'
 import ThumbnailPicker from '@/components/ThumbnailPicker.vue'
+import TextField from '@/components/TextField.vue'
+import SelectField from '@/components/SelectField.vue'
 import type { WpColumn } from '@/components/WpTable.vue'
 
 const auth=useAuthStore()

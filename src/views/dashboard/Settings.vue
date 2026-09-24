@@ -51,7 +51,7 @@
             <tr><th scope="row">Email</th><td><input v-model="form.site.email" type="email" class="regular-text" placeholder="lp2m@itsi.ac.id" /></td></tr>
             <tr><th scope="row">Telepon</th><td><input v-model="form.site.telepon" type="tel" class="regular-text" placeholder="(061) 663 7060" /></td></tr>
             <tr><th scope="row">Alamat</th><td><textarea v-model="form.site.alamat" class="large-text" rows="3"></textarea></td></tr>
-            <tr><th scope="row">URL Situs Frontend (LP2M)</th><td><input v-model="form.site.frontend_url" type="url" class="regular-text" placeholder="https://lp2m.pages.dev" /></td></tr>
+            <tr><th scope="row">URL Situs Frontend (LP2M)</th><td><input v-model="form.site.frontend_url" type="url" class="regular-text" placeholder="https://lp2m.itsi.ac.id" /></td></tr>
           </table>
           <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
             <WpButton variant="primary" :disabled="saving==='site'" @click="saveGroup('site')">{{ saving==='site' ? 'Menyimpan...' : 'Simpan Site' }}</WpButton>

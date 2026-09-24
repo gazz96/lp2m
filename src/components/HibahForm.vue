@@ -59,16 +59,24 @@
         </div>
 
         <div class="form-grid">
-          <div class="field" :class="{ invalid: fieldErrors.nama }">
-            <label for="nama">Nama Lengkap &amp; Gelar *</label>
-            <input type="text" id="nama" v-model="form.nama" placeholder="Ir. Andi Prayogi, S.Kom., M.Kom" />
-            <div class="error-msg">{{ fieldErrors.nama }}</div>
-          </div>
-          <div class="field" :class="{ invalid: fieldErrors.nip }">
-            <label for="nip">NIDN / NIDK *</label>
-            <input type="text" id="nip" v-model="form.nip" placeholder="cth. 0112345601" />
-            <div class="error-msg">{{ fieldErrors.nip }}</div>
-          </div>
+          <TextField
+            id="nama"
+            v-model="form.nama"
+            label="Nama Lengkap & Gelar"
+            placeholder="Ir. Andi Prayogi, S.Kom., M.Kom"
+            required
+            :error="fieldErrors.nama"
+            :invalid="!!fieldErrors.nama"
+          />
+          <TextField
+            id="nip"
+            v-model="form.nip"
+            label="NIDN / NIDK"
+            placeholder="cth. 0112345601"
+            required
+            :error="fieldErrors.nip"
+            :invalid="!!fieldErrors.nip"
+          />
           <div class="field" :class="{ invalid: fieldErrors.prodi }">
             <label for="prodi">Program Studi / Unit Kerja *</label>
             <div class="combobox" :class="{ open: prodiOpen }">
@@ -128,63 +136,91 @@
             </div>
             <div class="error-msg">{{ fieldErrors.skema }}</div>
           </div>
-          <div class="field full" :class="{ invalid: fieldErrors.judul }">
-            <label for="judul">Judul Usulan *</label>
-            <input type="text" id="judul" v-model="form.judul" placeholder="Judul lengkap penelitian atau program pengabdian" />
-            <div class="error-msg">{{ fieldErrors.judul }}</div>
-          </div>
-          <div class="field full" :class="{ invalid: fieldErrors.ringkasan }">
-            <label for="ringkasan">Ringkasan Usulan *<span class="hint"> — maksimum 500 karakter</span></label>
-            <textarea id="ringkasan" v-model="form.ringkasan" maxlength="500" placeholder="Latar belakang, tujuan, dan luaran yang ditargetkan"></textarea>
-            <div class="error-msg">{{ fieldErrors.ringkasan }}</div>
-          </div>
-          <div class="field" :class="{ invalid: fieldErrors.jenis_hibah }">
-            <label for="jenis_hibah">Jenis Hibah *</label>
-            <select id="jenis_hibah" v-model="form.jenis_hibah">
-              <option value="">Pilih jenis hibah</option>
-              <option v-for="o in jenisTerms" :key="o.id" :value="o.label || o.name">{{ o.label || o.name }}</option>
-            </select>
-            <div class="error-msg">{{ fieldErrors.jenis_hibah }}</div>
-          </div>
-          <div class="field" :class="{ invalid: fieldErrors.sdgs }">
-            <label for="sdgs">SDGs (Sustainable Development Goals) *</label>
-            <select id="sdgs" v-model="form.sdgs">
-              <option value="">Pilih SDGs</option>
-              <option v-for="o in sdgsTerms" :key="o.id" :value="o.name">{{ o.name }}</option>
-            </select>
-            <div class="error-msg">{{ fieldErrors.sdgs }}</div>
-          </div>
-          <div class="field" :class="{ invalid: fieldErrors.kelompok_keahlian }">
-            <label for="kelompok_keahlian">Kelompok Keahlian *</label>
-            <select id="kelompok_keahlian" v-model="form.kelompok_keahlian">
-              <option value="">Pilih kelompok keahlian</option>
-              <option v-for="o in kkTerms" :key="o.id" :value="o.label || o.name">{{ o.label || o.name }}</option>
-            </select>
-            <div class="error-msg">{{ fieldErrors.kelompok_keahlian }}</div>
-          </div>
-          <div class="field" :class="{ invalid: fieldErrors.email }">
-            <label for="email">Email Aktif *</label>
-            <input type="email" id="email" v-model="form.email" placeholder="nama@itsi.ac.id" />
-            <div class="error-msg">{{ fieldErrors.email }}</div>
-          </div>
-          <div class="field" :class="{ invalid: fieldErrors.hp }">
-            <label for="hp">Nomor WhatsApp Aktif *</label>
-            <input type="tel" id="hp" v-model="form.hp" placeholder="08xx-xxxx-xxxx" />
-            <div class="error-msg">{{ fieldErrors.hp }}</div>
-          </div>
-          <div class="field full" :class="{ invalid: fieldErrors.proposal }">
-            <label for="proposal">Upload Proposal (PDF) *</label>
-            <input
-              type="file"
-              id="proposal"
-              accept=".pdf"
-              @change="onFileChange"
-              class="file-input"
-            />
-            <div class="file-hint">Maksimal 10MB. Format: PDF.</div>
-            <div v-if="form.proposalName" class="file-name">{{ form.proposalName }}</div>
-            <div class="error-msg">{{ fieldErrors.proposal }}</div>
-          </div>
+          <TextField
+            id="judul"
+            v-model="form.judul"
+            label="Judul Usulan"
+            placeholder="Judul lengkap penelitian atau program pengabdian"
+            full
+            required
+            :error="fieldErrors.judul"
+            :invalid="!!fieldErrors.judul"
+          />
+          <TextareaField
+            id="ringkasan"
+            v-model="form.ringkasan"
+            label="Ringkasan Usulan"
+            hint="maksimum 500 karakter"
+            placeholder="Latar belakang, tujuan, dan luaran yang ditargetkan"
+            :maxlength="500"
+            :rows="4"
+            full
+            required
+            :error="fieldErrors.ringkasan"
+            :invalid="!!fieldErrors.ringkasan"
+          />
+          <SelectField
+            id="jenis_hibah"
+            v-model="form.jenis_hibah"
+            label="Jenis Hibah"
+            empty-label="Pilih jenis hibah"
+            required
+            :options="jenisTerms.map((o: any) => o.label || o.name)"
+            :error="fieldErrors.jenis_hibah"
+            :invalid="!!fieldErrors.jenis_hibah"
+          />
+          <SelectField
+            id="sdgs"
+            v-model="form.sdgs"
+            label="SDGs (Sustainable Development Goals)"
+            empty-label="Pilih SDGs"
+            required
+            :options="sdgsTerms.map((o: any) => o.name)"
+            :error="fieldErrors.sdgs"
+            :invalid="!!fieldErrors.sdgs"
+          />
+          <SelectField
+            id="kelompok_keahlian"
+            v-model="form.kelompok_keahlian"
+            label="Kelompok Keahlian"
+            empty-label="Pilih kelompok keahlian"
+            required
+            :options="kkTerms.map((o: any) => o.label || o.name)"
+            :error="fieldErrors.kelompok_keahlian"
+            :invalid="!!fieldErrors.kelompok_keahlian"
+          />
+          <TextField
+            id="email"
+            v-model="form.email"
+            type="email"
+            label="Email Aktif"
+            placeholder="nama@itsi.ac.id"
+            required
+            :error="fieldErrors.email"
+            :invalid="!!fieldErrors.email"
+          />
+          <TextField
+            id="hp"
+            v-model="form.hp"
+            type="tel"
+            label="Nomor WhatsApp Aktif"
+            placeholder="08xx-xxxx-xxxx"
+            required
+            :error="fieldErrors.hp"
+            :invalid="!!fieldErrors.hp"
+          />
+          <FileField
+            id="proposal"
+            label="Upload Proposal (PDF)"
+            hint="Maksimal 10MB. Format: PDF."
+            empty-label=""
+            accept=".pdf"
+            full
+            required
+            :error="fieldErrors.proposal"
+            :invalid="!!fieldErrors.proposal"
+            @change="onFileChange"
+          />
         </div>
 
         <!-- Anggota tim dinamis (maks 2 dosen + 2 mahasiswa) -->
@@ -207,21 +243,26 @@
               <button type="button" class="anggota-remove" @click="removeAnggota(i)">✕ Hapus</button>
             </div>
             <div class="anggota-grid">
-              <div class="field">
-                <label :for="'ang_nomor_' + i">{{ m.tipe === 'mahasiswa' ? 'NIM' : 'NIDN' }} *</label>
-                <input :id="'ang_nomor_' + i" type="text" v-model="m.nomor" :placeholder="m.tipe === 'mahasiswa' ? 'cth. 2024xxxxxx' : 'cth. 0112345601'" />
-              </div>
-              <div class="field">
-                <label :for="'ang_nama_' + i">Nama Lengkap *</label>
-                <input :id="'ang_nama_' + i" type="text" v-model="m.nama" placeholder="Nama lengkap tanpa gelar" />
-              </div>
-              <div v-if="m.tipe === 'mahasiswa'" class="field">
-                <label :for="'ang_prodi_' + i">Program Studi *</label>
-                <select :id="'ang_prodi_' + i" v-model="m.prodi">
-                  <option value="">Pilih prodi</option>
-                  <option v-for="p in prodiTerms" :key="p" :value="p">{{ p }}</option>
-                </select>
-              </div>
+              <TextField
+                :id="'ang_nomor_' + i"
+                v-model="m.nomor"
+                :label="(m.tipe === 'mahasiswa' ? 'NIM' : 'NIDN') + ' *'"
+                :placeholder="m.tipe === 'mahasiswa' ? 'cth. 2024xxxxxx' : 'cth. 0112345601'"
+              />
+              <TextField
+                :id="'ang_nama_' + i"
+                v-model="m.nama"
+                label="Nama Lengkap *"
+                placeholder="Nama lengkap tanpa gelar"
+              />
+              <SelectField
+                v-if="m.tipe === 'mahasiswa'"
+                :id="'ang_prodi_' + i"
+                v-model="m.prodi"
+                label="Program Studi *"
+                empty-label="Pilih prodi"
+                :options="prodiTerms"
+              />
             </div>
             <div class="error-msg">{{ fieldErrors['anggota_list_' + i] }}</div>
           </div>
@@ -256,6 +297,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useHibahForm } from '@/composables/useHibahForm'
+import TextField from '@/components/TextField.vue'
+import SelectField from '@/components/SelectField.vue'
+import TextareaField from '@/components/TextareaField.vue'
+import FileField from '@/components/FileField.vue'
 
 const props = withDefaults(defineProps<{
   hibahId?: number | null

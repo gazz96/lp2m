@@ -35,7 +35,11 @@
           <div class="wp-detail-group__body">
             <div class="components-base-control">
               <label class="components-base-control__label">Status</label>
-              <select class="components-select-control__input" v-model="f.status"><option value="draft">Draft</option><option value="publish">Publish</option></select>
+              <SelectField
+                v-model="f.status"
+                input-class="components-select-control__input"
+                :options="[{ label: 'Draft', value: 'draft' }, { label: 'Publish', value: 'publish' }]"
+              />
             </div>
             <div v-if="editId" style="font-size:12px;color:var(--wp-text-muted);margin-top:8px">ID: {{ editId }}</div>
           </div>
@@ -71,6 +75,7 @@ import WpButton from '@/components/WpButton.vue'
 import WpEditor from '@/components/WpEditor.vue'
 import ThumbnailPicker from '@/components/ThumbnailPicker.vue'
 import TagSelect from '@/components/TagSelect.vue'
+import SelectField from '@/components/SelectField.vue'
 import { useToast } from '@/composables/useToast'
 
 const route=useRoute(),router=useRouter(),auth=useAuthStore()

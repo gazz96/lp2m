@@ -34,6 +34,8 @@ export interface HibahEventData {
   file_panduan: string[]
   file_template: string[]
   file_kelompok_keahlian: string[]
+  file_surat_kesanggupan?: string[]
+  surat_kesanggupan_template_url?: string
   timeline_items: Array<{ date: string; label: string }>
   category_names: string[]
 }
