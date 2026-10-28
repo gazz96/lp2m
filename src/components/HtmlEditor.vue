@@ -22,18 +22,28 @@
       @paste="onPaste"
       @blur="emitValue"
     ></div>
-    <div v-if="previewMode" class="he-preview" v-html="sanitize(modelValue)"></div>
+    <div v-if="previewMode" ref="previewEl" class="he-preview" v-html="sanitize(modelValue)"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick, defineProps, defineEmits } from 'vue'
+import { hydrateWpContent } from '@/utils/wpContent'
 
 const props = defineProps<{ modelValue: string }>()
 const emit = defineEmits<{ (e: 'update:modelValue', v: string): void }>()
 
 const editorRef = ref<HTMLDivElement | null>(null)
+const previewEl = ref<HTMLElement | null>(null)
 const previewMode = ref(false)
+
+// Preview merender konten Gutenberg mentah; blok core/file (PDF) perlu
+// dihidrasi manual karena Interactivity API tidak dimuat — lihat utils.
+watch([previewMode, () => props.modelValue], async () => {
+  if (!previewMode.value) return
+  await nextTick()
+  hydrateWpContent(previewEl.value)
+})
 
 onMounted(() => {
   if (editorRef.value && props.modelValue) {
