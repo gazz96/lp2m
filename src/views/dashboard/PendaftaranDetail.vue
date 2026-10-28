@@ -492,7 +492,7 @@ function onRevisiProposalPick(e: Event) {
 async function load() {
   loading.value = true; error.value = ''
   try {
-    const r = await fetch(`${base}/lp2m/v1/hibah/${id}`)
+    const r = await fetch(`${base}/lp2m/v1/hibah/${id}`, { headers: { ...auth.authHeaders() } })
     if (!r.ok) throw new Error('HTTP ' + r.status)
     const json = await r.json()
     if (!json.success) throw new Error(json.message || 'Data tidak ditemukan')

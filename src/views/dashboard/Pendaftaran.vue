@@ -222,7 +222,7 @@ const filtered=computed(()=>{let a=[...items.value];if(statusFilter.value!=='all
 const byStatus=computed(()=>{const m:Record<string,number>={submitted:0,under_review:0,revised:0,approved:0,rejected:0,done:0};items.value.forEach(r=>{const s=r.status||'submitted';if(s in m)m[s]++});return m})
 
 async function fetchData(p=1){loading.value=true;error.value=''
-  try{const base=SITE.apiBase.replace('/wp/v2','');const r=await fetch(`${base}/lp2m/v1/hibah?per_page=${perPg}&page=${p}`);if(!r.ok)throw new Error('HTTP '+r.status);const json=await r.json()
+  try{const base=SITE.apiBase.replace('/wp/v2','');const r=await fetch(`${base}/lp2m/v1/hibah?per_page=${perPg}&page=${p}`, { headers: { ...auth.authHeaders() } });if(!r.ok)throw new Error('HTTP '+r.status);const json=await r.json()
   if(json.success){items.value=(json.data||[]).map((d:any)=>({...d,status:d.status||'submitted'}));total.value=json.total;pg.value=p}else{error.value=json.message||'Gagal'}}catch(e:any){error.value=e.message}finally{loading.value=false}}
 
 // ── Inline: email override + status modal (klik badge) ──
