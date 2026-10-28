@@ -519,6 +519,46 @@ section { padding: 78px 0; }
   border: 0;
   border-radius: 6px;
 }
+
+/* Blok Gutenberg core/file (PDF embed + tombol unduh). Tanpa ini preview PDF
+   menempel ke nama berkas dan tombol unduh tampil sebagai tautan polos. */
+.entry-content .wp-block-file {
+  margin: 1.6em 0;
+}
+.entry-content .wp-block-file__embed {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper-2);
+}
+/* `display:block` di atas mengalahkan aturan UA `[hidden]{display:none}`.
+   Tanpa penjaga ini, browser tanpa PDF viewer tetap menampilkan kotak kosong —
+   padahal core/file sengaja menyembunyikannya lewat atribut `hidden`. */
+.entry-content .wp-block-file__embed[hidden] {
+  display: none;
+}
+.entry-content .wp-block-file > a:not(.wp-block-file__button) {
+  font-weight: 600;
+  word-break: break-word;
+}
+.entry-content .wp-block-file__button {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--green-700);
+  color: var(--white);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.entry-content .wp-block-file__button:hover {
+  background: var(--green-600);
+  color: var(--white);
+}
 .entry-content .wp-block-embed__wrapper,
 .entry-content .wp-block-video {
   position: relative;

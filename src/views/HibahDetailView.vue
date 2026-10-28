@@ -32,7 +32,7 @@
           />
         </div>
 
-        <div class="entry-content" v-html="item.content?.rendered"></div>
+        <div class="entry-content" ref="contentEl" v-html="item.content?.rendered"></div>
         <div v-if="hasMeta" class="meta-card" style="margin-top:32px;padding:20px;border:1px solid var(--line);border-radius:8px">
           <div v-for="row in metaRows" :key="row.label" style="display:flex;gap:12px;padding:6px 0;border-bottom:1px solid var(--line)">
             <span style="width:160px;flex-shrink:0;color:var(--ink-soft)">{{ row.label }}</span>
@@ -61,9 +61,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { SITE } from '@/data'
+import { hydrateWpContent } from '@/utils/wpContent'
 import TopBar from '@/components/TopBar.vue'
 import SiteNav from '@/components/SiteNav.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
@@ -71,6 +72,17 @@ import HibahForm from '@/components/HibahForm.vue'
 
 const item=ref<Record<string,any> | null>(null),loading=ref(true),notFound=ref(false)
 const base=SITE.apiBase.replace('/wp/v2','')
+const contentEl=ref<HTMLElement | null>(null)
+
+// Konten v-html: hidrasi blok Gutenberg yang butuh Interactivity API
+// (preview PDF core/file) — lihat utils/wpContent.ts.
+watch(
+  () => item.value?.content?.rendered,
+  async () => {
+    await nextTick()
+    hydrateWpContent(contentEl.value)
+  }
+)
 
 function fmtDate(d:string){return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}
 function clean(s:string){return new DOMParser().parseFromString(s,'text/html').body.textContent||''}

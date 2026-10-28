@@ -45,7 +45,7 @@
           >{{ t.name }}</router-link>
         </div>
 
-        <div class="entry-content" v-html="item.content?.rendered"></div>
+        <div class="entry-content" ref="contentEl" v-html="item.content?.rendered"></div>
 
         <!-- Share -->
         <div class="share-row">
@@ -61,9 +61,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { SITE } from '@/data'
+import { hydrateWpContent } from '@/utils/wpContent'
 import TopBar from '@/components/TopBar.vue'
 import SiteNav from '@/components/SiteNav.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
@@ -73,6 +74,18 @@ const loading = ref(true)
 const notFound = ref(false)
 const isPage = ref(false)
 const base = SITE.apiBase.replace('/wp/v2', '')
+const contentEl = ref<HTMLElement | null>(null)
+
+// Konten dirender lewat v-html, jadi blok Gutenberg yang bergantung pada
+// Interactivity API (mis. preview PDF core/file) harus dihidrasi manual
+// setelah DOM ter-render — lihat utils/wpContent.ts.
+watch(
+  () => item.value?.content?.rendered,
+  async () => {
+    await nextTick()
+    hydrateWpContent(contentEl.value)
+  }
+)
 
 const catMap: Record<number, string> = {
   16: 'Penelitian',
