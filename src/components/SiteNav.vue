@@ -54,7 +54,8 @@ const links = [
   { label: 'Beranda', to: '/' },
   { label: 'Tentang', to: '/#tentang' },
   { label: 'Bidang Unggulan', to: '/#bidang' },
-  { label: 'Pengumuman', to: '/pengumuman' }
+  { label: 'Pengumuman', to: '/pengumuman' },
+  { label: 'Reward Jurnal', to: '/reward-jurnal' }
 ]
 
 const hibahSubs = [

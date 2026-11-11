@@ -18,6 +18,7 @@ import Pendaftaran from '@/views/dashboard/Pendaftaran.vue'
 import PendaftaranDetail from '@/views/dashboard/PendaftaranDetail.vue'
 import Profile from '@/views/dashboard/Profile.vue'
 import Settings from '@/views/dashboard/Settings.vue'
+import RewardJurnal from '@/views/RewardJurnal.vue'
 import SuksesView from '@/views/SuksesView.vue'
 import TrackStatusView from '@/views/TrackStatusView.vue'
 import BlogView from '@/views/BlogView.vue'
@@ -44,6 +45,8 @@ const router = createRouter({
     { path: '/v/sukses/:no', name: 'sukses', component: SuksesView },
     { path: '/blog', name: 'blog', component: BlogView },
     { path: '/pengumuman', name: 'pengumuman', component: PengumumanView },
+    { path: '/reward-jurnal', name: 'reward-jurnal', component: RewardJurnal },
+    { path: '/reward-publikasi-dosenITSI-2026', name: 'reward-publikasi-dosen-2026', component: RewardJurnal },
     { path: '/hibah', name: 'hibah-archive', component: HibahArchiveView },
     { path: '/hibah/:slug', name: 'hibah-detail', component: HibahDetailView },
     { path: '/artikel/:slug', name: 'artikel-detail', component: ArtikelDetailView },
