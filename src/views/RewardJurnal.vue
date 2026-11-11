@@ -15,7 +15,22 @@
         <div id="primary" class="content-area">
           <div class="entry-content reward-shell">
 
+            <!-- ══ Kata Pengantar ══ -->
+            <div class="rw-intro">
+              <p>Yth. Bpk/Ibu Dosen Institut Teknologi Sawit Indonesia.</p>
+              <p>Berikut formulir Dokumentasi Publikasi Artikel, Buku, HAKI, dan Seminar dari aktivitas Penelitian dan atau Pengabdian Kepada Masyarakat yang dipublikasi atau diperoleh pada Tahun 2026. Publikasi yang diisi pada formulir ini telah sudah disubmit atau disinkron di platform SINTA. Publikasi berupa Buku mohon menyerahkan hardcopy kepada LPPM ITSI. Terima kasih.</p>
+            </div>
+
+            <!-- ══ Status periode pengajuan ══ -->
+            <div v-if="periodLoading" class="rw-card rw-center">Memuat status pengajuan…</div>
+            <div v-else-if="!periodOpen" class="rw-card rw-closed">
+              <div class="rw-closed-icon">⏳</div>
+              <h2>Pengajuan Ditutup</h2>
+              <p>{{ periodMsg }}</p>
+            </div>
+
             <!-- ══ Stepper ══ -->
+            <template v-else>
             <ol class="rw-steps">
               <li v-for="(s, i) in stepLabels" :key="s" :class="{ active: i === step, done: i < step }">
                 <span class="rw-step-num">{{ i < step ? '✓' : i + 1 }}</span>
@@ -153,6 +168,7 @@
                 </button>
               </div>
             </div>
+            </template>
           </div>
         </div>
       </div>
@@ -209,6 +225,9 @@ const submitError = ref('')
 const submitting = ref(false)
 const success = ref(false)
 const loadingCats = ref(true)
+const periodOpen = ref(true)
+const periodMsg = ref('')
+const periodLoading = ref(true)
 
 const hasSeminar = computed(() => !!(form.penyelenggara_seminar || form.judul_paper_seminar || form.kategori_seminar_id !== '' || form.sertifikat_pemateri || form.dokumentasi_seminar))
 
@@ -244,7 +263,23 @@ async function loadCategories() {
     loadingCats.value = false
   }
 }
-onMounted(loadCategories)
+onMounted(() => { loadCategories(); loadPeriod() })
+
+// ── Periode pengajuan (open/closed) ──
+async function loadPeriod() {
+  periodLoading.value = true
+  try {
+    const res = await fetch(`${base}/lp2m/v1/reward-jurnal/period`)
+    if (!res.ok) return
+    const data = await res.json().catch(() => ({}))
+    periodOpen.value = !!data.open
+    periodMsg.value = data.message || ''
+  } catch {
+    // default: terbuka
+  } finally {
+    periodLoading.value = false
+  }
+}
 
 // ── File handling ──
 function validateFile(file: File, kind: 'pdf' | 'any', label: string): string {
@@ -501,6 +536,32 @@ function resetAll() {
 }
 .rw-title { font-size: 1.4rem; margin-bottom: 4px; }
 .rw-sub { color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 20px; }
+
+.rw-intro {
+  margin-bottom: 24px;
+  padding: 18px 20px;
+  background: var(--paper-2, #eef2e3);
+  border-left: 4px solid var(--green-800);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.rw-intro p { margin: 0 0 10px; }
+.rw-intro p:last-child { margin-bottom: 0; }
+
+.rw-center { text-align: center; color: var(--ink-soft); padding: 32px 20px; }
+
+.rw-closed { text-align: center; padding: 44px 28px; }
+.rw-closed-icon {
+  width: 64px; height: 64px; margin: 0 auto 18px;
+  border-radius: 50%;
+  background: #fdf1ee;
+  color: var(--rust, #9b4224);
+  font-size: 2rem; line-height: 64px;
+}
+.rw-closed h2 { margin-bottom: 10px; }
+.rw-closed p { color: var(--ink-soft); max-width: 46ch; margin: 0 auto; }
 
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 620px) { .form-grid { grid-template-columns: 1fr; } }

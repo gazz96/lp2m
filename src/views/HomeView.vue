@@ -7,6 +7,7 @@
   </SiteNav>
   <main>
     <HeroSection />
+    <RewardPromoSection />
     <FrondRule leafColor="#8CB39A" />
     <TentangSection />
     <BidangSection />
@@ -25,6 +26,7 @@
 import TopBar from '@/components/TopBar.vue'
 import SiteNav from '@/components/SiteNav.vue'
 import HeroSection from '@/components/HeroSection.vue'
+import RewardPromoSection from '@/components/RewardPromoSection.vue'
 import FrondRule from '@/components/FrondRule.vue'
 import TentangSection from '@/components/TentangSection.vue'
 import BidangSection from '@/components/BidangSection.vue'
