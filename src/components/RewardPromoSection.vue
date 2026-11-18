@@ -35,7 +35,8 @@ onMounted(async () => {
     const res = await fetch(`${SITE.apiBase.replace('/wp/v2', '')}/lp2m/v1/settings/dokumen`)
     if (res.ok) {
       const data = await res.json()
-      pengumumanUrl.value = data?.dokumen?.pengumuman_url || ''
+      // Endpoint /settings/dokumen mengembalikan array FLAT (bukan nested dokumen).
+      pengumumanUrl.value = data?.pengumuman_url || ''
     }
   } catch { /* tombol tetap tersembunyi */ }
 })
