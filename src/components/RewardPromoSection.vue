@@ -122,5 +122,7 @@ onMounted(async () => {
     text-align: center;
   }
   .reward-promo-body p { margin: 0 auto; }
+  .rp-cta-row { flex-wrap: wrap; justify-content: center; }
+  .rp-btn { width: auto; }
 }
 </style>
