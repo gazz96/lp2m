@@ -13,8 +13,7 @@
         <div class="rp-cta-row">
           <router-link to="/reward-publikasi-dosenITSI-2026" class="btn rp-btn">Ajukan Sekarang</router-link>
           <a v-if="pengumumanUrl" :href="pengumumanUrl" class="btn rp-btn-dl" download>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-            Download Pengumuman
+            Pengumuman
           </a>
         </div>
       </div>
@@ -100,7 +99,7 @@ onMounted(async () => {
   line-height: 1.6;
 }
 .reward-promo-cta { flex-shrink: 0; }
-.rp-cta-row { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+.rp-cta-row { display: flex; flex-direction: row; gap: 10px; align-items: center; }
 .rp-btn-dl {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   background: transparent; border: 1.5px solid var(--gold-soft, #f0d99a);
