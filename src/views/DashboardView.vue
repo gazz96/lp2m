@@ -43,6 +43,10 @@
           <span class="dashicons dashicons-email-alt"></span>
           Pendaftaran
         </router-link>
+        <router-link to="/dashboard/reward-jurnal" active-class="active" class="dash-link">
+          <span class="dashicons dashicons-awards"></span>
+          Reward Jurnal
+        </router-link>
         <router-link to="/dashboard/profile" active-class="active" class="dash-link">
           <span class="dashicons dashicons-admin-users"></span>
           Profile
@@ -121,7 +125,8 @@ function doLogout() { auth.logout(); router.push('/') }
 .dashicons.dashicons-dashboard,
 .dashicons.dashicons-admin-page,
 .dashicons.dashicons-admin-post,
-.dashicons.dashicons-email-alt {
+.dashicons.dashicons-email-alt,
+.dashicons.dashicons-awards {
   font-size: 20px; width: 20px; height: 20px;
   color: rgba(240,246,252,0.6);
 }

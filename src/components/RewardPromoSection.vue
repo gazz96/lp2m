@@ -10,13 +10,35 @@
         <p>Ajukan reward untuk dokumentasi publikasi artikel jurnal, buku, HAKI, dan seminar dari aktivitas penelitian &amp; pengabdian masyarakat Tahun 2026.</p>
       </div>
       <div class="reward-promo-cta">
-        <router-link to="/reward-publikasi-dosenITSI-2026" class="btn rp-btn">Ajukan Sekarang</router-link>
+        <div class="rp-cta-row">
+          <router-link to="/reward-publikasi-dosenITSI-2026" class="btn rp-btn">Ajukan Sekarang</router-link>
+          <a v-if="pengumumanUrl" :href="pengumumanUrl" class="btn rp-btn-dl" download>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+            Download Pengumuman
+          </a>
+        </div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { SITE } from '@/data'
+
+// File pengumuman pengusulan reward diatur admin di LP2M → Settings → Dokumen (lp2m_dok_pengumuman_id).
+// Kalau belum diunggah, tombol download tidak dirender.
+const pengumumanUrl = ref('')
+
+onMounted(async () => {
+  try {
+    const res = await fetch(`${SITE.apiBase.replace('/wp/v2', '')}/lp2m/v1/settings/dokumen`)
+    if (res.ok) {
+      const data = await res.json()
+      pengumumanUrl.value = data?.dokumen?.pengumuman_url || ''
+    }
+  } catch { /* tombol tetap tersembunyi */ }
+})
 </script>
 
 <style scoped>
@@ -77,6 +99,13 @@
   line-height: 1.6;
 }
 .reward-promo-cta { flex-shrink: 0; }
+.rp-cta-row { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+.rp-btn-dl {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: transparent; border: 1.5px solid var(--gold-soft, #f0d99a);
+  color: var(--gold-soft, #f0d99a); font-weight: 600; white-space: nowrap;
+}
+.rp-btn-dl:hover { background: rgba(255, 255, 255, 0.12); color: #fff; border-color: #fff; }
 .rp-btn {
   padding: 12px 24px;
   background: var(--gold, #d4a72c);

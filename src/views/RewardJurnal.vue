@@ -68,7 +68,20 @@
                 <div class="form-grid">
                   <TextField id="rw-judul-artikel" v-model="form.judul_artikel" label="Judul Artikel" placeholder="Judul lengkap artikel" full required :error="stepErrors.judul_artikel" :invalid="!!stepErrors.judul_artikel" />
                   <TextField id="rw-url-artikel" v-model="form.url_artikel" type="url" label="URL Artikel" placeholder="https://doi.org/..." full required :error="stepErrors.url_artikel" :invalid="!!stepErrors.url_artikel" />
-                  <SelectField id="rw-kat-jurnal" v-model="form.kategori_jurnal_id" label="Kategori Jurnal" empty-label="Pilih kategori jurnal" :options="catOptions('kategori_jurnal')" numeric full required :error="stepErrors.kategori_jurnal_id" :invalid="!!stepErrors.kategori_jurnal_id" />
+                  <div class="full">
+                    <label class="chiplabel">Kategori Jurnal <span style="color:var(--rust)">*</span></label>
+                    <ChipSelect
+                      v-model="form.kategori_jurnal_id"
+                      :options="catOptions('kategori_jurnal')"
+                      label="Kategori Jurnal"
+                      add-placeholder="Kategori tidak ada? Ketik nama baru…"
+                      required
+                      :error="stepErrors.kategori_jurnal_id"
+                      :invalid="!!stepErrors.kategori_jurnal_id"
+                      @create="(name) => createCategory('kategori_jurnal', name)"
+                      @update:modelValue="(v) => { if (v !== '') clearNewCategory('kategori_jurnal') }"
+                    />
+                  </div>
                   <FileField id="rw-file-artikel" label="File Artikel" hint="PDF, maks 5 file, 10 MB per file." accept=".pdf,application/pdf" multiple full required :error="stepErrors.file_artikel" :invalid="!!stepErrors.file_artikel" @change="(e) => onFiles(e, 'file_artikel', 5, 'pdf')" />
                   <FileField id="rw-file-proposal" label="File Proposal Penelitian dari Artikel" hint="PDF, sampai 5 file, 10 MB per file." accept=".pdf,application/pdf" multiple full required :error="stepErrors.file_proposal_artikel" :invalid="!!stepErrors.file_proposal_artikel" @change="(e) => onFiles(e, 'file_proposal_artikel', 5, 'pdf')" />
                   <FileField id="rw-bukti-bayar" label="Bukti Bayar (jika bayar)" hint="PDF/gambar, maks 10 MB (opsional)." accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" full :error="stepErrors.bukti_bayar" :invalid="!!stepErrors.bukti_bayar" @change="(e) => onSingle(e, 'bukti_bayar', 'any')" />
@@ -82,7 +95,20 @@
                 <div class="form-grid">
                   <TextField id="rw-judul-buku" v-model="form.judul_buku" label="Judul Buku" placeholder="Judul lengkap buku" full required :error="stepErrors.judul_buku" :invalid="!!stepErrors.judul_buku" />
                   <TextField id="rw-url-buku" v-model="form.url_buku" type="url" label="URL Buku" placeholder="https://..." full required :error="stepErrors.url_buku" :invalid="!!stepErrors.url_buku" />
-                  <SelectField id="rw-kat-buku" v-model="form.kategori_buku_id" label="Kategori Buku" empty-label="Pilih kategori buku" :options="catOptions('kategori_buku')" numeric full required :error="stepErrors.kategori_buku_id" :invalid="!!stepErrors.kategori_buku_id" />
+                  <div class="full">
+                    <label class="chiplabel">Kategori Buku <span style="color:var(--rust)">*</span></label>
+                    <ChipSelect
+                      v-model="form.kategori_buku_id"
+                      :options="catOptions('kategori_buku')"
+                      label="Kategori Buku"
+                      add-placeholder="Kategori tidak ada? Ketik nama baru…"
+                      required
+                      :error="stepErrors.kategori_buku_id"
+                      :invalid="!!stepErrors.kategori_buku_id"
+                      @create="(name) => createCategory('kategori_buku', name)"
+                      @update:modelValue="(v) => { if (v !== '') clearNewCategory('kategori_buku') }"
+                    />
+                  </div>
                   <FileField id="rw-cover" label="Cover Depan Buku" hint="1 file PDF, maks 10 MB." accept=".pdf,application/pdf" full required :error="stepErrors.cover_depan_buku" :invalid="!!stepErrors.cover_depan_buku" @change="(e) => onSingle(e, 'cover_depan_buku', 'pdf')" />
                   <FileField id="rw-isbn" label="Halaman ISBN" hint="1 file PDF/gambar, maks 10 MB." accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" full required :error="stepErrors.halaman_isbn" :invalid="!!stepErrors.halaman_isbn" @change="(e) => onSingle(e, 'halaman_isbn', 'any')" />
                   <FileField id="rw-bayar-buku" label="Bukti Bayar Biaya Penerbitan Buku" hint="PDF/gambar, maks 10 MB (opsional)." accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" full :error="stepErrors.bukti_bayar_buku" :invalid="!!stepErrors.bukti_bayar_buku" @change="(e) => onSingle(e, 'bukti_bayar_buku', 'any')" />
@@ -96,7 +122,20 @@
                 <div class="form-grid">
                   <TextField id="rw-judul-haki" v-model="form.judul_haki" label="Judul HAKI (lengkap)" placeholder="Tulis judul pada HAKI secara lengkap" full required :error="stepErrors.judul_haki" :invalid="!!stepErrors.judul_haki" />
                   <TextField id="rw-no-haki" v-model="form.nomor_dokumen_haki" label="Nomor Dokumen / Sertifikat HAKI" placeholder="EC00xxxxxxxx" full required :error="stepErrors.nomor_dokumen_haki" :invalid="!!stepErrors.nomor_dokumen_haki" />
-                  <SelectField id="rw-kat-haki" v-model="form.kategori_haki_id" label="Kategori HAKI" empty-label="Pilih kategori HAKI" :options="catOptions('kategori_haki')" numeric full required :error="stepErrors.kategori_haki_id" :invalid="!!stepErrors.kategori_haki_id" />
+                  <div class="full">
+                    <label class="chiplabel">Kategori HAKI <span style="color:var(--rust)">*</span></label>
+                    <ChipSelect
+                      v-model="form.kategori_haki_id"
+                      :options="catOptions('kategori_haki')"
+                      label="Kategori HAKI"
+                      add-placeholder="Kategori tidak ada? Ketik nama baru…"
+                      required
+                      :error="stepErrors.kategori_haki_id"
+                      :invalid="!!stepErrors.kategori_haki_id"
+                      @create="(name) => createCategory('kategori_haki', name)"
+                      @update:modelValue="(v) => { if (v !== '') clearNewCategory('kategori_haki') }"
+                    />
+                  </div>
                   <FileField id="rw-sert-haki" label="Sertifikat HAKI" hint="PDF/gambar, maks 10 MB." accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" full required :error="stepErrors.sertifikat_haki" :invalid="!!stepErrors.sertifikat_haki" @change="(e) => onSingle(e, 'sertifikat_haki', 'any')" />
                   <FileField id="rw-bayar-haki" label="Bukti Pembayaran Biaya Penerbitan HAKI" hint="PDF/gambar, maks 10 MB (opsional)." accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" full :error="stepErrors.bukti_bayar_haki" :invalid="!!stepErrors.bukti_bayar_haki" @change="(e) => onSingle(e, 'bukti_bayar_haki', 'any')" />
                 </div>
@@ -109,7 +148,19 @@
                 <div class="form-grid">
                   <TextField id="rw-penyelenggara" v-model="form.penyelenggara_seminar" label="Penyelenggara Seminar" placeholder="Nama penyelenggara" full :error="stepErrors.penyelenggara_seminar" :invalid="!!stepErrors.penyelenggara_seminar" />
                   <TextField id="rw-judul-paper" v-model="form.judul_paper_seminar" label="Judul Paper Seminar" placeholder="Judul paper/makalah" full :error="stepErrors.judul_paper_seminar" :invalid="!!stepErrors.judul_paper_seminar" />
-                  <SelectField id="rw-kat-seminar" v-model="form.kategori_seminar_id" label="Kategori Seminar" empty-label="Pilih kategori seminar" :options="catOptions('kategori_seminar')" numeric full :error="stepErrors.kategori_seminar_id" :invalid="!!stepErrors.kategori_seminar_id" />
+                  <div class="full">
+                    <label class="chiplabel">Kategori Seminar</label>
+                    <ChipSelect
+                      v-model="form.kategori_seminar_id"
+                      :options="catOptions('kategori_seminar')"
+                      label="Kategori Seminar"
+                      add-placeholder="Kategori tidak ada? Ketik nama baru…"
+                      :error="stepErrors.kategori_seminar_id"
+                      :invalid="!!stepErrors.kategori_seminar_id"
+                      @create="(name) => createCategory('kategori_seminar', name)"
+                      @update:modelValue="(v) => { if (v !== '') clearNewCategory('kategori_seminar') }"
+                    />
+                  </div>
                   <FileField id="rw-sert-pemateri" label="Sertifikat sebagai Pemateri Seminar" hint="PDF/gambar, maks 10 MB." accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" full :error="stepErrors.sertifikat_pemateri" :invalid="!!stepErrors.sertifikat_pemateri" @change="(e) => onSingle(e, 'sertifikat_pemateri', 'any')" />
                   <FileField id="rw-dokumentasi" label="Dokumentasi Seminar" hint="PDF/gambar, maks 10 MB." accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" full :error="stepErrors.dokumentasi_seminar" :invalid="!!stepErrors.dokumentasi_seminar" @change="(e) => onSingle(e, 'dokumentasi_seminar', 'any')" />
                 </div>
@@ -126,7 +177,7 @@
                   <div class="rw-review-sec">Artikel / Jurnal</div>
                   <div><dt>Judul Artikel</dt><dd>{{ form.judul_artikel || '—' }}</dd></div>
                   <div><dt>URL</dt><dd>{{ form.url_artikel || '—' }}</dd></div>
-                  <div><dt>Kategori</dt><dd>{{ catName('kategori_jurnal', form.kategori_jurnal_id) }}</dd></div>
+                  <div><dt>Kategori</dt><dd>{{ pendingCatLabel('kategori_jurnal') || catName('kategori_jurnal', form.kategori_jurnal_id) }}</dd></div>
                   <div><dt>File Artikel</dt><dd>{{ fileCount('file_artikel') }} file</dd></div>
                   <div><dt>File Proposal</dt><dd>{{ fileCount('file_proposal_artikel') }} file</dd></div>
                   <div v-if="form.bukti_bayar"><dt>Bukti Bayar</dt><dd>{{ form.bukti_bayar.name }}</dd></div>
@@ -134,7 +185,7 @@
                   <div class="rw-review-sec">Buku</div>
                   <div><dt>Judul Buku</dt><dd>{{ form.judul_buku || '—' }}</dd></div>
                   <div><dt>URL</dt><dd>{{ form.url_buku || '—' }}</dd></div>
-                  <div><dt>Kategori</dt><dd>{{ catName('kategori_buku', form.kategori_buku_id) }}</dd></div>
+                  <div><dt>Kategori</dt><dd>{{ pendingCatLabel('kategori_buku') || catName('kategori_buku', form.kategori_buku_id) }}</dd></div>
                   <div><dt>Cover</dt><dd>{{ form.cover_depan_buku ? form.cover_depan_buku.name : '—' }}</dd></div>
                   <div><dt>Halaman ISBN</dt><dd>{{ form.halaman_isbn ? form.halaman_isbn.name : '—' }}</dd></div>
                   <div v-if="form.bukti_bayar_buku"><dt>Bukti Bayar</dt><dd>{{ form.bukti_bayar_buku.name }}</dd></div>
@@ -142,7 +193,7 @@
                   <div class="rw-review-sec">HAKI</div>
                   <div><dt>Judul HAKI</dt><dd>{{ form.judul_haki || '—' }}</dd></div>
                   <div><dt>No. Dokumen</dt><dd>{{ form.nomor_dokumen_haki || '—' }}</dd></div>
-                  <div><dt>Kategori</dt><dd>{{ catName('kategori_haki', form.kategori_haki_id) }}</dd></div>
+                  <div><dt>Kategori</dt><dd>{{ pendingCatLabel('kategori_haki') || catName('kategori_haki', form.kategori_haki_id) }}</dd></div>
                   <div><dt>Sertifikat</dt><dd>{{ form.sertifikat_haki ? form.sertifikat_haki.name : '—' }}</dd></div>
                   <div v-if="form.bukti_bayar_haki"><dt>Bukti Bayar HAKI</dt><dd>{{ form.bukti_bayar_haki.name }}</dd></div>
 
@@ -150,7 +201,7 @@
                     <div class="rw-review-sec">Seminar</div>
                     <div v-if="form.penyelenggara_seminar"><dt>Penyelenggara</dt><dd>{{ form.penyelenggara_seminar }}</dd></div>
                     <div v-if="form.judul_paper_seminar"><dt>Judul Paper</dt><dd>{{ form.judul_paper_seminar }}</dd></div>
-                    <div v-if="form.kategori_seminar_id !== ''"><dt>Kategori</dt><dd>{{ catName('kategori_seminar', form.kategori_seminar_id) }}</dd></div>
+                    <div v-if="form.kategori_seminar_id !== '' || form.kategori_seminar_new"><dt>Kategori</dt><dd>{{ pendingCatLabel('kategori_seminar') || catName('kategori_seminar', form.kategori_seminar_id) }}</dd></div>
                     <div v-if="form.sertifikat_pemateri"><dt>Sertifikat</dt><dd>{{ form.sertifikat_pemateri.name }}</dd></div>
                     <div v-if="form.dokumentasi_seminar"><dt>Dokumentasi</dt><dd>{{ form.dokumentasi_seminar.name }}</dd></div>
                   </template>
@@ -184,8 +235,8 @@ import TopBar from '@/components/TopBar.vue'
 import SiteNav from '@/components/SiteNav.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
 import TextField from '@/components/TextField.vue'
-import SelectField from '@/components/SelectField.vue'
 import FileField from '@/components/FileField.vue'
+import ChipSelect from '@/components/ChipSelect.vue'
 
 const base = SITE.apiBase.replace('/wp/v2', '')
 
@@ -198,15 +249,19 @@ const form = reactive({
   judul_artikel: '',
   url_artikel: '',
   kategori_jurnal_id: '' as number | '',
+  kategori_jurnal_new: '',
   judul_buku: '',
   url_buku: '',
   kategori_buku_id: '' as number | '',
+  kategori_buku_new: '',
   judul_haki: '',
   nomor_dokumen_haki: '',
   kategori_haki_id: '' as number | '',
+  kategori_haki_new: '',
   penyelenggara_seminar: '',
   judul_paper_seminar: '',
   kategori_seminar_id: '' as number | '',
+  kategori_seminar_new: '',
   // files
   file_artikel: [] as File[],
   file_proposal_artikel: [] as File[],
@@ -246,6 +301,20 @@ function catName(tax: string, id: number | '') {
   if (id === '') return '—'
   const t = (categories[tax] || []).find((x) => x.id === id)
   return t ? t.name : '—'
+}
+
+// ── Kategori manual (chips + input baru) ──
+// Nama baru TIDAK dibuat dari frontend (tidak ada endpoint publik create-term);
+// dikirim sebagai kategori_<tax>_new dan backend yang membuat term-nya saat submit.
+function createCategory(tax: string, name: string) {
+  ;(form as any)[tax + '_new'] = name
+  stepErrors[tax + '_id'] = ''
+}
+function clearNewCategory(tax: string) {
+  ;(form as any)[tax + '_new'] = ''
+}
+function pendingCatLabel(tax: string) {
+  return (form as any)[tax + '_new'] || ''
 }
 
 async function loadCategories() {
@@ -353,7 +422,7 @@ function validateArtikel(): boolean {
   let ok = true
   if (!form.judul_artikel.trim()) { stepErrors.judul_artikel = 'Wajib diisi.'; ok = false }
   if (!form.url_artikel.trim()) { stepErrors.url_artikel = 'Wajib diisi.'; ok = false }
-  if (form.kategori_jurnal_id === '') { stepErrors.kategori_jurnal_id = 'Wajib dipilih.'; ok = false }
+  if (form.kategori_jurnal_id === '' && !form.kategori_jurnal_new.trim()) { stepErrors.kategori_jurnal_id = 'Wajib dipilih atau diisi.'; ok = false }
   if (form.file_artikel.length === 0) { stepErrors.file_artikel = 'Wajib diunggah.'; ok = false }
   if (form.file_proposal_artikel.length === 0) { stepErrors.file_proposal_artikel = 'Wajib diunggah.'; ok = false }
   return ok
@@ -362,7 +431,7 @@ function validateBuku(): boolean {
   let ok = true
   if (!form.judul_buku.trim()) { stepErrors.judul_buku = 'Wajib diisi.'; ok = false }
   if (!form.url_buku.trim()) { stepErrors.url_buku = 'Wajib diisi.'; ok = false }
-  if (form.kategori_buku_id === '') { stepErrors.kategori_buku_id = 'Wajib dipilih.'; ok = false }
+  if (form.kategori_buku_id === '' && !form.kategori_buku_new.trim()) { stepErrors.kategori_buku_id = 'Wajib dipilih atau diisi.'; ok = false }
   if (!form.cover_depan_buku) { stepErrors.cover_depan_buku = 'Wajib diunggah.'; ok = false }
   if (!form.halaman_isbn) { stepErrors.halaman_isbn = 'Wajib diunggah.'; ok = false }
   return ok
@@ -371,7 +440,7 @@ function validateHaki(): boolean {
   let ok = true
   if (!form.judul_haki.trim()) { stepErrors.judul_haki = 'Wajib diisi.'; ok = false }
   if (!form.nomor_dokumen_haki.trim()) { stepErrors.nomor_dokumen_haki = 'Wajib diisi.'; ok = false }
-  if (form.kategori_haki_id === '') { stepErrors.kategori_haki_id = 'Wajib dipilih.'; ok = false }
+  if (form.kategori_haki_id === '' && !form.kategori_haki_new.trim()) { stepErrors.kategori_haki_id = 'Wajib dipilih atau diisi.'; ok = false }
   if (!form.sertifikat_haki) { stepErrors.sertifikat_haki = 'Wajib diunggah.'; ok = false }
   return ok
 }
@@ -426,6 +495,16 @@ async function submit() {
     for (const k of Object.keys(termIds)) {
       if (termIds[k] && termIds[k] !== '') fd.append(k, termIds[k])
     }
+    // Nama kategori baru (diketik manual) → backend membuat term-nya.
+    const newCats: Record<string, string> = {
+      kategori_jurnal_new: form.kategori_jurnal_new,
+      kategori_buku_new: form.kategori_buku_new,
+      kategori_haki_new: form.kategori_haki_new,
+      kategori_seminar_new: form.kategori_seminar_new,
+    }
+    for (const k of Object.keys(newCats)) {
+      if (newCats[k].trim()) fd.append(k, newCats[k].trim())
+    }
     for (const f of form.file_artikel) fd.append('file_artikel[]', f, f.name)
     for (const f of form.file_proposal_artikel) fd.append('file_proposal_artikel[]', f, f.name)
     const singleFiles: Record<string, File | null> = {
@@ -465,9 +544,13 @@ function resetAll() {
   Object.assign(form, {
     nama_dosen: '', no_whatsapp: '',
     judul_artikel: '', url_artikel: '', kategori_jurnal_id: '',
+    kategori_jurnal_new: '',
     judul_buku: '', url_buku: '', kategori_buku_id: '',
+    kategori_buku_new: '',
     judul_haki: '', nomor_dokumen_haki: '', kategori_haki_id: '',
+    kategori_haki_new: '',
     penyelenggara_seminar: '', judul_paper_seminar: '', kategori_seminar_id: '',
+    kategori_seminar_new: '',
     file_artikel: [], file_proposal_artikel: [],
     bukti_bayar: null, cover_depan_buku: null, halaman_isbn: null,
     bukti_bayar_buku: null, sertifikat_haki: null, bukti_bayar_haki: null,
