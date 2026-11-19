@@ -2,14 +2,14 @@
   <header class="site">
     <div class="wrap">
       <nav class="main">
-        <div class="brand">
+        <RouterLink to="/" class="brand" aria-label="Ke Beranda">
           <div class="brand-mark" v-if="!site?.logo_url">LP</div>
           <img v-else :src="site.logo_url" class="brand-logo" :alt="site?.nama || SITE.name" />
           <div class="brand-text">
             <div class="name">{{ site?.nama || SITE.name }}</div>
             <div class="sub">{{ site?.nama_panjang || SITE.institute }}</div>
           </div>
-        </div>
+        </RouterLink>
 
         <div class="nav-links" :class="{ open: menuOpen }">
           <RouterLink to="/" @click="menuOpen = false">Beranda</RouterLink>
@@ -143,6 +143,10 @@ function onSubClick() {
   display: block;
   object-fit: contain;
 }
+
+/* Brand sebagai link ke beranda — buang style anchor default. */
+a.brand { text-decoration: none; color: inherit; }
+a.brand:hover { text-decoration: none; }
 
 /* Trigger berbentuk <button> (dropdown tanpa halaman target) disamakan
    dengan link nav lainnya. */
