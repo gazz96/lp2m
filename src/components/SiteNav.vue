@@ -157,6 +157,58 @@ button.drop-trigger {
 }
 button.drop-trigger:hover { color: var(--green-800); }
 
+/* ── Dropdown (desktop) ── */
+.nav-item.dropdown { position: relative; }
+.drop-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.drop-trigger::after {
+  content: "";
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  margin-top: 2px;
+  opacity: 0.6;
+}
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 180px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  padding: 6px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+  z-index: 60;
+}
+.nav-item.dropdown:hover .dropdown-menu,
+.nav-item.dropdown.open .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.dropdown-menu a {
+  display: block;
+  padding: 9px 16px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  border-bottom: none !important;
+  white-space: nowrap;
+}
+.dropdown-menu a:hover {
+  background: var(--paper-2);
+  color: var(--green-800);
+  border-bottom: none !important;
+}
+
 /* Sembunyikan sub-teks brand saat header mulai sesak. */
 @media (max-width: 1199px) {
   .brand-text .sub { display: none; }
