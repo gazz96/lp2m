@@ -8,6 +8,7 @@
           <div class="eyebrow">Insentif Publikasi</div>
           <h1>Reward Jurnal</h1>
           <p>Ajukan reward (insentif) untuk publikasi jurnal, buku, HAKI, dan seminar Anda secara online.</p>
+          <a v-if="pengumumanUrl" :href="pengumumanUrl" class="btn rp-hero-dl" download>⬇ Pengumuman</a>
         </div>
       </div>
 
@@ -332,7 +333,20 @@ async function loadCategories() {
     loadingCats.value = false
   }
 }
-onMounted(() => { loadCategories(); loadPeriod() })
+onMounted(() => { loadCategories(); loadPeriod(); loadPengumuman() })
+
+// ── File pengumuman (Settings → Dokumen) ──
+// Diatur admin di LP2M → Settings → Dokumen (dok_pengumuman_id). Tombol hanya
+// tampil kalau file sudah diunggah.
+const pengumumanUrl = ref('')
+async function loadPengumuman() {
+  try {
+    const res = await fetch(`${base}/lp2m/v1/settings/dokumen`)
+    if (!res.ok) return
+    const data = await res.json()
+    pengumumanUrl.value = data?.pengumuman_url || ''
+  } catch { /* tombol tetap tersembunyi */ }
+}
 
 // ── Periode pengajuan (open/closed) ──
 async function loadPeriod() {
@@ -574,6 +588,13 @@ function resetAll() {
 .reward-hero .eyebrow::before { background: var(--gold-soft); }
 .reward-hero h1 { color: #fff; font-size: 2.4rem; margin-bottom: 10px; }
 .reward-hero p { color: var(--green-100); max-width: 52ch; }
+.rp-hero-dl {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 16px; padding: 10px 20px; border-radius: 8px;
+  background: transparent; border: 1.5px solid var(--gold-soft);
+  color: var(--gold-soft); font-weight: 600; text-decoration: none;
+}
+.rp-hero-dl:hover { background: rgba(255, 255, 255, 0.12); color: #fff; border-color: #fff; }
 
 .reward-shell { max-width: 760px; margin: 0 auto; }
 

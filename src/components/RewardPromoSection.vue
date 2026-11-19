@@ -12,9 +12,6 @@
       <div class="reward-promo-cta">
         <div class="rp-cta-row">
           <router-link to="/reward-publikasi-dosenITSI-2026" class="btn rp-btn">Ajukan Sekarang</router-link>
-          <router-link to="/reward-jurnal" class="btn rp-btn-dl">
-            Pengumuman
-          </router-link>
         </div>
       </div>
     </div>
@@ -22,8 +19,8 @@
 </template>
 
 <script setup lang="ts">
-// Tombol "Pengumuman" kini menuju halaman /reward-jurnal (di sana pengumuman
-// bisa diunduh langsung) — tidak lagi bergantung pada file pengumuman.
+// Tombol "Pengumuman" sudah dipindah ke halaman /reward-jurnal (hero, di bawah
+// deskripsi) supaya dosen bisa langsung mengunduh di tempat pengajuan.
 </script>
 
 <style scoped>
@@ -85,12 +82,6 @@
 }
 .reward-promo-cta { flex-shrink: 0; }
 .rp-cta-row { display: flex; flex-direction: row; gap: 10px; align-items: center; }
-.rp-btn-dl {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  background: transparent; border: 1.5px solid var(--gold-soft, #f0d99a);
-  color: var(--gold-soft, #f0d99a); font-weight: 600; white-space: nowrap;
-}
-.rp-btn-dl:hover { background: rgba(255, 255, 255, 0.12); color: #fff; border-color: #fff; }
 .rp-btn {
   padding: 12px 24px;
   background: var(--gold, #d4a72c);
