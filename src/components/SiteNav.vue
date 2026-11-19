@@ -12,24 +12,45 @@
         </div>
 
         <div class="nav-links" :class="{ open: menuOpen }">
-          <RouterLink v-for="link in links" :key="link.to" :to="link.to" @click="onLinkClick(link)">{{ link.label }}</RouterLink>
+          <RouterLink to="/" @click="menuOpen = false">Beranda</RouterLink>
+
           <div
+            v-for="dd in dropdowns"
+            :key="dd.key"
             class="nav-item dropdown"
-            :class="{ open: hibahOpen }"
-            @mouseenter="hibahOpen = true"
-            @mouseleave="hibahOpen = false"
+            :class="{ open: openKey === dd.key }"
+            @mouseenter="openMenu(dd.key)"
+            @mouseleave="closeMenu(dd.key)"
           >
-            <RouterLink to="/#hibah" class="drop-trigger" @click="onHibahClick">Hibah</RouterLink>
+            <RouterLink
+              v-if="dd.to"
+              :to="dd.to"
+              class="drop-trigger"
+              @click="onTriggerClick(dd)"
+            >{{ dd.label }}</RouterLink>
+            <button
+              v-else
+              type="button"
+              class="drop-trigger"
+              @click="onTriggerClick(dd)"
+            >{{ dd.label }}</button>
             <div class="dropdown-menu">
-              <RouterLink v-for="sub in hibahSubs" :key="sub.to" :to="sub.to" @click="onSubClick">{{ sub.label }}</RouterLink>
+              <RouterLink
+                v-for="sub in dd.items"
+                :key="sub.to"
+                :to="sub.to"
+                @click="onSubClick"
+              >{{ sub.label }}</RouterLink>
             </div>
           </div>
+
           <RouterLink to="/#kontak" class="nav-contact" @click="menuOpen = false">Kontak</RouterLink>
-          <RouterLink to="/daftar/status" @click="menuOpen = false">Cek Formulir</RouterLink>
+          <RouterLink to="/daftar/status" class="only-mobile" @click="menuOpen = false">Cek Formulir</RouterLink>
         </div>
 
         <div class="nav-cta">
           <slot name="extra">
+            <RouterLink to="/daftar/status" class="btn btn-outline nav-btn-cek only-desktop">Cek Formulir</RouterLink>
             <a href="#form-hibah" class="btn btn-primary nav-btn">Daftar Hibah</a>
           </slot>
           <button class="burger" @click="menuOpen = !menuOpen" aria-label="Buka menu">
@@ -43,60 +64,60 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRoute } from 'vue-router'
 import { SITE } from '@/data'
 import { useSiteSettings } from '@/composables/useSiteSettings'
 
 const { site } = useSiteSettings()
-const route = useRoute()
 
-const links = [
-  { label: 'Beranda', to: '/' },
-  { label: 'Tentang', to: '/#tentang' },
-  { label: 'Bidang Unggulan', to: '/#bidang' },
-  { label: 'Pengumuman', to: '/pengumuman' },
-  { label: 'Reward Jurnal', to: '/reward-jurnal' }
-]
+// Hierarki menu (Opsi A): 5 item level-atas, konten sekunder masuk dropdown.
+interface NavItem { label: string; to: string }
+interface Dropdown { key: string; label: string; to: string; items: NavItem[] }
 
-const hibahSubs = [
-  { label: 'Jadwal', to: '/#jadwal' },
-  { label: 'Publikasi', to: '/#publikasi' },
-  { label: 'Infografis', to: '/#infografis' }
+const dropdowns: Dropdown[] = [
+  {
+    key: 'tentang',
+    label: 'Tentang',
+    to: '/#tentang',
+    items: [
+      { label: 'Tentang', to: '/#tentang' },
+      { label: 'Bidang Unggulan', to: '/#bidang' },
+    ],
+  },
+  {
+    key: 'hibah',
+    label: 'Hibah',
+    to: '/#hibah',
+    items: [
+      { label: 'Jadwal', to: '/#jadwal' },
+      { label: 'Publikasi', to: '/#publikasi' },
+      { label: 'Infografis', to: '/#infografis' },
+    ],
+  },
+  {
+    key: 'informasi',
+    label: 'Informasi',
+    to: '',
+    items: [
+      { label: 'Pengumuman', to: '/pengumuman' },
+      { label: 'Reward Jurnal', to: '/reward-jurnal' },
+    ],
+  },
 ]
 
 const menuOpen = ref(false)
-const hibahOpen = ref(false)
+const openKey = ref('')
 
-// Jika menu item menunjuk ke section di halaman beranda, scroll ke sana
-// (mis. saat user ada di /daftar/status lalu klik "Tentang").
-function scrollToSection(id: string) {
-  const el = document.querySelector(id)
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    const header = document.querySelector('.site-header')
-    if (header) {
-      const top = el.getBoundingClientRect().top + window.scrollY - header.clientHeight
-      window.scrollTo({ top, behavior: 'smooth' })
-    }
-  }
+function openMenu(key: string) {
+  openKey.value = key
+}
+function closeMenu(key: string) {
+  if (openKey.value === key) openKey.value = ''
 }
 
-function onLinkClick(link: { to: string }) {
-  menuOpen.value = false
-  if (link.to.startsWith('/#')) {
-    const id = link.to.slice(1) // "#tentang"
-    if (route.path !== '/') {
-      // Pindah dulu ke beranda, lalu scroll — ditangani router scrollBehavior.
-      return
-    }
-    scrollToSection(id)
-  }
-}
-
-function onHibahClick() {
-  // Mobile: klik trigger membuka/tutup submenu. Desktop: navigasi ke #hibah.
-  if (window.innerWidth <= 700) {
-    hibahOpen.value = !hibahOpen.value
+// Trigger dropdown: desktop → navigasi ke anchor target; mobile/tanpa target → toggle submenu.
+function onTriggerClick(dd: Dropdown) {
+  if (!dd.to || window.innerWidth <= 1023) {
+    openKey.value = openKey.value === dd.key ? '' : dd.key
   } else {
     menuOpen.value = false
   }
@@ -104,13 +125,17 @@ function onHibahClick() {
 
 function onSubClick() {
   menuOpen.value = false
-  hibahOpen.value = false
+  openKey.value = ''
 }
 </script>
 
 <style scoped>
 .nav-btn {
   padding: 9px 18px;
+}
+.nav-btn-cek {
+  padding: 9px 18px;
+  white-space: nowrap;
 }
 .brand-logo {
   height: 40px;
@@ -119,59 +144,32 @@ function onSubClick() {
   object-fit: contain;
 }
 
-/* ── Dropdown Hibah ── */
-.nav-item.dropdown { position: relative; }
-.drop-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-.drop-trigger::after {
-  content: "";
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid currentColor;
-  margin-top: 2px;
-  opacity: 0.6;
-}
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  min-width: 180px;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  padding: 6px 0;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(6px);
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
-  z-index: 60;
-}
-.nav-item.dropdown:hover .dropdown-menu,
-.nav-item.dropdown.open .dropdown-menu {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-.dropdown-menu a {
-  display: block;
-  padding: 9px 16px;
-  font-size: 0.9rem;
+/* Trigger berbentuk <button> (dropdown tanpa halaman target) disamakan
+   dengan link nav lainnya. */
+button.drop-trigger {
+  background: none;
+  border: 0;
+  padding: 6px 2px;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 500;
   color: var(--ink-soft);
-  border-bottom: none !important;
-  white-space: nowrap;
 }
-.dropdown-menu a:hover {
-  background: var(--paper-2);
-  color: var(--green-800);
-  border-bottom: none !important;
+button.drop-trigger:hover { color: var(--green-800); }
+
+/* Sembunyikan sub-teks brand saat header mulai sesak. */
+@media (max-width: 1199px) {
+  .brand-text .sub { display: none; }
 }
 
-@media (max-width: 700px) {
+/* Utility show/hide antara desktop & tablet. */
+.only-mobile { display: none !important; }
+
+/* ── Breakpoint tablet/mobile: burger di <1024px (sebelumnya 700px) ── */
+@media (max-width: 1023px) {
+  .only-desktop { display: none !important; }
+  .only-mobile { display: block !important; }
+
   .nav-links { display: none; }
   .nav-links.open {
     display: flex;
@@ -181,6 +179,7 @@ function onSubClick() {
     right: 0;
     background: var(--paper);
     flex-direction: column;
+    align-items: stretch;
     padding: 20px 24px;
     border-bottom: 1px solid var(--line);
     gap: 14px;

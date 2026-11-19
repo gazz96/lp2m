@@ -719,8 +719,7 @@ footer.site { background: var(--green-900); color: var(--green-100); padding: 64
   .footer-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 700px) {
-  .nav-links, .nav-cta .btn-outline { display: none; }
-  .burger { display: block; }
+  /* Nav & burger kini diatur komponen SiteNav (breakpoint 1023px). */
   .topbar .wrap { font-size: 0.7rem; }
   .hero-stats { grid-template-columns: repeat(2, 1fr); row-gap: 18px; }
   .bidang-grid { grid-template-columns: 1fr; }
