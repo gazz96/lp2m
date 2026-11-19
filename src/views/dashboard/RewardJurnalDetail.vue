@@ -43,9 +43,9 @@
                 <tr><th style="width:200px">Judul Artikel</th><td>{{ post.judul_artikel || '—' }}</td></tr>
                 <tr><th>URL Artikel</th><td><template v-for="l in linkOut(post.url_artikel)" :key="l.url"><a :href="l.url" target="_blank" rel="noopener" style="color:#2271b1;font-size:12px;word-break:break-all">{{ shortenUrl(l.url) }}</a></template><span v-if="!post.url_artikel">—</span></td></tr>
                 <tr><th>Kategori Jurnal</th><td>{{ termsLabel(post.kategori_jurnal_names) }}</td></tr>
-                <tr><th>File Artikel</th><td>{{ fileLinks(post.file_artikel) }}</td></tr>
-                <tr><th>File Proposal</th><td>{{ fileLinks(post.file_proposal_artikel) }}</td></tr>
-                <tr><th>Bukti Bayar</th><td>{{ fileLinks(post.bukti_bayar) }}</td></tr>
+                <tr><th>File Artikel</th><td><span v-html="fileLinks(post.file_artikel)"></span></td></tr>
+                <tr><th>File Proposal</th><td><span v-html="fileLinks(post.file_proposal_artikel)"></span></td></tr>
+                <tr><th>Bukti Bayar</th><td><span v-html="fileLinks(post.bukti_bayar)"></span></td></tr>
               </table>
             </div>
           </div>
@@ -57,9 +57,9 @@
                 <tr><th style="width:200px">Judul Buku</th><td>{{ post.judul_buku || '—' }}</td></tr>
                 <tr><th>URL Buku</th><td><template v-for="l in linkOut(post.url_buku)" :key="l.url"><a :href="l.url" target="_blank" rel="noopener" style="color:#2271b1;font-size:12px;word-break:break-all">{{ shortenUrl(l.url) }}</a></template><span v-if="!post.url_buku">—</span></td></tr>
                 <tr><th>Kategori Buku</th><td>{{ termsLabel(post.kategori_buku_names) }}</td></tr>
-                <tr><th>Cover Depan</th><td>{{ fileLinks(post.cover_depan_buku) }}</td></tr>
-                <tr><th>Halaman ISBN</th><td>{{ fileLinks(post.halaman_isbn) }}</td></tr>
-                <tr><th>Bukti Bayar Penerbitan</th><td>{{ fileLinks(post.bukti_bayar_buku) }}</td></tr>
+                <tr><th>Cover Depan</th><td><span v-html="fileLinks(post.cover_depan_buku)"></span></td></tr>
+                <tr><th>Halaman ISBN</th><td><span v-html="fileLinks(post.halaman_isbn)"></span></td></tr>
+                <tr><th>Bukti Bayar Penerbitan</th><td><span v-html="fileLinks(post.bukti_bayar_buku)"></span></td></tr>
               </table>
             </div>
           </div>
@@ -71,8 +71,8 @@
                 <tr><th style="width:200px">Judul HAKI</th><td>{{ post.judul_haki || '—' }}</td></tr>
                 <tr><th>Nomor Dokumen</th><td>{{ post.nomor_dokumen_haki || '—' }}</td></tr>
                 <tr><th>Kategori HAKI</th><td>{{ termsLabel(post.kategori_haki_names) }}</td></tr>
-                <tr><th>Sertifikat</th><td>{{ fileLinks(post.sertifikat_haki) }}</td></tr>
-                <tr><th>Bukti Bayar Penerbitan</th><td>{{ fileLinks(post.bukti_bayar_haki) }}</td></tr>
+                <tr><th>Sertifikat</th><td><span v-html="fileLinks(post.sertifikat_haki)"></span></td></tr>
+                <tr><th>Bukti Bayar Penerbitan</th><td><span v-html="fileLinks(post.bukti_bayar_haki)"></span></td></tr>
               </table>
             </div>
           </div>
@@ -84,8 +84,8 @@
                 <tr><th style="width:200px">Penyelenggara</th><td>{{ post.penyelenggara_seminar || '—' }}</td></tr>
                 <tr><th>Judul Paper</th><td>{{ post.judul_paper_seminar || '—' }}</td></tr>
                 <tr><th>Kategori Seminar</th><td>{{ termsLabel(post.kategori_seminar_names) }}</td></tr>
-                <tr><th>Sertifikat Pemateri</th><td>{{ fileLinks(post.sertifikat_pemateri) }}</td></tr>
-                <tr><th>Dokumentasi</th><td>{{ fileLinks(post.dokumentasi_seminar) }}</td></tr>
+                <tr><th>Sertifikat Pemateri</th><td><span v-html="fileLinks(post.sertifikat_pemateri)"></span></td></tr>
+                <tr><th>Dokumentasi</th><td><span v-html="fileLinks(post.dokumentasi_seminar)"></span></td></tr>
               </table>
             </div>
           </div>
