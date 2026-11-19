@@ -12,9 +12,9 @@
       <div class="reward-promo-cta">
         <div class="rp-cta-row">
           <router-link to="/reward-publikasi-dosenITSI-2026" class="btn rp-btn">Ajukan Sekarang</router-link>
-          <a v-if="pengumumanUrl" :href="pengumumanUrl" class="btn rp-btn-dl" download>
+          <router-link to="/reward-jurnal" class="btn rp-btn-dl">
             Pengumuman
-          </a>
+          </router-link>
         </div>
       </div>
     </div>
@@ -22,23 +22,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { SITE } from '@/data'
-
-// File pengumuman pengusulan reward diatur admin di LP2M → Settings → Dokumen (lp2m_dok_pengumuman_id).
-// Kalau belum diunggah, tombol download tidak dirender.
-const pengumumanUrl = ref('')
-
-onMounted(async () => {
-  try {
-    const res = await fetch(`${SITE.apiBase.replace('/wp/v2', '')}/lp2m/v1/settings/dokumen`)
-    if (res.ok) {
-      const data = await res.json()
-      // Endpoint /settings/dokumen mengembalikan array FLAT (bukan nested dokumen).
-      pengumumanUrl.value = data?.pengumuman_url || ''
-    }
-  } catch { /* tombol tetap tersembunyi */ }
-})
+// Tombol "Pengumuman" kini menuju halaman /reward-jurnal (di sana pengumuman
+// bisa diunduh langsung) — tidak lagi bergantung pada file pengumuman.
 </script>
 
 <style scoped>
