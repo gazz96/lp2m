@@ -1,10 +1,6 @@
 <template>
   <TopBar />
-  <SiteNav>
-    <template #extra>
-      <a href="#form-hibah" class="btn btn-primary nav-btn-dash">Daftar Hibah</a>
-    </template>
-  </SiteNav>
+  <SiteNav />
   <main>
     <HeroSection />
     <RewardPromoSection />
