@@ -16,6 +16,7 @@ import ArtikelForm from '@/views/dashboard/ArtikelForm.vue'
 import KategoriArtikel from '@/views/dashboard/KategoriArtikel.vue'
 import Pendaftaran from '@/views/dashboard/Pendaftaran.vue'
 import PendaftaranDetail from '@/views/dashboard/PendaftaranDetail.vue'
+import RewardJurnalDetail from '@/views/dashboard/RewardJurnalDetail.vue'
 import RewardJurnalLaporan from '@/views/dashboard/RewardJurnalLaporan.vue'
 import Profile from '@/views/dashboard/Profile.vue'
 import Settings from '@/views/dashboard/Settings.vue'
@@ -78,6 +79,7 @@ const router = createRouter({
         { path: 'pendaftaran', name: 'pendaftaran', component: Pendaftaran },
         { path: 'pendaftaran/:id', name: 'pendaftaran-detail', component: PendaftaranDetail },
         { path: 'reward-jurnal', name: 'reward-jurnal-laporan', component: RewardJurnalLaporan },
+        { path: 'reward-jurnal/:id', name: 'reward-jurnal-detail', component: RewardJurnalDetail },
         { path: 'profile', name: 'profile', component: Profile },
         { path: 'settings', name: 'settings', component: Settings },
       ]

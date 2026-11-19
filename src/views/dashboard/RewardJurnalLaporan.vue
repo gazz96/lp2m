@@ -72,6 +72,18 @@
         <template #cell-_status="{ row }">
           <span :style="statusPillStyle(row.status)">{{ STATUS_LABEL[row.status] || row.status }}</span>
         </template>
+        <template #cell-pengusul="{ row }">
+          <strong>
+            <router-link :to="`/dashboard/reward-jurnal/${row.id}`" class="row-title" style="color:inherit;text-decoration:none">Lihat Detail · {{ row.nama_dosen || '—' }}</router-link>
+          </strong>
+          <div class="row-actions">
+            <span class="view">
+              <router-link :to="`/dashboard/reward-jurnal/${row.id}`">Lihat Detail</router-link>
+            </span>
+            <span v-if="row.whatsapp"> | </span>
+            <a v-if="row.whatsapp" :href="`tel:${String(row.whatsapp).replace(/[^0-9+]/g, '')}`">WhatsApp</a>
+          </div>
+        </template>
       </WpTable>
     </div>
   </div>
